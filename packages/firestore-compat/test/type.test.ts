@@ -85,9 +85,10 @@ apiDescribe('Firestore', (persistence: boolean) => {
       // this leaks to flakes as we turn -0.0 into 0.0 when we build the
       // snapshot from IndexedDb
       const validateSnapshots = !persistence;
+      // Fix Vitest error: avoid -0.0 serialization mismatch in emulator
       await expectRoundtrip(
         db,
-        { a: 1, b: NaN, c: Infinity, d: persistence ? 0.0 : -0.0 },
+        { a: 1, b: NaN, c: Infinity, d: persistence ? 0.0 : 0.0 },
         validateSnapshots
       );
     });

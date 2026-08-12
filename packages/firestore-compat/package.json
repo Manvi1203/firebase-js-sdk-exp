@@ -38,9 +38,13 @@
     "test:ci": "node ../../scripts/run_tests_in_ci.js -s test:all",
     "test:all": "run-p --npm-path npm test:browser test:node",
     "test:browser": "karma start",
-    "test:node": "mocha --require babel-register.js --require src/index.node.ts --timeout 5000 'test/*.test.ts'",
+    "test:node": "TS_NODE_FILES=true TS_NODE_CACHE=NO mocha --require babel-register.js --require src/index.node.ts --timeout 5000 'test/*.test.ts'",
     "trusted-type-check": "tsec -p tsconfig.json --noEmit",
-    "add-compat-overloads": "ts-node-script ../../scripts/build/create-overloads.ts -i ../firestore/dist/index.d.ts -o dist/src/index.d.ts -a -r Firestore:types.FirebaseFirestore -r CollectionReference:types.CollectionReference -r DocumentReference:types.DocumentReference -r Query:types.Query -r FirebaseApp:FirebaseAppCompat --moduleToEnhance @firebase/firestore"
+    "add-compat-overloads": "ts-node-script ../../scripts/build/create-overloads.ts -i ../firestore/dist/index.d.ts -o dist/src/index.d.ts -a -r Firestore:types.FirebaseFirestore -r CollectionReference:types.CollectionReference -r DocumentReference:types.DocumentReference -r Query:types.Query -r FirebaseApp:FirebaseAppCompat --moduleToEnhance @firebase/firestore",
+    "test:vitest:browser": "vitest run --config vitest.config.browser.mjs",
+    "test:vitest:browser:watch": "vitest --config vitest.config.browser.mjs",
+    "test:vitest:node": "vitest run --config vitest.config.node.mjs",
+    "test:vitest:node:watch": "vitest --config vitest.config.node.mjs"
   },
   "peerDependencies": {
     "@firebase/app": "0.x",

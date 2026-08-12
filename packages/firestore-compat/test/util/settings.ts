@@ -30,8 +30,17 @@ enum TargetBackend {
   PROD = 'prod'
 }
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const PROJECT_CONFIG = require('../../../../config/project.json');
+// Fix Vitest error: "Failed to resolve import config/project.json" / "ReferenceError: require is not defined"
+let PROJECT_CONFIG: Record<string, string> = {};
+try {
+  PROJECT_CONFIG =
+    typeof require !== 'undefined'
+      ? // eslint-disable-next-line @typescript-eslint/no-require-imports
+        require('../../../../config/project.json')
+      : {};
+} catch {
+  PROJECT_CONFIG = {};
+}
 
 const TARGET_BACKEND: TargetBackend = getTargetBackend();
 
@@ -97,5 +106,8 @@ function getSslEnabled(targetBackend: TargetBackend): boolean {
 
 export const DEFAULT_PROJECT_ID = USE_EMULATOR
   ? process.env.FIRESTORE_EMULATOR_PROJECT_ID || 'test-emulator'
-  : PROJECT_CONFIG.projectId;
+  : process.env.FIRESTORE_PROJECT_ID ||
+    process.env.GCLOUD_PROJECT ||
+    PROJECT_CONFIG.projectId ||
+    'test-emulator';
 export const ALT_PROJECT_ID = 'test-db2';
