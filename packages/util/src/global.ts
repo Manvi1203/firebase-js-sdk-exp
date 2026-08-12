@@ -15,12 +15,7 @@
  * limitations under the License.
  */
 
-/**
- * Polyfill for `globalThis` object.
- * @returns the `globalThis` object for the given environment.
- * @public
- */
-export function getGlobal(): typeof globalThis {
+const defaultGetGlobal = (): typeof globalThis => {
   if (typeof self !== 'undefined') {
     return self;
   }
@@ -31,4 +26,17 @@ export function getGlobal(): typeof globalThis {
     return global;
   }
   throw new Error('Unable to locate global object.');
+};
+
+export const _globalInternal = {
+  getGlobal: defaultGetGlobal
+};
+
+/**
+ * Polyfill for `globalThis` object.
+ * @returns the `globalThis` object for the given environment.
+ * @public
+ */
+export function getGlobal(): typeof globalThis {
+  return _globalInternal.getGlobal();
 }
