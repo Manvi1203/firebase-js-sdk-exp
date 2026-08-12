@@ -77,3 +77,7 @@ export async function createInstallationRequest(
     throw await getErrorFromResponse('Create Installation', response);
   }
 }
+
+export const _createInstallationRequestInternal = {
+  createInstallationRequest
+};

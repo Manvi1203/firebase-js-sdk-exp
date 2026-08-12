@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2019 Google LLC
+ * Copyright 2026 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,22 +15,8 @@
  * limitations under the License.
  */
 
-import { deleteInstallations } from './delete-installations';
-import { getId } from './get-id';
-import { getToken } from './get-token';
-import { onIdChange } from './on-id-change';
-import { getInstallations } from './get-installations';
-
-export * from './get-id';
-export * from './get-token';
-export * from './delete-installations';
-export * from './on-id-change';
-export * from './get-installations';
-
-export const _apiInternal = {
-  deleteInstallations,
-  getId,
-  getToken,
-  onIdChange,
-  getInstallations
-};
+if (typeof (globalThis as unknown as { process: unknown }).process === 'undefined') {
+  (globalThis as unknown as { process: { env: Record<string, string> } }).process = {
+    env: {}
+  };
+}

@@ -108,3 +108,9 @@ function closeBroadcastChannel(): void {
     broadcastChannel = null;
   }
 }
+
+export const _fidChangedInternal = {
+  fidChanged,
+  addCallback,
+  removeCallback
+};

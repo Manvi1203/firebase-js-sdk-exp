@@ -40,8 +40,10 @@ describe('getId', () => {
   beforeEach(() => {
     installations = getFakeInstallations();
 
+    // Stub _getInstallationEntryInternal to avoid Vitest error:
+    // "TypeError: ES Modules cannot be stubbed"
     getInstallationEntrySpy = stub(
-      getInstallationEntryModule,
+      getInstallationEntryModule._getInstallationEntryInternal,
       'getInstallationEntry'
     );
   });
@@ -72,8 +74,10 @@ describe('getId', () => {
       }
     });
 
+    // Stub _refreshAuthTokenInternal to avoid Vitest error:
+    // "TypeError: ES Modules cannot be stubbed"
     const refreshAuthTokenSpy = stub(
-      refreshAuthTokenModule,
+      refreshAuthTokenModule._refreshAuthTokenInternal,
       'refreshAuthToken'
     ).resolves({
       token: 'authToken',

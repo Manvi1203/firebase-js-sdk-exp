@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import { generateAuthTokenRequest } from '../functions/generate-auth-token-request';
+import { _generateAuthTokenRequestInternal } from '../functions/generate-auth-token-request';
 import {
   AppConfig,
   FirebaseInstallationsImpl
@@ -31,7 +31,7 @@ import {
 import { PENDING_TIMEOUT_MS, TOKEN_EXPIRATION_BUFFER } from '../util/constants';
 import { ERROR_FACTORY, ErrorCode, isServerError } from '../util/errors';
 import { sleep } from '../util/sleep';
-import { remove, set, update } from './idb-manager';
+import { _idbManagerInternal } from './idb-manager';
 
 /**
  * Returns a valid authentication token for the installation. Generates a new
@@ -44,7 +44,7 @@ export async function refreshAuthToken(
   forceRefresh = false
 ): Promise<CompletedAuthToken> {
   let tokenPromise: Promise<CompletedAuthToken> | undefined;
-  const entry = await update(installations.appConfig, oldEntry => {
+  const entry = await _idbManagerInternal.update(installations.appConfig, oldEntry => {
     if (!isEntryRegistered(oldEntry)) {
       throw ERROR_FACTORY.create(ErrorCode.NOT_REGISTERED);
     }
@@ -117,7 +117,7 @@ async function waitUntilAuthTokenRequest(
 function updateAuthTokenRequest(
   appConfig: AppConfig
 ): Promise<RegisteredInstallationEntry> {
-  return update(appConfig, oldEntry => {
+  return _idbManagerInternal.update(appConfig, oldEntry => {
     if (!isEntryRegistered(oldEntry)) {
       throw ERROR_FACTORY.create(ErrorCode.NOT_REGISTERED);
     }
@@ -139,7 +139,7 @@ async function fetchAuthTokenFromServer(
   installationEntry: RegisteredInstallationEntry
 ): Promise<CompletedAuthToken> {
   try {
-    const authToken = await generateAuthTokenRequest(
+    const authToken = await _generateAuthTokenRequestInternal.generateAuthTokenRequest(
       installations,
       installationEntry
     );
@@ -147,7 +147,7 @@ async function fetchAuthTokenFromServer(
       ...installationEntry,
       authToken
     };
-    await set(installations.appConfig, updatedInstallationEntry);
+    await _idbManagerInternal.set(installations.appConfig, updatedInstallationEntry);
     return authToken;
   } catch (e) {
     if (
@@ -156,13 +156,13 @@ async function fetchAuthTokenFromServer(
     ) {
       // Server returned a "FID not found" or a "Invalid authentication" error.
       // Generate a new ID next time.
-      await remove(installations.appConfig);
+      await _idbManagerInternal.remove(installations.appConfig);
     } else {
       const updatedInstallationEntry: RegisteredInstallationEntry = {
         ...installationEntry,
         authToken: { requestStatus: RequestStatus.NOT_STARTED }
       };
-      await set(installations.appConfig, updatedInstallationEntry);
+      await _idbManagerInternal.set(installations.appConfig, updatedInstallationEntry);
     }
     throw e;
   }
@@ -212,3 +212,7 @@ function hasAuthTokenRequestTimedOut(authToken: AuthToken): boolean {
     authToken.requestTime + PENDING_TIMEOUT_MS < Date.now()
   );
 }
+
+export const _refreshAuthTokenInternal = {
+  refreshAuthToken
+};

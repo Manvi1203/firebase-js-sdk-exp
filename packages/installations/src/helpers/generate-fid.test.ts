@@ -82,42 +82,48 @@ describe('generateFid', () => {
     }
   });
 
-  it('generates FIDs where each character is equally likely to appear in each location', () => {
-    const numTries = 200000;
+  // Pass timeout as 3rd parameter to avoid Vitest error:
+  // "TypeError: Cannot read properties of undefined (reading 'timeout')"
+  it(
+    'generates FIDs where each character is equally likely to appear in each location',
+    () => {
+      const numTries = 200000;
 
-    const charOccurrencesMapList: Array<Map<string, number>> = new Array(22);
-    for (let i = 0; i < charOccurrencesMapList.length; i++) {
-      charOccurrencesMapList[i] = new Map();
-    }
-
-    for (let i = 0; i < numTries; i++) {
-      const fid = generateFid();
-
-      Array.from(fid).forEach((char, location) => {
-        const map = charOccurrencesMapList[location];
-        map.set(char, (map.get(char) || 0) + 1);
-      });
-    }
-
-    for (let i = 0; i < charOccurrencesMapList.length; i++) {
-      const map = charOccurrencesMapList[i];
-      if (i === 0) {
-        // In the first location only 4 characters (c, d, e, f) are valid.
-        expect(map.size).to.equal(4);
-      } else {
-        // In locations other than the first, all 64 characters are valid.
-        expect(map.size).to.equal(64);
+      const charOccurrencesMapList: Array<Map<string, number>> = new Array(22);
+      for (let i = 0; i < charOccurrencesMapList.length; i++) {
+        charOccurrencesMapList[i] = new Map();
       }
 
-      Array.from(map.entries()).forEach(([_, occurrence]) => {
-        const expectedOccurrence = numTries / map.size;
+      for (let i = 0; i < numTries; i++) {
+        const fid = generateFid();
 
-        // 10% margin of error
-        expect(occurrence).to.be.above(expectedOccurrence * 0.9);
-        expect(occurrence).to.be.below(expectedOccurrence * 1.1);
-      });
-    }
-  }).timeout(30000);
+        Array.from(fid).forEach((char, location) => {
+          const map = charOccurrencesMapList[location];
+          map.set(char, (map.get(char) || 0) + 1);
+        });
+      }
+
+      for (let i = 0; i < charOccurrencesMapList.length; i++) {
+        const map = charOccurrencesMapList[i];
+        if (i === 0) {
+          // In the first location only 4 characters (c, d, e, f) are valid.
+          expect(map.size).to.equal(4);
+        } else {
+          // In locations other than the first, all 64 characters are valid.
+          expect(map.size).to.equal(64);
+        }
+
+        Array.from(map.entries()).forEach(([_, occurrence]) => {
+          const expectedOccurrence = numTries / map.size;
+
+          // 10% margin of error
+          expect(occurrence).to.be.above(expectedOccurrence * 0.9);
+          expect(occurrence).to.be.below(expectedOccurrence * 1.1);
+        });
+      }
+    },
+    30000
+  );
 
   it('returns an empty string if FID generation fails', () => {
     stub(crypto, 'getRandomValues').throws();

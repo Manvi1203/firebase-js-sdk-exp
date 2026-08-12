@@ -48,3 +48,7 @@ function getDeleteEndpoint(
 ): string {
   return `${getInstallationsEndpoint(appConfig)}/${fid}`;
 }
+
+export const _deleteInstallationRequestInternal = {
+  deleteInstallationRequest
+};

@@ -82,3 +82,7 @@ function getGenerateAuthTokenEndpoint(
 ): string {
   return `${getInstallationsEndpoint(appConfig)}/${fid}/authTokens:generate`;
 }
+
+export const _generateAuthTokenRequestInternal = {
+  generateAuthTokenRequest
+};

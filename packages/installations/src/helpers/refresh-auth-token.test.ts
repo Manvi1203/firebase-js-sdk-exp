@@ -47,8 +47,10 @@ describe('refreshAuthToken', () => {
   beforeEach(() => {
     installations = getFakeInstallations();
 
+    // Stub _generateAuthTokenRequestInternal to avoid Vitest error:
+    // "TypeError: ES Modules cannot be stubbed"
     generateAuthTokenRequestSpy = stub(
-      generateAuthTokenRequestModule,
+      generateAuthTokenRequestModule._generateAuthTokenRequestInternal,
       'generateAuthTokenRequest'
     ).callsFake(async () => {
       await sleep(100); // Request would take some time

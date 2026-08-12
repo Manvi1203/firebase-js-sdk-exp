@@ -25,16 +25,21 @@ import { FirebaseInstallationsImpl } from '../interfaces/installation-impl';
 
 describe('onIdChange', () => {
   let installations: FirebaseInstallationsImpl;
+  let addCallbackStub: ReturnType<typeof stub>;
+  let removeCallbackStub: ReturnType<typeof stub>;
 
   beforeEach(() => {
     installations = getFakeInstallations();
-    stub(FidChangedModule);
+    // Stub _fidChangedInternal to avoid Vitest error:
+    // "TypeError: ES Modules cannot be stubbed"
+    addCallbackStub = stub(FidChangedModule._fidChangedInternal, 'addCallback');
+    removeCallbackStub = stub(FidChangedModule._fidChangedInternal, 'removeCallback');
   });
 
   it('calls addCallback with the given callback and app key when called', () => {
     const callback = stub();
     onIdChange(installations, callback);
-    expect(FidChangedModule.addCallback).to.have.been.calledOnceWith(
+    expect(addCallbackStub).to.have.been.calledOnceWith(
       installations.appConfig,
       callback
     );
@@ -44,7 +49,7 @@ describe('onIdChange', () => {
     const callback = stub();
     const unsubscribe = onIdChange(installations, callback);
     unsubscribe();
-    expect(FidChangedModule.removeCallback).to.have.been.calledOnceWith(
+    expect(removeCallbackStub).to.have.been.calledOnceWith(
       installations.appConfig,
       callback
     );

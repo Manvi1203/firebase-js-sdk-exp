@@ -186,8 +186,10 @@ describe('getToken', () => {
   beforeEach(() => {
     installations = getFakeInstallations();
 
+    // Stub _createInstallationRequestInternal to avoid Vitest error:
+    // "TypeError: ES Modules cannot be stubbed"
     createInstallationRequestSpy = stub(
-      createInstallationRequestModule,
+      createInstallationRequestModule._createInstallationRequestInternal,
       'createInstallationRequest'
     ).callsFake(async (_, installationEntry) => {
       await sleep(100); // Request would take some time
@@ -204,8 +206,10 @@ describe('getToken', () => {
       };
       return result;
     });
+    // Stub _generateAuthTokenRequestInternal to avoid Vitest error:
+    // "TypeError: ES Modules cannot be stubbed"
     generateAuthTokenRequestSpy = stub(
-      generateAuthTokenRequestModule,
+      generateAuthTokenRequestModule._generateAuthTokenRequestInternal,
       'generateAuthTokenRequest'
     ).callsFake(async () => {
       await sleep(100); // Request would take some time

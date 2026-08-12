@@ -15,8 +15,8 @@
  * limitations under the License.
  */
 
-import { getInstallationEntry } from '../helpers/get-installation-entry';
-import { refreshAuthToken } from '../helpers/refresh-auth-token';
+import { _getInstallationEntryInternal } from '../helpers/get-installation-entry';
+import { _refreshAuthTokenInternal } from '../helpers/refresh-auth-token';
 import { FirebaseInstallationsImpl } from '../interfaces/installation-impl';
 import { Installations } from '../interfaces/public-types';
 
@@ -37,14 +37,14 @@ export async function getToken(
 
   // At this point we either have a Registered Installation in the DB, or we've
   // already thrown an error.
-  const authToken = await refreshAuthToken(installationsImpl, forceRefresh);
+  const authToken = await _refreshAuthTokenInternal.refreshAuthToken(installationsImpl, forceRefresh);
   return authToken.token;
 }
 
 async function completeInstallationRegistration(
   installations: FirebaseInstallationsImpl
 ): Promise<void> {
-  const { registrationPromise } = await getInstallationEntry(installations);
+  const { registrationPromise } = await _getInstallationEntryInternal.getInstallationEntry(installations);
 
   if (registrationPromise) {
     // A createInstallation request is in progress. Wait until it finishes.
