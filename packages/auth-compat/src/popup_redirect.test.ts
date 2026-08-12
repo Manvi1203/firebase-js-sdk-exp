@@ -73,14 +73,16 @@ describe('popup_redirect/CompatPopupRedirectResolver', () => {
     });
 
     it('selects the Cordova resolver if in Cordova', async () => {
-      sinon.stub(platform, '_isCordova').returns(Promise.resolve(true));
+      // Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+      sinon.stub(platform._platformInternal, '_isCordova').returns(Promise.resolve(true));
       await compatResolver._initialize(auth);
       expect(cordovaResolver._initialize).to.have.been.calledWith(auth);
       expect(browserResolver._initialize).not.to.have.been.called;
     });
 
     it('selects the Browser resolver if in Browser', async () => {
-      sinon.stub(platform, '_isCordova').returns(Promise.resolve(false));
+      // Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+      sinon.stub(platform._platformInternal, '_isCordova').returns(Promise.resolve(false));
       await compatResolver._initialize(auth);
       expect(cordovaResolver._initialize).not.to.have.been.called;
       expect(browserResolver._initialize).to.have.been.calledWith(auth);
@@ -149,7 +151,8 @@ describe('popup_redirect/CompatPopupRedirectResolver', () => {
 
   context('_shouldInitProactively', () => {
     it('returns true if platform may be cordova', () => {
-      sinon.stub(platform, '_isLikelyCordova').returns(true);
+      // Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+      sinon.stub(platform._platformInternal, '_isLikelyCordova').returns(true);
       expect(compatResolver._shouldInitProactively).to.be.true;
     });
 
@@ -162,7 +165,8 @@ describe('popup_redirect/CompatPopupRedirectResolver', () => {
           '_shouldInitProactively'
         )
         .value(true);
-      sinon.stub(platform, '_isLikelyCordova').returns(false);
+      // Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+      sinon.stub(platform._platformInternal, '_isLikelyCordova').returns(false);
       expect(compatResolver._shouldInitProactively).to.be.true;
     });
 
@@ -175,7 +179,8 @@ describe('popup_redirect/CompatPopupRedirectResolver', () => {
           '_shouldInitProactively'
         )
         .value(false);
-      sinon.stub(platform, '_isLikelyCordova').returns(false);
+      // Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+      sinon.stub(platform._platformInternal, '_isLikelyCordova').returns(false);
       expect(compatResolver._shouldInitProactively).to.be.false;
     });
   });

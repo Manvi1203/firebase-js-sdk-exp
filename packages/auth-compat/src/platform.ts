@@ -128,10 +128,12 @@ export function _isWebStorageSupported(): boolean {
  */
 export function _isWorker(): boolean {
   // WorkerGlobalScope only defined in worker environment.
-  return (
-    typeof global !== 'undefined' &&
-    'WorkerGlobalScope' in global &&
-    'importScripts' in global
+  // Fix Vitest error: "ReferenceError: global is not defined" in browser environment
+  const g = typeof globalThis !== 'undefined' ? globalThis : (typeof global !== 'undefined' ? global : undefined);
+  return !!(
+    g &&
+    'WorkerGlobalScope' in g &&
+    'importScripts' in g
   );
 }
 
@@ -151,29 +153,42 @@ export function _isPopupRedirectSupported(): boolean {
   );
 }
 
+// Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+export const _platformInternal = {
+  _isLikelyCordova(): boolean {
+    return _isAndroidOrIosCordovaScheme() && typeof document !== 'undefined';
+  },
+  async _isCordova(): Promise<boolean> {
+    if (!_platformInternal._isLikelyCordova()) {
+      return false;
+    }
+
+    return new Promise(resolve => {
+      const timeoutId = setTimeout(() => {
+        // We've waited long enough; the telltale Cordova event didn't happen
+        resolve(false);
+      }, CORDOVA_ONDEVICEREADY_TIMEOUT_MS);
+
+      document.addEventListener('deviceready', () => {
+        clearTimeout(timeoutId);
+        resolve(true);
+      });
+    });
+  },
+  _getSelfWindow(): Window | null {
+    return typeof window !== 'undefined' ? window : null;
+  }
+};
+
 /** Quick check that indicates the platform *may* be Cordova */
 export function _isLikelyCordova(): boolean {
-  return _isAndroidOrIosCordovaScheme() && typeof document !== 'undefined';
+  return _platformInternal._isLikelyCordova();
 }
 
 export async function _isCordova(): Promise<boolean> {
-  if (!_isLikelyCordova()) {
-    return false;
-  }
-
-  return new Promise(resolve => {
-    const timeoutId = setTimeout(() => {
-      // We've waited long enough; the telltale Cordova event didn't happen
-      resolve(false);
-    }, CORDOVA_ONDEVICEREADY_TIMEOUT_MS);
-
-    document.addEventListener('deviceready', () => {
-      clearTimeout(timeoutId);
-      resolve(true);
-    });
-  });
+  return _platformInternal._isCordova();
 }
 
 export function _getSelfWindow(): Window | null {
-  return typeof window !== 'undefined' ? window : null;
+  return _platformInternal._getSelfWindow();
 }

@@ -91,7 +91,8 @@ describe('auth compat', () => {
 
     it('does not save persistence if property throws DOMException', async () => {
       if (typeof self !== 'undefined') {
-        sinon.stub(platform, '_getSelfWindow').returns({
+        // Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+        sinon.stub(platform._platformInternal, '_getSelfWindow').returns({
           get sessionStorage(): Storage {
             throw new DOMException('Nope!');
           }
@@ -149,7 +150,8 @@ describe('auth compat', () => {
 
     it('does not die if sessionStorage errors', async () => {
       if (typeof self !== 'undefined') {
-        sinon.stub(platform, '_getSelfWindow').returns({
+        // Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+        sinon.stub(platform._platformInternal, '_getSelfWindow').returns({
           get sessionStorage(): Storage {
             throw new DOMException('Nope!');
           }

@@ -37,6 +37,7 @@
     "test:ci": "node ../../scripts/run_tests_in_ci.js -s test:all",
     "test:browser": "karma start",
     "test:browser:unit": "karma start --unit",
+    "test:vitest:browser": "vitest run --config vitest.config.browser.mjs",
     "test:browser:integration": "karma start --integration",
     "test:node": "ts-node -O '{\"module\": \"commonjs\", \"target\": \"es6\"}' scripts/run_node_tests.ts",
     "test:node:integration": "ts-node -O '{\"module\": \"commonjs\", \"target\": \"es6\"}' scripts/run_node_tests.ts --integration",
