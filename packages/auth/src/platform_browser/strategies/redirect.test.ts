@@ -68,7 +68,7 @@ describe('platform_browser/strategies/redirect', () => {
   let eventManager: AuthEventManager;
   let provider: OAuthProvider;
   let resolver: PopupRedirectResolver;
-  let idpStubs: sinon.SinonStubbedInstance<typeof idpTasks>;
+  let idpStubs: sinon.SinonStubbedInstance<typeof idpTasks._idpInternal>;
 
   beforeEach(async () => {
     eventManager = new AuthEventManager({} as unknown as TestAuth);
@@ -77,7 +77,8 @@ describe('platform_browser/strategies/redirect', () => {
     _getInstance<PopupRedirectResolverInternal>(resolver)._redirectPersistence =
       RedirectPersistence;
     auth = await testAuth(resolver);
-    idpStubs = sinon.stub(idpTasks);
+    // Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+    idpStubs = sinon.stub(idpTasks._idpInternal);
     _getInstance<RedirectPersistence>(RedirectPersistence).hasPendingRedirect =
       true;
   });
@@ -161,7 +162,8 @@ describe('platform_browser/strategies/redirect', () => {
     beforeEach(async () => {
       user = testUser(auth, 'uid', 'email', true);
       await auth._updateCurrentUser(user);
-      sinon.stub(link, '_assertLinkedStatus').returns(Promise.resolve());
+      // Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+      sinon.stub(link._linkUnlinkInternal, '_assertLinkedStatus').returns(Promise.resolve());
     });
 
     it('redirects the window', async () => {

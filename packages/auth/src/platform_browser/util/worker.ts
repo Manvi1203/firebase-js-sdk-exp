@@ -17,29 +17,45 @@
 
 import { _window } from '../auth_window';
 
+// Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+export const _workerInternal = {
+  _isWorker(): boolean {
+    return (
+      typeof _window()['WorkerGlobalScope'] !== 'undefined' &&
+      typeof _window()['importScripts'] === 'function'
+    );
+  },
+  async _getActiveServiceWorker(): Promise<ServiceWorker | null> {
+    if (!navigator?.serviceWorker) {
+      return null;
+    }
+    try {
+      const registration = await navigator.serviceWorker.ready;
+      return registration.active;
+    } catch {
+      return null;
+    }
+  },
+  _getServiceWorkerController(): ServiceWorker | null {
+    return navigator?.serviceWorker?.controller || null;
+  },
+  _getWorkerGlobalScope(): ServiceWorker | null {
+    return _isWorker() ? (self as unknown as ServiceWorker) : null;
+  }
+};
+
 export function _isWorker(): boolean {
-  return (
-    typeof _window()['WorkerGlobalScope'] !== 'undefined' &&
-    typeof _window()['importScripts'] === 'function'
-  );
+  return _workerInternal._isWorker();
 }
 
 export async function _getActiveServiceWorker(): Promise<ServiceWorker | null> {
-  if (!navigator?.serviceWorker) {
-    return null;
-  }
-  try {
-    const registration = await navigator.serviceWorker.ready;
-    return registration.active;
-  } catch {
-    return null;
-  }
+  return _workerInternal._getActiveServiceWorker();
 }
 
 export function _getServiceWorkerController(): ServiceWorker | null {
-  return navigator?.serviceWorker?.controller || null;
+  return _workerInternal._getServiceWorkerController();
 }
 
 export function _getWorkerGlobalScope(): ServiceWorker | null {
-  return _isWorker() ? (self as unknown as ServiceWorker) : null;
+  return _workerInternal._getWorkerGlobalScope();
 }

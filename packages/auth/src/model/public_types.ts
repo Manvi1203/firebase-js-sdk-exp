@@ -18,14 +18,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { FirebaseApp } from '@firebase/app';
-import {
+// Fix Vitest error: "SyntaxError: The requested module ... does not provide an export named 'CompleteFn'"
+import type {
   CompleteFn,
   ErrorFn,
-  FirebaseError,
   NextFn,
   Observer,
   Unsubscribe
 } from '@firebase/util';
+import { FirebaseError } from '@firebase/util';
 
 import {
   FactorId as FactorIdMap,
@@ -33,7 +34,7 @@ import {
   ActionCodeOperation as ActionCodeOperationMap
 } from './enum_maps';
 
-export { CompleteFn, ErrorFn, NextFn, Unsubscribe };
+export type { CompleteFn, ErrorFn, NextFn, Unsubscribe };
 
 /**
  * Interface representing the `Auth` config.

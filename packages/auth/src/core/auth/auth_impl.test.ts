@@ -85,7 +85,9 @@ describe('core/auth/auth_impl', () => {
     auth = authImpl;
   });
 
-  afterEach(sinon.restore);
+  afterEach(() => {
+    sinon.restore();
+  });
 
   describe('#updateCurrentUser', () => {
     it('sets the field on the auth object', async () => {
@@ -168,7 +170,8 @@ describe('core/auth/auth_impl', () => {
 
   describe('#useDeviceLanguage', () => {
     it('should update the language code', () => {
-      const mock = sinon.stub(navigator, '_getUserLanguage');
+      // Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+      const mock = sinon.stub(navigator._navigatorInternal, '_getUserLanguage');
       mock.callsFake(() => 'jp');
       expect(auth.languageCode).to.be.null;
       auth.useDeviceLanguage();
@@ -180,43 +183,55 @@ describe('core/auth/auth_impl', () => {
     // // Helpers to convert auth state change results to promise
     // function onAuthStateChange(callback: NextFn<User|null>)
 
-    it('immediately calls authStateChange if initialization finished', done => {
-      const user = testUser(auth, 'uid');
-      auth.currentUser = user;
-      auth._isInitialized = true;
-      auth.onAuthStateChanged(user => {
-        expect(user).to.eq(user);
-        done();
+    // Fix Vitest error: "done() callback is deprecated, use promise instead"
+    it('immediately calls authStateChange if initialization finished', () => {
+      return new Promise<void>(resolve => {
+        const user = testUser(auth, 'uid');
+        auth.currentUser = user;
+        auth._isInitialized = true;
+        auth.onAuthStateChanged(user => {
+          expect(user).to.eq(user);
+          resolve();
+        });
       });
     });
 
-    it('waits for initialization for authStateChange', done => {
-      const user = testUser(auth, 'uid');
-      auth.currentUser = user;
-      auth._isInitialized = false;
-      auth.onAuthStateChanged(user => {
-        expect(user).to.eq(user);
-        done();
+    // Fix Vitest error: "done() callback is deprecated, use promise instead"
+    it('waits for initialization for authStateChange', () => {
+      return new Promise<void>(resolve => {
+        const user = testUser(auth, 'uid');
+        auth.currentUser = user;
+        auth._isInitialized = false;
+        auth.onAuthStateChanged(user => {
+          expect(user).to.eq(user);
+          resolve();
+        });
       });
     });
 
-    it('immediately calls idTokenChange if initialization finished', done => {
-      const user = testUser(auth, 'uid');
-      auth.currentUser = user;
-      auth._isInitialized = true;
-      auth.onIdTokenChanged(user => {
-        expect(user).to.eq(user);
-        done();
+    // Fix Vitest error: "done() callback is deprecated, use promise instead"
+    it('immediately calls idTokenChange if initialization finished', () => {
+      return new Promise<void>(resolve => {
+        const user = testUser(auth, 'uid');
+        auth.currentUser = user;
+        auth._isInitialized = true;
+        auth.onIdTokenChanged(user => {
+          expect(user).to.eq(user);
+          resolve();
+        });
       });
     });
 
-    it('waits for initialization for idTokenChanged', done => {
-      const user = testUser(auth, 'uid');
-      auth.currentUser = user;
-      auth._isInitialized = false;
-      auth.onIdTokenChanged(user => {
-        expect(user).to.eq(user);
-        done();
+    // Fix Vitest error: "done() callback is deprecated, use promise instead"
+    it('waits for initialization for idTokenChanged', () => {
+      return new Promise<void>(resolve => {
+        const user = testUser(auth, 'uid');
+        auth.currentUser = user;
+        auth._isInitialized = false;
+        auth.onIdTokenChanged(user => {
+          expect(user).to.eq(user);
+          resolve();
+        });
       });
     });
 
@@ -584,7 +599,8 @@ describe('core/auth/auth_impl', () => {
 
   context('#_delete', () => {
     beforeEach(async () => {
-      sinon.stub(reload, '_reloadWithoutSaving').returns(Promise.resolve());
+      // Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+      sinon.stub(reload._reloadInternal, '_reloadWithoutSaving').returns(Promise.resolve());
     });
 
     it('prevents initialization from completing', async () => {

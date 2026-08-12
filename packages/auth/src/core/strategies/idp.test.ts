@@ -102,8 +102,9 @@ describe('core/strategies/idb', () => {
     });
 
     it('passes through the bypassAuthState flag', async () => {
+      // Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
       const stub = sinon
-        .stub(credential, '_signInWithCredential')
+        .stub(credential._credentialInternal, '_signInWithCredential')
         .returns(Promise.resolve({} as unknown as UserCredentialImpl));
       await idpTasks._signIn({
         auth,
@@ -158,8 +159,9 @@ describe('core/strategies/idb', () => {
     });
 
     it('passes through the bypassAuthState flag', async () => {
+      // Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
       const stub = sinon
-        .stub(reauthenticate, '_reauthenticate')
+        .stub(reauthenticate._reauthenticateInternal, '_reauthenticate')
         .returns(Promise.resolve({} as unknown as UserCredentialImpl));
       await idpTasks._reauth({
         auth,
@@ -216,8 +218,9 @@ describe('core/strategies/idb', () => {
     });
 
     it('passes through the bypassAuthState flag', async () => {
+      // Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
       const stub = sinon
-        .stub(linkUnlink, '_link')
+        .stub(linkUnlink._linkUnlinkInternal, '_link')
         .returns(Promise.resolve({} as unknown as UserCredentialImpl));
       await idpTasks._link({
         auth,

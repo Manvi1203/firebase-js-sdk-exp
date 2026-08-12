@@ -30,32 +30,47 @@ import { OperationType } from '../../model/enums';
 import { _isFirebaseServerApp } from '@firebase/app';
 import { _serverAppCurrentUserOperationNotSupportedError } from '../../core/util/assert';
 
+// Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+export const _credentialInternal = {
+  async _signInWithCredential(
+    auth: AuthInternal,
+    credential: AuthCredential,
+    bypassAuthState = false
+  ): Promise<UserCredential> {
+    if (_isFirebaseServerApp(auth.app)) {
+      return Promise.reject(
+        _serverAppCurrentUserOperationNotSupportedError(auth)
+      );
+    }
+    const operationType = OperationType.SIGN_IN;
+    const response = await _processCredentialSavingMfaContextIfNecessary(
+      auth,
+      operationType,
+      credential
+    );
+    const userCredential = await UserCredentialImpl._fromIdTokenResponse(
+      auth,
+      operationType,
+      response
+    );
+
+    if (!bypassAuthState) {
+      await auth._updateCurrentUser(userCredential.user);
+    }
+    return userCredential;
+  }
+};
+
 export async function _signInWithCredential(
   auth: AuthInternal,
   credential: AuthCredential,
   bypassAuthState = false
 ): Promise<UserCredential> {
-  if (_isFirebaseServerApp(auth.app)) {
-    return Promise.reject(
-      _serverAppCurrentUserOperationNotSupportedError(auth)
-    );
-  }
-  const operationType = OperationType.SIGN_IN;
-  const response = await _processCredentialSavingMfaContextIfNecessary(
+  return _credentialInternal._signInWithCredential(
     auth,
-    operationType,
-    credential
+    credential,
+    bypassAuthState
   );
-  const userCredential = await UserCredentialImpl._fromIdTokenResponse(
-    auth,
-    operationType,
-    response
-  );
-
-  if (!bypassAuthState) {
-    await auth._updateCurrentUser(userCredential.user);
-  }
-  return userCredential;
 }
 
 /**

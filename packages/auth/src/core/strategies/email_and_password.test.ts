@@ -192,7 +192,8 @@ describe('core/strategies/sendPasswordResetEmail', () => {
       }
       // RecaptchaEnterpriseVerifier.verify() will always call _loadJS
       // the first time it is called, and it must be stubbed for tests.
-      sinon.stub(jsHelpers, '_loadJS').callsFake(mockLoadJS);
+      // Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+      sinon.stub(jsHelpers._loadJsInternal, '_loadJS').callsFake(mockLoadJS);
       const recaptcha = new MockGreCAPTCHATopLevel();
       window.grecaptcha = recaptcha;
       sinon
@@ -727,7 +728,8 @@ describe('core/strategies/email_and_password/createUserWithEmailAndPassword', ()
       );
 
       // Mock recaptcha js loading method and manually set window.recaptcha
-      sinon.stub(jsHelpers, '_loadJS').callsFake(mockLoadJS);
+      // Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+      sinon.stub(jsHelpers._loadJsInternal, '_loadJS').callsFake(mockLoadJS);
       const recaptcha = new MockGreCAPTCHATopLevel();
       window.grecaptcha = recaptcha;
       const stub = sinon.stub(recaptcha.enterprise, 'execute');
@@ -893,7 +895,8 @@ describe('password policy cache is updated in auth flows upon error', () => {
     // Initialize the reCAPTCHA config so the auth flows use reCAPTCHA.
     await _initializeRecaptchaConfig(auth);
 
-    sinon.stub(jsHelpers, '_loadJS').callsFake(mockLoadJS);
+    // Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+    sinon.stub(jsHelpers._loadJsInternal, '_loadJS').callsFake(mockLoadJS);
     const recaptcha = new MockGreCAPTCHATopLevel();
     window.grecaptcha = recaptcha;
     const stub = sinon.stub(recaptcha.enterprise, 'execute');

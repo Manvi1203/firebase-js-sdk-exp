@@ -58,17 +58,42 @@ export async function unlink(user: User, providerId: string): Promise<User> {
   return userInternal;
 }
 
+// Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+export const _linkUnlinkInternal = {
+  async _link(
+    user: UserInternal,
+    credential: AuthCredential,
+    bypassAuthState = false
+  ): Promise<UserCredentialInternal> {
+    const response = await _logoutIfInvalidated(
+      user,
+      credential._linkToIdToken(user.auth, await user.getIdToken()),
+      bypassAuthState
+    );
+    return UserCredentialImpl._forOperation(user, OperationType.LINK, response);
+  },
+  async _assertLinkedStatus(
+    expected: boolean,
+    user: UserInternal,
+    provider: string
+  ): Promise<void> {
+    await _reloadWithoutSaving(user);
+    const providerIds = providerDataAsNames(user.providerData);
+
+    const code =
+      expected === false
+        ? AuthErrorCode.PROVIDER_ALREADY_LINKED
+        : AuthErrorCode.NO_SUCH_PROVIDER;
+    _assert(providerIds.has(provider) === expected, user.auth, code);
+  }
+};
+
 export async function _link(
   user: UserInternal,
   credential: AuthCredential,
   bypassAuthState = false
 ): Promise<UserCredentialInternal> {
-  const response = await _logoutIfInvalidated(
-    user,
-    credential._linkToIdToken(user.auth, await user.getIdToken()),
-    bypassAuthState
-  );
-  return UserCredentialImpl._forOperation(user, OperationType.LINK, response);
+  return _linkUnlinkInternal._link(user, credential, bypassAuthState);
 }
 
 export async function _assertLinkedStatus(
@@ -76,12 +101,5 @@ export async function _assertLinkedStatus(
   user: UserInternal,
   provider: string
 ): Promise<void> {
-  await _reloadWithoutSaving(user);
-  const providerIds = providerDataAsNames(user.providerData);
-
-  const code =
-    expected === false
-      ? AuthErrorCode.PROVIDER_ALREADY_LINKED
-      : AuthErrorCode.NO_SUCH_PROVIDER;
-  _assert(providerIds.has(provider) === expected, user.auth, code);
+  return _linkUnlinkInternal._assertLinkedStatus(expected, user, provider);
 }

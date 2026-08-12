@@ -99,11 +99,16 @@ export function connectAuthEmulator(
 
   // Workaround to get cookies in Firebase Studio
   if (isCloudWorkstation(host)) {
-    void pingServer(`${protocol}//${host}${portStr}`);
+    void _emulatorInternal.pingServer(`${protocol}//${host}${portStr}`);
   } else if (!disableWarnings) {
     emitEmulatorWarning();
   }
 }
+
+// Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+export const _emulatorInternal = {
+  pingServer
+};
 
 function extractProtocol(url: string): string {
   const protocolEnd = url.indexOf(':');

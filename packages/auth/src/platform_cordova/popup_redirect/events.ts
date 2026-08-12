@@ -66,91 +66,6 @@ export class CordovaAuthEventManager extends AuthEventManager {
   }
 }
 
-/**
- * Generates a (partial) {@link AuthEvent}.
- */
-export function _generateNewEvent(
-  auth: AuthInternal,
-  type: AuthEventType,
-  eventId: string | null = null
-): AuthEvent {
-  return {
-    type,
-    eventId,
-    urlResponse: null,
-    sessionId: generateSessionId(),
-    postBody: null,
-    tenantId: auth.tenantId,
-    error: _createError(auth, AuthErrorCode.NO_AUTH_EVENT)
-  };
-}
-
-export function _savePartialEvent(
-  auth: AuthInternal,
-  event: AuthEvent
-): Promise<void> {
-  return storage()._set(persistenceKey(auth), event as object as PersistedBlob);
-}
-
-export async function _getAndRemoveEvent(
-  auth: AuthInternal
-): Promise<AuthEvent | null> {
-  const event = (await storage()._get(
-    persistenceKey(auth)
-  )) as AuthEvent | null;
-  if (event) {
-    await storage()._remove(persistenceKey(auth));
-  }
-  return event;
-}
-
-export function _eventFromPartialAndUrl(
-  partialEvent: AuthEvent,
-  url: string
-): AuthEvent | null {
-  // Parse the deep link within the dynamic link URL.
-  const callbackUrl = _getDeepLinkFromCallback(url);
-  // Confirm it is actually a callback URL.
-  // Currently the universal link will be of this format:
-  // https://<AUTH_DOMAIN>/__/auth/callback<OAUTH_RESPONSE>
-  // This is a fake URL but is not intended to take the user anywhere
-  // and just redirect to the app.
-  if (callbackUrl.includes('/__/auth/callback')) {
-    // Check if there is an error in the URL.
-    // This mechanism is also used to pass errors back to the app:
-    // https://<AUTH_DOMAIN>/__/auth/callback?firebaseError=<STRINGIFIED_ERROR>
-    const params = searchParamsOrEmpty(callbackUrl);
-    // Get the error object corresponding to the stringified error if found.
-    const errorObject = params['firebaseError']
-      ? parseJsonOrNull(decodeURIComponent(params['firebaseError']))
-      : null;
-    const code = errorObject?.['code']?.split('auth/')?.[1];
-    const error = code ? _createError(code) : null;
-    if (error) {
-      return {
-        type: partialEvent.type,
-        eventId: partialEvent.eventId,
-        tenantId: partialEvent.tenantId,
-        error,
-        urlResponse: null,
-        sessionId: null,
-        postBody: null
-      };
-    } else {
-      return {
-        type: partialEvent.type,
-        eventId: partialEvent.eventId,
-        tenantId: partialEvent.tenantId,
-        sessionId: partialEvent.sessionId,
-        urlResponse: callbackUrl,
-        postBody: null
-      };
-    }
-  }
-
-  return null;
-}
-
 function generateSessionId(): string {
   const chars = [];
   const allowedChars =
@@ -178,18 +93,135 @@ function parseJsonOrNull(json: string): ReturnType<typeof JSON.parse> | null {
   }
 }
 
+// Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+export const _cordovaEventsInternal = {
+  _generateNewEvent(
+    auth: AuthInternal,
+    type: AuthEventType,
+    eventId: string | null = null
+  ): AuthEvent {
+    return {
+      type,
+      eventId,
+      urlResponse: null,
+      sessionId: generateSessionId(),
+      postBody: null,
+      tenantId: auth.tenantId,
+      error: _createError(auth, AuthErrorCode.NO_AUTH_EVENT)
+    };
+  },
+
+  _savePartialEvent(
+    auth: AuthInternal,
+    event: AuthEvent
+  ): Promise<void> {
+    return storage()._set(persistenceKey(auth), event as object as PersistedBlob);
+  },
+
+  async _getAndRemoveEvent(
+    auth: AuthInternal
+  ): Promise<AuthEvent | null> {
+    const event = (await storage()._get(
+      persistenceKey(auth)
+    )) as AuthEvent | null;
+    if (event) {
+      await storage()._remove(persistenceKey(auth));
+    }
+    return event;
+  },
+
+  _eventFromPartialAndUrl(
+    partialEvent: AuthEvent,
+    url: string
+  ): AuthEvent | null {
+    // Parse the deep link within the dynamic link URL.
+    const callbackUrl = _cordovaEventsInternal._getDeepLinkFromCallback(url);
+    // Confirm it is actually a callback URL.
+    // Currently the universal link will be of this format:
+    // https://<AUTH_DOMAIN>/__/auth/callback<OAUTH_RESPONSE>
+    // This is a fake URL but is not intended to take the user anywhere
+    // and just redirect to the app.
+    if (callbackUrl.includes('/__/auth/callback')) {
+      // Check if there is an error in the URL.
+      // This mechanism is also used to pass errors back to the app:
+      // https://<AUTH_DOMAIN>/__/auth/callback?firebaseError=<STRINGIFIED_ERROR>
+      const params = searchParamsOrEmpty(callbackUrl);
+      // Get the error object corresponding to the stringified error if found.
+      const errorObject = params['firebaseError']
+        ? parseJsonOrNull(decodeURIComponent(params['firebaseError']))
+        : null;
+      const code = errorObject?.['code']?.split('auth/')?.[1];
+      const error = code ? _createError(code) : null;
+      if (error) {
+        return {
+          type: partialEvent.type,
+          eventId: partialEvent.eventId,
+          tenantId: partialEvent.tenantId,
+          error,
+          urlResponse: null,
+          sessionId: null,
+          postBody: null
+        };
+      } else {
+        return {
+          type: partialEvent.type,
+          eventId: partialEvent.eventId,
+          tenantId: partialEvent.tenantId,
+          sessionId: partialEvent.sessionId,
+          urlResponse: callbackUrl,
+          postBody: null
+        };
+      }
+    }
+
+    return null;
+  },
+
+  _getDeepLinkFromCallback(url: string): string {
+    const params = searchParamsOrEmpty(url);
+    const link = params['link'] ? decodeURIComponent(params['link']) : undefined;
+    // Double link case (automatic redirect)
+    const doubleDeepLink = searchParamsOrEmpty(link)['link'];
+    // iOS custom scheme links.
+    const iOSDeepLink = params['deep_link_id']
+      ? decodeURIComponent(params['deep_link_id'])
+      : undefined;
+    const iOSDoubleDeepLink = searchParamsOrEmpty(iOSDeepLink)['link'];
+    return iOSDoubleDeepLink || iOSDeepLink || doubleDeepLink || link || url;
+  }
+};
+
+export function _generateNewEvent(
+  auth: AuthInternal,
+  type: AuthEventType,
+  eventId: string | null = null
+): AuthEvent {
+  return _cordovaEventsInternal._generateNewEvent(auth, type, eventId);
+}
+
+export function _savePartialEvent(
+  auth: AuthInternal,
+  event: AuthEvent
+): Promise<void> {
+  return _cordovaEventsInternal._savePartialEvent(auth, event);
+}
+
+export async function _getAndRemoveEvent(
+  auth: AuthInternal
+): Promise<AuthEvent | null> {
+  return _cordovaEventsInternal._getAndRemoveEvent(auth);
+}
+
+export function _eventFromPartialAndUrl(
+  partialEvent: AuthEvent,
+  url: string
+): AuthEvent | null {
+  return _cordovaEventsInternal._eventFromPartialAndUrl(partialEvent, url);
+}
+
 // Exported for testing
 export function _getDeepLinkFromCallback(url: string): string {
-  const params = searchParamsOrEmpty(url);
-  const link = params['link'] ? decodeURIComponent(params['link']) : undefined;
-  // Double link case (automatic redirect)
-  const doubleDeepLink = searchParamsOrEmpty(link)['link'];
-  // iOS custom scheme links.
-  const iOSDeepLink = params['deep_link_id']
-    ? decodeURIComponent(params['deep_link_id'])
-    : undefined;
-  const iOSDoubleDeepLink = searchParamsOrEmpty(iOSDeepLink)['link'];
-  return iOSDoubleDeepLink || iOSDeepLink || doubleDeepLink || link || url;
+  return _cordovaEventsInternal._getDeepLinkFromCallback(url);
 }
 
 /**

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2020 Google LLC
+ * Copyright 2026 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,17 +15,8 @@
  * limitations under the License.
  */
 
-// Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
-export const _eventIdInternal = {
-  _generateEventId(prefix = '', digits = 10): string {
-    let random = '';
-    for (let i = 0; i < digits; i++) {
-      random += Math.floor(Math.random() * 10);
-    }
-    return prefix + random;
-  }
-};
-
-export function _generateEventId(prefix = '', digits = 10): string {
-  return _eventIdInternal._generateEventId(prefix, digits);
+if (typeof (globalThis as unknown as { process: unknown }).process === 'undefined') {
+  (globalThis as unknown as { process: { env: Record<string, string> } }).process = {
+    env: {}
+  };
 }

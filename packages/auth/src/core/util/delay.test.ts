@@ -15,17 +15,18 @@
  * limitations under the License.
  */
 
-import * as util from '@firebase/util';
 import { expect } from 'chai';
 import { restore, stub } from 'sinon';
-import { Delay, DelayMin } from './delay';
-import * as navigator from './navigator';
+import { Delay, DelayMin, _delayInternal } from './delay';
 
 describe('core/util/delay', () => {
   const SHORT_DELAY = 30_000;
   const LONG_DELAY = 60_000;
 
-  afterEach(restore);
+  // Fix Vitest error: sandbox.restore() does not take any parameters
+  afterEach(() => {
+    restore();
+  });
 
   it('should return the short delay in browser environments', () => {
     const delay = new Delay(SHORT_DELAY, LONG_DELAY);
@@ -33,21 +34,24 @@ describe('core/util/delay', () => {
   });
 
   it('should return the long delay in Cordova environments', () => {
-    const mock = stub(util, 'isMobileCordova');
+    // Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+    const mock = stub(_delayInternal, 'isMobileCordova');
     mock.callsFake(() => true);
     const delay = new Delay(SHORT_DELAY, LONG_DELAY);
     expect(delay.get()).to.eq(LONG_DELAY);
   });
 
   it('should return the long delay in React Native environments', () => {
-    const mock = stub(util, 'isReactNative');
+    // Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+    const mock = stub(_delayInternal, 'isReactNative');
     mock.callsFake(() => true);
     const delay = new Delay(SHORT_DELAY, LONG_DELAY);
     expect(delay.get()).to.eq(LONG_DELAY);
   });
 
   it('should return quicker when offline', () => {
-    const mock = stub(navigator, '_isOnline');
+    // Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+    const mock = stub(_delayInternal, '_isOnline');
     mock.callsFake(() => false);
     const delay = new Delay(SHORT_DELAY, LONG_DELAY);
     expect(delay.get()).to.eq(DelayMin.OFFLINE);

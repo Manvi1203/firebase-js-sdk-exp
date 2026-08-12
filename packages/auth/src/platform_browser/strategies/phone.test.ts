@@ -173,7 +173,8 @@ describe('platform_browser/strategies/phone', () => {
         return;
       }
       mockRecaptchaEnterpriseEnablement(EnforcementState.ENFORCE);
-      sinon.stub(jsHelpers, '_loadJS').callsFake(mockLoadJS);
+      // Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+      sinon.stub(jsHelpers._loadJsInternal, '_loadJS').callsFake(mockLoadJS);
 
       await signInWithPhoneNumber(auth, '+15105550000', v2Verifier);
 
@@ -190,7 +191,8 @@ describe('platform_browser/strategies/phone', () => {
         return;
       }
       mockRecaptchaEnterpriseEnablement(EnforcementState.ENFORCE);
-      sinon.stub(jsHelpers, '_loadJS').callsFake(mockLoadJS);
+      // Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+      sinon.stub(jsHelpers._loadJsInternal, '_loadJS').callsFake(mockLoadJS);
       await signInWithPhoneNumber(auth, '+15105550000');
 
       expect(sendCodeEndpoint.calls[0].request).to.eql({

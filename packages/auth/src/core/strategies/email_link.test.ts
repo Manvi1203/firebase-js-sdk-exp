@@ -195,7 +195,8 @@ describe('core/strategies/sendSignInLinkToEmail', () => {
       if (typeof window === 'undefined') {
         return;
       }
-      sinon.stub(jsHelpers, '_loadJS').callsFake(mockLoadJS);
+      // Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+      sinon.stub(jsHelpers._loadJsInternal, '_loadJS').callsFake(mockLoadJS);
       window.grecaptcha = recaptcha;
       sinon
         .stub(recaptcha.enterprise, 'execute')

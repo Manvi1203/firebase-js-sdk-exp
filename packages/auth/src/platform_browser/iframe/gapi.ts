@@ -115,9 +115,16 @@ function loadGapi(auth: AuthInternal): Promise<gapi.iframes.Context> {
 }
 
 let cachedGApiLoader: Promise<gapi.iframes.Context> | null = null;
+// Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+export const _gapiInternal = {
+  _loadGapi(auth: AuthInternal): Promise<gapi.iframes.Context> {
+    cachedGApiLoader = cachedGApiLoader || loadGapi(auth);
+    return cachedGApiLoader;
+  }
+};
+
 export function _loadGapi(auth: AuthInternal): Promise<gapi.iframes.Context> {
-  cachedGApiLoader = cachedGApiLoader || loadGapi(auth);
-  return cachedGApiLoader;
+  return _gapiInternal._loadGapi(auth);
 }
 
 export function _resetLoader(): void {

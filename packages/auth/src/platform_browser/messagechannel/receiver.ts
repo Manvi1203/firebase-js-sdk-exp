@@ -64,6 +64,11 @@ export class Receiver {
     return newInstance;
   }
 
+  // Fix Vitest error: reset singleton receivers between test suites
+  static _reset(): void {
+    this.receivers.length = 0;
+  }
+
   private isListeningto(eventTarget: EventTarget): boolean {
     return this.eventTarget === eventTarget;
   }
@@ -145,7 +150,8 @@ export class Receiver {
     if (this.handlersMap[eventType] && eventHandler) {
       this.handlersMap[eventType].delete(eventHandler);
     }
-    if (!eventHandler || this.handlersMap[eventType].size === 0) {
+    // Fix Vitest error: safe check on handlersMap[eventType]?.size
+    if (!eventHandler || this.handlersMap[eventType]?.size === 0) {
       delete this.handlersMap[eventType];
     }
 

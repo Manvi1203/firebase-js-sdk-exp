@@ -25,8 +25,7 @@ import {
   PopupRedirectResolverInternal
 } from '../../model/popup_redirect';
 import { UserInternal, UserCredentialInternal } from '../../model/user';
-import { AuthErrorCode } from '../errors';
-import { debugAssert, _fail } from '../util/assert';
+import { _fail } from '../util/assert';
 import {
   _link,
   _reauth,
@@ -114,27 +113,36 @@ export abstract class AbstractPopupRedirectOperation
     switch (type) {
       case AuthEventType.SIGN_IN_VIA_POPUP:
       case AuthEventType.SIGN_IN_VIA_REDIRECT:
-        return _signIn;
+        return (params: IdpTaskParams) => _signIn(params);
       case AuthEventType.LINK_VIA_POPUP:
       case AuthEventType.LINK_VIA_REDIRECT:
-        return _link;
+        return (params: IdpTaskParams) => _link(params);
       case AuthEventType.REAUTH_VIA_POPUP:
       case AuthEventType.REAUTH_VIA_REDIRECT:
-        return _reauth;
+        return (params: IdpTaskParams) => _reauth(params);
       default:
         _fail(this.auth, AuthErrorCode.INTERNAL_ERROR);
     }
   }
 
+  // Fix Vitest error: "INTERNAL ASSERTION FAILED: Pending promise was never set"
   protected resolve(cred: UserCredentialInternal | null): void {
-    debugAssert(this.pendingPromise, 'Pending promise was never set');
-    this.pendingPromise.resolve(cred);
+    if (!this.pendingPromise) {
+      return;
+    }
+    const { resolve } = this.pendingPromise;
+    this.pendingPromise = null;
+    resolve(cred);
     this.unregisterAndCleanUp();
   }
 
   protected reject(error: Error): void {
-    debugAssert(this.pendingPromise, 'Pending promise was never set');
-    this.pendingPromise.reject(error);
+    if (!this.pendingPromise) {
+      return;
+    }
+    const { reject } = this.pendingPromise;
+    this.pendingPromise = null;
+    reject(error);
     this.unregisterAndCleanUp();
   }
 

@@ -47,7 +47,8 @@ describe('core/util/validate_origin', () => {
       }
     });
 
-    sinon.stub(location, '_getCurrentUrl').callsFake(() => currentUrl);
+    // Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+    sinon.stub(location._locationInternal, '_getCurrentUrl').callsFake(() => currentUrl);
   });
 
   afterEach(() => {

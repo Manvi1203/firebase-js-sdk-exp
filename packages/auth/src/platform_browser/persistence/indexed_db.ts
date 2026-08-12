@@ -61,12 +61,16 @@ interface DBObject {
 class DBPromise<T> {
   constructor(private readonly request: IDBRequest) {}
 
-  toPromise(): Promise<T> {
-    return new Promise<T>((resolve, reject) => {
+  // Fix Vitest error: transform inside toPromise constructor to eliminate intermediate rejecting promise
+  toPromise<R = T>(transform?: (res: T) => R): Promise<R> {
+    return new Promise<R>((resolve, reject) => {
       this.request.addEventListener('success', () => {
-        resolve(this.request.result);
+        const res = this.request.result;
+        resolve(transform ? transform(res) : (res as unknown as R));
       });
-      this.request.addEventListener('error', () => {
+      this.request.addEventListener('error', event => {
+        // Fix Vitest error: prevent error bubbling to window
+        event.preventDefault();
         reject(this.request.error);
       });
     });
@@ -92,7 +96,9 @@ export function _deleteDatabase(): Promise<void> {
 export function _openDatabase(): Promise<IDBDatabase> {
   const request = indexedDB.open(DB_NAME, DB_VERSION);
   return new Promise((resolve, reject) => {
-    request.addEventListener('error', () => {
+    request.addEventListener('error', event => {
+      // Fix Vitest error: prevent error bubbling to window
+      event.preventDefault();
       reject(request.error);
     });
 
@@ -125,30 +131,47 @@ export function _openDatabase(): Promise<IDBDatabase> {
   });
 }
 
-export async function _putObject(
+export function _putObject(
   db: IDBDatabase,
   key: string,
   value: PersistenceValue | string
 ): Promise<void> {
-  const request = getObjectStore(db, true).put({
-    [DB_DATA_KEYPATH]: key,
-    value
-  });
-  return new DBPromise<void>(request).toPromise();
+  try {
+    const request = getObjectStore(db, true).put({
+      [DB_DATA_KEYPATH]: key,
+      value
+    });
+    return new DBPromise<void>(request).toPromise();
+  } catch (e) {
+    // Fix Vitest error: return rejected promise so caller attaches immediate rejection handler
+    return Promise.reject(e);
+  }
 }
 
-async function getObject(
+// Fix Vitest error: "InvalidStateError: Failed to execute 'transaction' on 'IDBDatabase': The database connection is closing."
+function getObject(
   db: IDBDatabase,
   key: string
 ): Promise<PersistedBlob | null> {
-  const request = getObjectStore(db, false).get(key);
-  const data = await new DBPromise<DBObject | undefined>(request).toPromise();
-  return data === undefined ? null : data.value;
+  try {
+    const request = getObjectStore(db, false).get(key);
+    return new DBPromise<DBObject | undefined>(request).toPromise(data =>
+      data === undefined ? null : data.value
+    );
+  } catch (e) {
+    // Fix Vitest error: return rejected promise so caller attaches immediate rejection handler
+    return Promise.reject(e);
+  }
 }
 
 export function _deleteObject(db: IDBDatabase, key: string): Promise<void> {
-  const request = getObjectStore(db, true).delete(key);
-  return new DBPromise<void>(request).toPromise();
+  try {
+    const request = getObjectStore(db, true).delete(key);
+    return new DBPromise<void>(request).toPromise();
+  } catch (e) {
+    // Fix Vitest error: return rejected promise so caller attaches immediate rejection handler
+    return Promise.reject(e);
+  }
 }
 
 export const _POLLING_INTERVAL_MS = 800;
@@ -513,7 +536,8 @@ class IndexedDBLocalPersistence implements InternalPersistence {
     if (!this.listeners[key]) {
       this.listeners[key] = new Set();
       // Populate the cache to avoid spuriously triggering on first poll.
-      void this._get(key); // This can happen in the background async and we can return immediately.
+      // Fix Vitest error: "InvalidStateError: Failed to execute 'transaction' on 'IDBDatabase': The database connection is closing."
+      void this._get(key).catch(() => {});
     }
     this.listeners[key].add(listener);
   }

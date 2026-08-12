@@ -20,9 +20,8 @@ import * as sinon from 'sinon';
 import sinonChai from 'sinon-chai';
 
 import { FirebaseError } from '@firebase/util';
-import * as utils from '@firebase/util';
 
-import { _open, AuthPopup } from './popup';
+import { _open, AuthPopup, _popupInternal } from './popup';
 import { AuthInternal } from '../../model/auth';
 import { testAuth } from '../../../test/helpers/mock_auth';
 
@@ -34,7 +33,8 @@ describe('platform_browser/util/popup', () => {
   let popupStub: sinon.SinonStubbedInstance<Window>;
 
   function setUA(ua: string): void {
-    sinon.stub(utils, 'getUA').returns(ua);
+    // Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+    sinon.stub(_popupInternal, 'getUA').returns(ua);
   }
 
   function windowTarget(): string {

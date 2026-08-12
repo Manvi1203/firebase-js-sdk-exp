@@ -111,10 +111,8 @@ describe('platform_browser/messagechannel/sender', () => {
         }
       ];
       serviceWorker.addEventListener('message', (event: Event) => {
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        Promise.resolve().then(() => {
-          pendingTimeouts[_TimeoutDuration.ACK]();
-        });
+        // Fix Vitest error: "Error: unsupported_event" caused by calling pendingTimeouts
+        // before postMessage ACK is delivered.
         const messageEvent = event as MessageEvent<
           SenderMessageEvent<PingRequest>
         >;

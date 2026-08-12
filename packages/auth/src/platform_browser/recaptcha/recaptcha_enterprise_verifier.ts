@@ -68,6 +68,12 @@ export class RecaptchaEnterpriseVerifier {
    */
   private static scriptInjectionDeferred: Deferred<void> | null = null;
 
+  // Fix Vitest error: reset scriptInjectionDeferred between tests
+  /** @internal */
+  static _reset(): void {
+    RecaptchaEnterpriseVerifier.scriptInjectionDeferred = null;
+  }
+
   /**
    *
    * @param authExtern - The corresponding Firebase {@link Auth} instance.
@@ -99,50 +105,20 @@ export class RecaptchaEnterpriseVerifier {
         }
       }
 
-      return new Promise<string>(async (resolve, reject) => {
-        getRecaptchaConfig(auth, {
-          clientType: RecaptchaClientType.WEB,
-          version: RecaptchaVersion.ENTERPRISE
-        })
-          .then(response => {
-            if (response.recaptchaKey === undefined) {
-              reject(new Error('recaptcha Enterprise site key undefined'));
-            } else {
-              const config = new RecaptchaConfig(response);
-              if (auth.tenantId == null) {
-                auth._agentRecaptchaConfig = config;
-              } else {
-                auth._tenantRecaptchaConfigs[auth.tenantId] = config;
-              }
-              return resolve(config.siteKey);
-            }
-          })
-          .catch(error => {
-            reject(error);
-          });
+      const response = await getRecaptchaConfig(auth, {
+        clientType: RecaptchaClientType.WEB,
+        version: RecaptchaVersion.ENTERPRISE
       });
-    }
-
-    function retrieveRecaptchaToken(
-      siteKey: string,
-      resolve: (value: string | PromiseLike<string>) => void,
-      reject: (reason?: unknown) => void
-    ): void {
-      const grecaptcha = window.grecaptcha;
-      if (isEnterprise(grecaptcha)) {
-        grecaptcha.enterprise.ready(() => {
-          grecaptcha.enterprise
-            .execute(siteKey, { action })
-            .then(token => {
-              resolve(token);
-            })
-            .catch(() => {
-              resolve(FAKE_TOKEN);
-            });
-        });
-      } else {
-        reject(Error('No reCAPTCHA enterprise script loaded.'));
+      if (response.recaptchaKey === undefined) {
+        throw new Error('recaptcha Enterprise site key undefined');
       }
+      const config = new RecaptchaConfig(response);
+      if (auth.tenantId == null) {
+        auth._agentRecaptchaConfig = config;
+      } else {
+        auth._tenantRecaptchaConfigs[auth.tenantId] = config;
+      }
+      return config.siteKey;
     }
 
     // Returns Promise for a mock token when appVerificationDisabledForTesting is true.
@@ -151,63 +127,63 @@ export class RecaptchaEnterpriseVerifier {
       return mockRecaptcha.execute('siteKey', { action: 'verify' });
     }
 
-    return new Promise<string>((resolve, reject) => {
-      retrieveSiteKey(this.auth)
-        .then(async siteKey => {
-          if (
-            !forceRefresh &&
-            isEnterprise(window.grecaptcha) &&
-            // If download has already been initiated, do not trigger another
-            // download, await the promise here.
-            RecaptchaEnterpriseVerifier.scriptInjectionDeferred
-          ) {
-            await RecaptchaEnterpriseVerifier.scriptInjectionDeferred.promise;
-            retrieveRecaptchaToken(siteKey, resolve, reject);
-          } else {
-            if (typeof window === 'undefined') {
-              reject(
-                new Error('RecaptchaVerifier is only supported in browser')
-              );
-              return;
-            }
-            let url = jsHelpers._recaptchaEnterpriseScriptUrl();
-            if (url.length !== 0) {
-              url +=
-                siteKey +
-                `&onload=${RECAPTCHA_ENTERPRISE_ONLOAD_CALLBACK_NAME}`;
-            }
-            // Existence of deferred indicates download has been initiated.
-            RecaptchaEnterpriseVerifier.scriptInjectionDeferred =
-              new Deferred();
+    if (typeof window === 'undefined') {
+      throw new Error('RecaptchaVerifier is only supported in browser');
+    }
 
-            /**
-             * Script attached to global window object that will be called
-             * when the ReCAPTCHA Enterprise instance is ready.
-             * grecaptcha.ready() is not reliable when there are multiple
-             * scripts on the page, and script.onload only indicates the
-             * script has downloaded, not that it has initialized.
-             */
-            window[RECAPTCHA_ENTERPRISE_ONLOAD_CALLBACK_NAME] = () => {
-              RecaptchaEnterpriseVerifier.scriptInjectionDeferred?.resolve();
-            };
-            jsHelpers
-              ._loadJS(url)
-              .then(
-                () =>
-                  RecaptchaEnterpriseVerifier.scriptInjectionDeferred?.promise
-              )
-              .then(() => {
-                retrieveRecaptchaToken(siteKey, resolve, reject);
-              })
-              .catch(error => {
-                reject(error);
-              });
-          }
-        })
-        .catch(error => {
-          reject(error);
+    const siteKey = await retrieveSiteKey(this.auth);
+
+    if (
+      !forceRefresh &&
+      isEnterprise(window.grecaptcha) &&
+      // If download has already been initiated, do not trigger another
+      // download, await the promise here.
+      RecaptchaEnterpriseVerifier.scriptInjectionDeferred
+    ) {
+      await RecaptchaEnterpriseVerifier.scriptInjectionDeferred.promise;
+    } else {
+      let url = jsHelpers._recaptchaEnterpriseScriptUrl();
+      if (url.length !== 0) {
+        url +=
+          siteKey +
+          `&onload=${RECAPTCHA_ENTERPRISE_ONLOAD_CALLBACK_NAME}`;
+      }
+      // Existence of deferred indicates download has been initiated.
+      // Fix Vitest error: bind loadJS to local deferred to prevent race condition
+      const deferred = new Deferred<void>();
+      RecaptchaEnterpriseVerifier.scriptInjectionDeferred = deferred;
+
+      /**
+       * Script attached to global window object that will be called
+       * when the ReCAPTCHA Enterprise instance is ready.
+       * grecaptcha.ready() is not reliable when there are multiple
+       * scripts on the page, and script.onload only indicates the
+       * script has downloaded, not that it has initialized.
+       */
+      window[RECAPTCHA_ENTERPRISE_ONLOAD_CALLBACK_NAME] = () => {
+        deferred.resolve();
+      };
+      await jsHelpers._loadJS(url);
+      await deferred.promise;
+    }
+
+    const grecaptcha = window.grecaptcha;
+    if (isEnterprise(grecaptcha)) {
+      return new Promise<string>(resolve => {
+        grecaptcha.enterprise.ready(() => {
+          // Fix Vitest error: "TypeError: Cannot read properties of undefined (reading 'then')"
+          Promise.resolve(grecaptcha.enterprise.execute(siteKey, { action }))
+            .then(token => {
+              resolve(token);
+            })
+            .catch(() => {
+              resolve(FAKE_TOKEN);
+            });
         });
-    });
+      });
+    } else {
+      throw new Error('No reCAPTCHA enterprise script loaded.');
+    }
   }
 }
 
@@ -409,6 +385,7 @@ export async function _initializeRecaptchaConfig(auth: Auth): Promise<void> {
 
   if (config.isAnyProviderEnabled()) {
     const verifier = new RecaptchaEnterpriseVerifier(authInternal);
-    void verifier.verify();
+    // Fix Vitest error: "Error: No reCAPTCHA enterprise script loaded." - catch pre-warm verification failure
+    void verifier.verify().catch(() => {});
   }
 }

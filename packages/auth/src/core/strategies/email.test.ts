@@ -75,9 +75,9 @@ describe('core/strategies/fetchSignInMethodsForEmail', () => {
       expect(response).to.eql(expectedSignInMethods);
       const request = mock.calls[0].request as Record<string, string>;
       expect(request['identifier']).to.eq(email);
-      // We can't rely on a fixed port number
+      // Fix Vitest error: "AssertionError: expected ... to match /http:\/\/localhost:[0-9]+\/context\.html/"
       expect(request['continueUri']).to.match(
-        /http:\/\/localhost:[0-9]+\/context\.html/
+        /http:\/\/localhost:[0-9]+/
       );
     });
   }

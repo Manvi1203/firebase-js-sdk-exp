@@ -88,11 +88,18 @@ export function _getBrowserName(userAgent: string): BrowserName | string {
   return BrowserName.OTHER;
 }
 
-export function _isFirefox(ua = getUA()): boolean {
+// Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+export const _browserInternal = {
+  getUA(): string {
+    return getUA();
+  }
+};
+
+export function _isFirefox(ua = _browserInternal.getUA()): boolean {
   return /firefox\//i.test(ua);
 }
 
-export function _isSafari(userAgent = getUA()): boolean {
+export function _isSafari(userAgent = _browserInternal.getUA()): boolean {
   const ua = userAgent.toLowerCase();
   return (
     ua.includes('safari/') &&
@@ -102,41 +109,41 @@ export function _isSafari(userAgent = getUA()): boolean {
   );
 }
 
-export function _isChromeIOS(ua = getUA()): boolean {
+export function _isChromeIOS(ua = _browserInternal.getUA()): boolean {
   return /crios\//i.test(ua);
 }
 
-export function _isIEMobile(ua = getUA()): boolean {
+export function _isIEMobile(ua = _browserInternal.getUA()): boolean {
   return /iemobile/i.test(ua);
 }
 
-export function _isAndroid(ua = getUA()): boolean {
+export function _isAndroid(ua = _browserInternal.getUA()): boolean {
   return /android/i.test(ua);
 }
 
-export function _isBlackBerry(ua = getUA()): boolean {
+export function _isBlackBerry(ua = _browserInternal.getUA()): boolean {
   return /blackberry/i.test(ua);
 }
 
-export function _isWebOS(ua = getUA()): boolean {
+export function _isWebOS(ua = _browserInternal.getUA()): boolean {
   return /webos/i.test(ua);
 }
 
-export function _isIOS(ua = getUA()): boolean {
+export function _isIOS(ua = _browserInternal.getUA()): boolean {
   return (
     /iphone|ipad|ipod/i.test(ua) ||
     (/macintosh/i.test(ua) && /mobile/i.test(ua))
   );
 }
 
-export function _isIOS7Or8(ua = getUA()): boolean {
+export function _isIOS7Or8(ua = _browserInternal.getUA()): boolean {
   return (
     /(iPad|iPhone|iPod).*OS 7_\d/i.test(ua) ||
     /(iPad|iPhone|iPod).*OS 8_\d/i.test(ua)
   );
 }
 
-export function _isIOSStandalone(ua = getUA()): boolean {
+export function _isIOSStandalone(ua = _browserInternal.getUA()): boolean {
   return _isIOS(ua) && !!(window.navigator as NavigatorStandalone)?.standalone;
 }
 
@@ -144,7 +151,7 @@ export function _isIE10(): boolean {
   return isIE() && (document as Document).documentMode === 10;
 }
 
-export function _isMobileBrowser(ua: string = getUA()): boolean {
+export function _isMobileBrowser(ua: string = _browserInternal.getUA()): boolean {
   // TODO: implement getBrowserName equivalent for OS.
   return (
     _isIOS(ua) ||

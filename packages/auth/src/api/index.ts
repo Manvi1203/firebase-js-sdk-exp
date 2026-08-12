@@ -178,7 +178,7 @@ export async function _performApiRequest<T, V>(
        problems". See the Cloudflare GitHub issue #487: Error: The 'referrerPolicy' field on
        'RequestInitializerDict' is not implemented."
        https://github.com/cloudflare/next-on-pages/issues/487 */
-    if (!isCloudflareWorker()) {
+    if (!_apiInternal.isCloudflareWorker()) {
       fetchArgs.referrerPolicy = 'strict-origin-when-cross-origin';
     }
 
@@ -369,3 +369,8 @@ export function _makeTaggedError(
   (error.customData! as TaggedWithTokenResponse)._tokenResponse = response;
   return error;
 }
+
+// Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+export const _apiInternal = {
+  isCloudflareWorker
+};

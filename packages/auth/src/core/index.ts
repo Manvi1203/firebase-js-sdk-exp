@@ -281,10 +281,12 @@ export { inMemoryPersistence } from './persistence/in_memory';
 // providers
 export { EmailAuthProvider } from './providers/email';
 export { FacebookAuthProvider } from './providers/facebook';
-export { CustomParameters } from './providers/federated';
+// Fix Vitest error: "SyntaxError: The requested module ... does not provide an export named 'CustomParameters'"
+export type { CustomParameters } from './providers/federated';
 export { GoogleAuthProvider } from './providers/google';
 export { GithubAuthProvider } from './providers/github';
-export { OAuthProvider, OAuthCredentialOptions } from './providers/oauth';
+export { OAuthProvider } from './providers/oauth';
+export type { OAuthCredentialOptions } from './providers/oauth';
 export { SAMLAuthProvider } from './providers/saml';
 export { TwitterAuthProvider } from './providers/twitter';
 
