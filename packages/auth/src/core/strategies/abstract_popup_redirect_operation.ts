@@ -25,6 +25,7 @@ import {
   PopupRedirectResolverInternal
 } from '../../model/popup_redirect';
 import { UserInternal, UserCredentialInternal } from '../../model/user';
+import { AuthErrorCode } from '../errors';
 import { _fail } from '../util/assert';
 import {
   _link,

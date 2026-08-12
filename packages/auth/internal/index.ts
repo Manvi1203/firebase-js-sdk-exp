@@ -37,7 +37,9 @@ export type {
 export { AuthEventType } from '../src/model/popup_redirect';
 export type { UserCredentialInternal, UserParameters } from '../src/model/user';
 export type { AuthInternal, ConfigInternal } from '../src/model/auth';
-export { DefaultConfig, AuthImpl, _castAuth } from '../src/core/auth/auth_impl';
+// Fix Vitest error: "SyntaxError: The requested module ... does not provide an export named 'DefaultConfig'" (const enum erased at runtime)
+export type { DefaultConfig } from '../src/core/auth/auth_impl';
+export { AuthImpl, _castAuth } from '../src/core/auth/auth_impl';
 
 export { ClientPlatform, _getClientVersion } from '../src/core/util/version';
 
