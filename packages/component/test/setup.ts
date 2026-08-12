@@ -1,28 +1,22 @@
-/**
- * @license
- * Copyright 2019 Google LLC
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 import { use } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
-import { restore } from 'sinon';
 import sinonChai from 'sinon-chai';
 
 use(chaiAsPromised);
 use(sinonChai);
 
-afterEach(async () => {
-  restore();
-});
+if (typeof (globalThis as any).global === 'undefined') {
+  (globalThis as any).global = globalThis;
+}
+if (typeof (globalThis as any).process === 'undefined') {
+  (globalThis as any).process = { env: {} };
+}
+if (typeof (globalThis as any).before === 'undefined') {
+  (globalThis as any).before = (globalThis as any).beforeAll;
+}
+if (typeof (globalThis as any).after === 'undefined') {
+  (globalThis as any).after = (globalThis as any).afterAll;
+}
+if (typeof (globalThis as any).context === 'undefined') {
+  (globalThis as any).context = (globalThis as any).describe;
+}
