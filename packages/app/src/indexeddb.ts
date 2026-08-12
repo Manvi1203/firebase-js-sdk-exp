@@ -64,9 +64,9 @@ function getDbPromise(): Promise<IDBPDatabase<AppDB>> {
   return dbPromise;
 }
 
-export async function readHeartbeatsFromIndexedDB(
+const defaultReadHeartbeatsFromIndexedDB = async (
   app: FirebaseApp
-): Promise<HeartbeatsInIndexedDB | undefined> {
+): Promise<HeartbeatsInIndexedDB | undefined> => {
   try {
     const db = await getDbPromise();
     const tx = db.transaction(STORE_NAME);
@@ -85,12 +85,12 @@ export async function readHeartbeatsFromIndexedDB(
       logger.warn(idbGetError.message);
     }
   }
-}
+};
 
-export async function writeHeartbeatsToIndexedDB(
+const defaultWriteHeartbeatsToIndexedDB = async (
   app: FirebaseApp,
   heartbeatObject: HeartbeatsInIndexedDB
-): Promise<void> {
+): Promise<void> => {
   try {
     const db = await getDbPromise();
     const tx = db.transaction(STORE_NAME, 'readwrite');
@@ -107,6 +107,24 @@ export async function writeHeartbeatsToIndexedDB(
       logger.warn(idbGetError.message);
     }
   }
+};
+
+export const _indexedDbInternal = {
+  readHeartbeatsFromIndexedDB: defaultReadHeartbeatsFromIndexedDB,
+  writeHeartbeatsToIndexedDB: defaultWriteHeartbeatsToIndexedDB
+};
+
+export async function readHeartbeatsFromIndexedDB(
+  app: FirebaseApp
+): Promise<HeartbeatsInIndexedDB | undefined> {
+  return _indexedDbInternal.readHeartbeatsFromIndexedDB(app);
+}
+
+export async function writeHeartbeatsToIndexedDB(
+  app: FirebaseApp,
+  heartbeatObject: HeartbeatsInIndexedDB
+): Promise<void> {
+  return _indexedDbInternal.writeHeartbeatsToIndexedDB(app, heartbeatObject);
 }
 
 function computeKey(app: FirebaseApp): string {

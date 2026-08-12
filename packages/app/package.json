@@ -30,13 +30,14 @@
     "test:ci": "node ../../scripts/run_tests_in_ci.js -s test:all",
     "test:all": "run-p --npm-path npm test:browser test:node",
     "test:browser": "karma start",
-    "test:node": "TS_NODE_COMPILER_OPTIONS='{\"module\":\"commonjs\"}' nyc --reporter lcovonly -- mocha src/**/*.test.ts --config ../../config/mocharc.node.js",
+    "test:node": "TS_NODE_COMPILER_OPTIONS='{\"module\":\"commonjs\"}' nyc --reporter lcovonly -- mocha 'src/**/*.test.ts' --config ../../config/mocharc.node.js",
     "trusted-type-check": "tsec -p tsconfig.json --noEmit",
     "api-report": "api-extractor run --local --verbose",
     "doc": "api-documenter markdown --input temp --output docs",
     "build:doc": "yarn build && yarn doc",
     "typings:public": "node ../../scripts/build/use_typings.js ./dist/app-public.d.ts",
-    "typings:internal": "node ../../scripts/build/use_typings.js ./dist/app.d.ts"
+    "typings:internal": "node ../../scripts/build/use_typings.js ./dist/app.d.ts",
+    "test:vitest:browser": "vitest run --config vitest.config.browser.mjs"
   },
   "dependencies": {
     "@firebase/util": "1.15.2",
