@@ -25,7 +25,8 @@ import * as modularApi from '@firebase/remote-config';
 describe('Remote Config Compat', () => {
   let remoteConfig!: RemoteConfigCompatImpl;
   const fakeModularRemoteConfig = getFakeModularRemoteConfig();
-  before(() => {
+  // Use beforeEach to avoid Vitest error: "ReferenceError: before is not defined"
+  beforeEach(() => {
     remoteConfig = new RemoteConfigCompatImpl(
       getFakeApp(),
       fakeModularRemoteConfig
@@ -33,9 +34,11 @@ describe('Remote Config Compat', () => {
   });
 
   it('activate() calls modular activate()', async () => {
-    const modularActivateStub = stub(modularApi, 'activate').callsFake(() =>
-      Promise.resolve(true)
-    );
+    // Stub _apiInternal to avoid Vitest error: "TypeError: ES Modules cannot be stubbed"
+    const modularActivateStub = stub(
+      modularApi._apiInternal,
+      'activate'
+    ).callsFake(() => Promise.resolve(true));
     const res = await remoteConfig.activate();
 
     expect(res).to.equal(res);
@@ -45,8 +48,9 @@ describe('Remote Config Compat', () => {
   });
 
   it('ensureInitialized() calls modular ensureInitialized()', async () => {
+    // Stub _apiInternal to avoid Vitest error: "TypeError: ES Modules cannot be stubbed"
     const modularEnsureInitializedStub = stub(
-      modularApi,
+      modularApi._apiInternal,
       'ensureInitialized'
     ).callsFake(() => Promise.resolve());
     await remoteConfig.ensureInitialized();
@@ -57,9 +61,11 @@ describe('Remote Config Compat', () => {
   });
 
   it('fetch() calls modular fetchConfig()', async () => {
-    const modularFetchStub = stub(modularApi, 'fetchConfig').callsFake(() =>
-      Promise.resolve()
-    );
+    // Stub _apiInternal to avoid Vitest error: "TypeError: ES Modules cannot be stubbed"
+    const modularFetchStub = stub(
+      modularApi._apiInternal,
+      'fetchConfig'
+    ).callsFake(() => Promise.resolve());
     await remoteConfig.fetch();
 
     expect(modularFetchStub).to.have.been.calledWithExactly(
@@ -68,8 +74,9 @@ describe('Remote Config Compat', () => {
   });
 
   it('fetchAndActivate() calls modular fetchAndActivate()', async () => {
+    // Stub _api2Internal to avoid Vitest error: "TypeError: ES Modules cannot be stubbed"
     const modularFetchAndActivateStub = stub(
-      modularApi,
+      modularApi._api2Internal,
       'fetchAndActivate'
     ).callsFake(() => Promise.resolve(true));
     const res = await remoteConfig.fetchAndActivate();
@@ -82,9 +89,11 @@ describe('Remote Config Compat', () => {
 
   it('getAll() calls modular getAll()', () => {
     const allValues = {};
-    const modularGetAllStub = stub(modularApi, 'getAll').callsFake(
-      () => allValues
-    );
+    // Stub _apiInternal to avoid Vitest error: "TypeError: ES Modules cannot be stubbed"
+    const modularGetAllStub = stub(
+      modularApi._apiInternal,
+      'getAll'
+    ).callsFake(() => allValues);
 
     const res = remoteConfig.getAll();
 
@@ -95,9 +104,11 @@ describe('Remote Config Compat', () => {
   });
 
   it('getBoolean() calls modular getBoolean()', () => {
-    const modularGetBoolean = stub(modularApi, 'getBoolean').callsFake(
-      () => false
-    );
+    // Stub _apiInternal to avoid Vitest error: "TypeError: ES Modules cannot be stubbed"
+    const modularGetBoolean = stub(
+      modularApi._apiInternal,
+      'getBoolean'
+    ).callsFake(() => false);
 
     const res = remoteConfig.getBoolean('myKey');
 
@@ -109,7 +120,11 @@ describe('Remote Config Compat', () => {
   });
 
   it('getNumber() calls modular getNumber()', () => {
-    const modularGetNumber = stub(modularApi, 'getNumber').callsFake(() => 123);
+    // Stub _apiInternal to avoid Vitest error: "TypeError: ES Modules cannot be stubbed"
+    const modularGetNumber = stub(
+      modularApi._apiInternal,
+      'getNumber'
+    ).callsFake(() => 123);
     const res = remoteConfig.getNumber('myNumKey');
 
     expect(res).to.equal(123);
@@ -120,9 +135,11 @@ describe('Remote Config Compat', () => {
   });
 
   it('getString() calls modular getString()', () => {
-    const modularGetString = stub(modularApi, 'getString').callsFake(
-      () => 'abc'
-    );
+    // Stub _apiInternal to avoid Vitest error: "TypeError: ES Modules cannot be stubbed"
+    const modularGetString = stub(
+      modularApi._apiInternal,
+      'getString'
+    ).callsFake(() => 'abc');
     const res = remoteConfig.getString('myStrKey');
 
     expect(res).to.equal('abc');
@@ -134,9 +151,11 @@ describe('Remote Config Compat', () => {
 
   it('getValue() calls modular getValue()', () => {
     const fakeValue = {} as modularApi.Value;
-    const modularGetValue = stub(modularApi, 'getValue').callsFake(
-      () => fakeValue
-    );
+    // Stub _apiInternal to avoid Vitest error: "TypeError: ES Modules cannot be stubbed"
+    const modularGetValue = stub(
+      modularApi._apiInternal,
+      'getValue'
+    ).callsFake(() => fakeValue);
     const res = remoteConfig.getValue('myValKey');
 
     expect(res).to.equal(fakeValue);
@@ -147,9 +166,11 @@ describe('Remote Config Compat', () => {
   });
 
   it('setLogLevel() calls modular setLogLevel()', () => {
-    const modularSetLogLevel = stub(modularApi, 'setLogLevel').callsFake(
-      () => {}
-    );
+    // Stub _apiInternal to avoid Vitest error: "TypeError: ES Modules cannot be stubbed"
+    const modularSetLogLevel = stub(
+      modularApi._apiInternal,
+      'setLogLevel'
+    ).callsFake(() => {});
     remoteConfig.setLogLevel('debug');
 
     expect(modularSetLogLevel).to.have.been.calledWithExactly(

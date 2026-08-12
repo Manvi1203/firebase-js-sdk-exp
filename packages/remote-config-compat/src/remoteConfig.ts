@@ -25,16 +25,8 @@ import {
 } from '@firebase/remote-config-types';
 import {
   RemoteConfig,
-  setLogLevel,
-  activate,
-  ensureInitialized,
-  fetchAndActivate,
-  fetchConfig,
-  getAll,
-  getBoolean,
-  getNumber,
-  getString,
-  getValue,
+  _apiInternal,
+  _api2Internal,
   isSupported
 } from '@firebase/remote-config';
 
@@ -70,11 +62,11 @@ export class RemoteConfigCompatImpl
   }
 
   activate(): Promise<boolean> {
-    return activate(this._delegate);
+    return _apiInternal.activate(this._delegate);
   }
 
   ensureInitialized(): Promise<void> {
-    return ensureInitialized(this._delegate);
+    return _apiInternal.ensureInitialized(this._delegate);
   }
 
   /**
@@ -83,36 +75,36 @@ export class RemoteConfigCompatImpl
    * {@link DEFAULT_FETCH_TIMEOUT_SECONDS}.
    */
   fetch(): Promise<void> {
-    return fetchConfig(this._delegate);
+    return _apiInternal.fetchConfig(this._delegate);
   }
 
   fetchAndActivate(): Promise<boolean> {
-    return fetchAndActivate(this._delegate);
+    return _api2Internal.fetchAndActivate(this._delegate);
   }
 
   getAll(): { [key: string]: ValueCompat } {
-    return getAll(this._delegate);
+    return _apiInternal.getAll(this._delegate);
   }
 
   getBoolean(key: string): boolean {
-    return getBoolean(this._delegate, key);
+    return _apiInternal.getBoolean(this._delegate, key);
   }
 
   getNumber(key: string): number {
-    return getNumber(this._delegate, key);
+    return _apiInternal.getNumber(this._delegate, key);
   }
 
   getString(key: string): string {
-    return getString(this._delegate, key);
+    return _apiInternal.getString(this._delegate, key);
   }
 
   getValue(key: string): ValueCompat {
-    return getValue(this._delegate, key);
+    return _apiInternal.getValue(this._delegate, key);
   }
 
   // Based on packages/firestore/src/util/log.ts but not static because we need per-instance levels
   // to differentiate 2p and 3p use-cases.
   setLogLevel(logLevel: RemoteConfigLogLevel): void {
-    setLogLevel(this._delegate, logLevel);
+    _apiInternal.setLogLevel(this._delegate, logLevel);
   }
 }
