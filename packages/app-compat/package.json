@@ -30,10 +30,11 @@
     "test:ci": "node ../../scripts/run_tests_in_ci.js -s test:all",
     "test:browser": "karma start",
     "test:browser:debug": "karma start --browsers Chrome --auto-watch",
-    "test:node": "TS_NODE_FILES=true TS_NODE_CACHE=NO TS_NODE_COMPILER_OPTIONS='{\"module\":\"commonjs\"}' nyc --reporter lcovonly -- mocha test/**/*.test.* src/**/*.test.ts --config ../../config/mocharc.node.js",
+    "test:node": "TS_NODE_FILES=true TS_NODE_CACHE=NO TS_NODE_COMPILER_OPTIONS='{\"module\":\"commonjs\"}' nyc --reporter lcovonly -- mocha 'test/**/*.test.*' --config ../../config/mocharc.node.js",
     "trusted-type-check": "tsec -p tsconfig.json --noEmit",
     "api-report": "api-extractor run --local --verbose",
-    "typings:public": "node ../../scripts/build/use_typings.js ./dist/app-compat-public.d.ts"
+    "typings:public": "node ../../scripts/build/use_typings.js ./dist/app-compat-public.d.ts",
+    "test:vitest:browser": "vitest run --config vitest.config.browser.mjs"
   },
   "license": "Apache-2.0",
   "dependencies": {
