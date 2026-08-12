@@ -19,12 +19,9 @@ import { FirebaseInstallations as FirebaseInstallationsCompat } from '@firebase/
 import { FirebaseApp, _FirebaseService } from '@firebase/app-compat';
 import {
   Installations,
-  deleteInstallations,
-  getId,
-  getToken,
+  _apiInternal,
   IdChangeCallbackFn,
-  IdChangeUnsubscribeFn,
-  onIdChange
+  IdChangeUnsubscribeFn
 } from '@firebase/installations';
 
 export class InstallationsCompat
@@ -33,15 +30,15 @@ export class InstallationsCompat
   constructor(public app: FirebaseApp, readonly _delegate: Installations) {}
 
   getId(): Promise<string> {
-    return getId(this._delegate);
+    return _apiInternal.getId(this._delegate);
   }
   getToken(forceRefresh?: boolean): Promise<string> {
-    return getToken(this._delegate, forceRefresh);
+    return _apiInternal.getToken(this._delegate, forceRefresh);
   }
   delete(): Promise<void> {
-    return deleteInstallations(this._delegate);
+    return _apiInternal.deleteInstallations(this._delegate);
   }
   onIdChange(callback: IdChangeCallbackFn): IdChangeUnsubscribeFn {
-    return onIdChange(this._delegate, callback);
+    return _apiInternal.onIdChange(this._delegate, callback);
   }
 }
