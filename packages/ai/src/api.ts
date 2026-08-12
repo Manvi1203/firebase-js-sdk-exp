@@ -35,7 +35,9 @@ import { GoogleAIBackend } from './backend';
 import { TemplateGenerativeModel } from './models/template-generative-model';
 import { logger } from './logger';
 
-export { TemplateChatSession } from './public-types';
+// In isolated ESM builds (Vitest/Vite), TypeScript types without 'export type'
+// cause runtime errors: SyntaxError: The requested module does not provide an export named 'TemplateChatSession'.
+export type { TemplateChatSession } from './public-types';
 export { ChatSession } from './methods/chat-session';
 export { ChatSessionBase } from './methods/chat-session-base';
 export { LiveSession } from './methods/live-session';
@@ -54,7 +56,11 @@ export {
   AgentPlatformBackend
 } from './backend';
 export {
-  startAudioConversation,
+  startAudioConversation
+} from './methods/live-session-helpers';
+// In isolated ESM builds (Vitest/Vite), TypeScript types without 'export type'
+// cause runtime errors: SyntaxError: The requested module does not provide an export named 'AudioConversationController'.
+export type {
   AudioConversationController,
   StartAudioConversationOptions
 } from './methods/live-session-helpers';

@@ -89,7 +89,9 @@ function setupGlobalMocks(): void {
     connect: sinon.stub(),
     disconnect: sinon.stub()
   } as any;
-  sinon.stub(global, 'AudioWorkletNode').returns(mockWorkletNode);
+  // Use globalThis to avoid Vitest error:
+  // "ReferenceError: global is not defined"
+  sinon.stub(globalThis as any, 'AudioWorkletNode').returns(mockWorkletNode);
 
   // Mock AudioContext
   mockAudioBufferSource = {
@@ -117,10 +119,14 @@ function setupGlobalMocks(): void {
     state: 'suspended' as AudioContextState,
     currentTime: 0
   } as any;
-  sinon.stub(global, 'AudioContext').returns(mockAudioContext);
+  // Use globalThis to avoid Vitest error:
+  // "ReferenceError: global is not defined"
+  sinon.stub(globalThis as any, 'AudioContext').returns(mockAudioContext);
 
   // Mock other globals
-  sinon.stub(global, 'Blob').returns({} as Blob);
+  // Use globalThis to avoid Vitest error:
+  // "ReferenceError: global is not defined"
+  sinon.stub(globalThis as any, 'Blob').returns({} as Blob);
   sinon.stub(URL, 'createObjectURL').returns('blob:http://localhost/fake-url');
 
   // Mock getUserMedia
@@ -129,7 +135,7 @@ function setupGlobalMocks(): void {
   } as any;
   getUserMediaStub = sinon.stub().resolves(mockMediaStream);
   if (typeof navigator === 'undefined') {
-    (global as any).navigator = {
+    (globalThis as any).navigator = {
       mediaDevices: { getUserMedia: getUserMediaStub }
     };
   } else {

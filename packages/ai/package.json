@@ -45,7 +45,8 @@
     "api-report": "api-extractor run --local --verbose",
     "typings:public": "node ../../scripts/build/use_typings.js ./dist/ai-public.d.ts",
     "type-check": "yarn tsc --noEmit",
-    "trusted-type-check": "tsec -p tsconfig.json --noEmit"
+    "trusted-type-check": "tsec -p tsconfig.json --noEmit",
+    "test:vitest:browser": "vitest run --config vitest.config.browser.mjs"
   },
   "peerDependencies": {
     "@firebase/app": "0.x",

@@ -100,7 +100,7 @@ describe('ChatSession', () => {
   describe('sendMessage()', () => {
     it('sends the correct params to generateContent()', async () => {
       const generateContentStub = stub(
-        generateContentMethods,
+        generateContentMethods._generateContentInternal,
         'generateContent'
       ).resolves();
       const chatSession = new ChatSession(
@@ -139,7 +139,7 @@ describe('ChatSession', () => {
     });
     it('generateContent errors should be catchable', async () => {
       const generateContentStub = stub(
-        generateContentMethods,
+        generateContentMethods._generateContentInternal,
         'generateContent'
       ).rejects('generateContent failed');
       const chatSession = new ChatSession(
@@ -156,7 +156,7 @@ describe('ChatSession', () => {
     });
     it('singleRequestOptions overrides requestOptions', async () => {
       const generateContentStub = stub(
-        generateContentMethods,
+        generateContentMethods._generateContentInternal,
         'generateContent'
       ).rejects('generateContent failed'); // not important
       const requestOptions = {
@@ -186,7 +186,7 @@ describe('ChatSession', () => {
     });
     it('singleRequestOptions is merged with requestOptions', async () => {
       const generateContentStub = stub(
-        generateContentMethods,
+        generateContentMethods._generateContentInternal,
         'generateContent'
       ).rejects('generateContent failed'); // not important
       const abortController = new AbortController();
@@ -236,7 +236,7 @@ describe('ChatSession', () => {
         ]
       };
       const generateContentStub = stub(
-        generateContentMethods,
+        generateContentMethods._generateContentInternal,
         'generateContent'
       ).resolves({
         // @ts-ignore
@@ -269,7 +269,7 @@ describe('ChatSession', () => {
     it('sends the correct params to generateContentStream()', async () => {
       const clock = useFakeTimers();
       const generateContentStreamStub = stub(
-        generateContentMethods,
+        generateContentMethods._generateContentInternal,
         'generateContentStream'
       ).resolves();
       const chatSession = new ChatSession(
@@ -312,7 +312,7 @@ describe('ChatSession', () => {
       const clock = useFakeTimers();
       const consoleStub = stub(console, 'error');
       const generateContentStreamStub = stub(
-        generateContentMethods,
+        generateContentMethods._generateContentInternal,
         'generateContentStream'
       ).rejects('generateContentStream failed');
       const chatSession = new ChatSession(
@@ -336,7 +336,7 @@ describe('ChatSession', () => {
       const consoleStub = stub(console, 'error');
       // make response undefined so that response.candidates errors
       const generateContentStreamStub = stub(
-        generateContentMethods,
+        generateContentMethods._generateContentInternal,
         'generateContentStream'
       ).resolves({} as unknown as GenerateContentStreamResult);
       const chatSession = new ChatSession(
@@ -363,7 +363,7 @@ describe('ChatSession', () => {
       const error = new Error('Aggregation failed');
 
       // Simulate stream returning, but the response promise failing (e.g. parsing error)
-      stub(generateContentMethods, 'generateContentStream').resolves({
+      stub(generateContentMethods._generateContentInternal, 'generateContentStream').resolves({
         stream: (async function* () {})(),
         response: Promise.reject(error)
       } as unknown as GenerateContentStreamResult);
@@ -396,7 +396,7 @@ describe('ChatSession', () => {
         candidates: [null]
       };
 
-      stub(generateContentMethods, 'generateContentStream').resolves({
+      stub(generateContentMethods._generateContentInternal, 'generateContentStream').resolves({
         stream: (async function* () {})(),
         response: Promise.resolve(malformedResponse)
       } as unknown as GenerateContentStreamResult);
@@ -424,7 +424,7 @@ describe('ChatSession', () => {
     });
     it('error from stream promise should not be logged', async () => {
       const consoleStub = stub(console, 'error');
-      stub(generateContentMethods, 'generateContentStream').rejects('foo');
+      stub(generateContentMethods._generateContentInternal, 'generateContentStream').rejects('foo');
       const chatSession = new ChatSession(
         fakeApiSettings,
         'a-model',
@@ -441,7 +441,7 @@ describe('ChatSession', () => {
     });
     it('error from final response promise should not be logged', async () => {
       const consoleStub = stub(console, 'error');
-      stub(generateContentMethods, 'generateContentStream').resolves({
+      stub(generateContentMethods._generateContentInternal, 'generateContentStream').resolves({
         response: new Promise((_, reject) => reject(new Error()))
       } as unknown as GenerateContentStreamResult);
       const chatSession = new ChatSession(
@@ -454,7 +454,7 @@ describe('ChatSession', () => {
     });
     it('singleRequestOptions overrides requestOptions', async () => {
       const generateContentStreamStub = stub(
-        generateContentMethods,
+        generateContentMethods._generateContentInternal,
         'generateContentStream'
       ).rejects('generateContentStream failed'); // not important
       const requestOptions = {
@@ -484,7 +484,7 @@ describe('ChatSession', () => {
     });
     it('singleRequestOptions is merged with requestOptions', async () => {
       const generateContentStreamStub = stub(
-        generateContentMethods,
+        generateContentMethods._generateContentInternal,
         'generateContentStream'
       ).rejects('generateContentStream failed'); // not important
       const abortController = new AbortController();
@@ -576,7 +576,7 @@ describe('ChatSession', () => {
       it('calls one function automatically', async () => {
         const greetingSpy = spy(getGreeting);
         const generateContentStub = stub(
-          generateContentMethods,
+          generateContentMethods._generateContentInternal,
           'generateContent'
           // @ts-ignore
         ).callsFake(async (apiSettings, model, params) => {
@@ -640,7 +640,7 @@ describe('ChatSession', () => {
         const greetingSpy = spy(getGreeting);
         const farewellSpy = spy(getFarewell);
         const generateContentStub = stub(
-          generateContentMethods,
+          generateContentMethods._generateContentInternal,
           'generateContent'
           // @ts-ignore
         ).callsFake(async (apiSettings, model, params) => {
@@ -716,7 +716,7 @@ describe('ChatSession', () => {
         const greetingSpy = spy(getGreeting);
         const warnStub = stub(logger, 'warn');
         const generateContentStub = stub(
-          generateContentMethods,
+          generateContentMethods._generateContentInternal,
           'generateContent'
           // @ts-ignore
         ).callsFake(async (apiSettings, model, params) => {
@@ -771,7 +771,7 @@ describe('ChatSession', () => {
       it('calls one function automatically', async () => {
         const greetingSpy = spy(getGreeting);
         const generateContentStreamStub = stub(
-          generateContentMethods,
+          generateContentMethods._generateContentInternal,
           'generateContentStream'
           // @ts-ignore
         ).callsFake(async (apiSettings, model, params) => {
@@ -835,7 +835,7 @@ describe('ChatSession', () => {
         const greetingSpy = spy(getGreeting);
         const farewellSpy = spy(getFarewell);
         const generateContentStreamStub = stub(
-          generateContentMethods,
+          generateContentMethods._generateContentInternal,
           'generateContentStream'
           // @ts-ignore
         ).callsFake(async (apiSettings, model, params) => {
@@ -921,7 +921,7 @@ describe('ChatSession', () => {
           ]
         };
         const generateContentStreamStub = stub(
-          generateContentMethods,
+          generateContentMethods._generateContentInternal,
           'generateContentStream'
           // @ts-ignore
         ).callsFake(async (apiSettings, model, params) => {

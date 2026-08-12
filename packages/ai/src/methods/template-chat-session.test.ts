@@ -109,7 +109,7 @@ describe('TemplateChatSession', () => {
   describe('sendMessage()', () => {
     it('generateContent errors should be catchable', async () => {
       const templateGenerateContentStub = stub(
-        generateContentMethods,
+        generateContentMethods._generateContentInternal,
         'templateGenerateContent'
       ).rejects(new Error('templateGenerateContent failed'));
       const chatSession = new TemplateChatSessionImpl(fakeApiSettings, {
@@ -137,7 +137,7 @@ describe('TemplateChatSession', () => {
         ]
       };
       const templateGenerateContentStub = stub(
-        generateContentMethods,
+        generateContentMethods._generateContentInternal,
         'templateGenerateContent'
       ).resolves({
         // @ts-ignore
@@ -230,7 +230,7 @@ describe('TemplateChatSession', () => {
       it('calls one function automatically', async () => {
         const greetingSpy = spy(getGreeting);
         const templateGenerateContentStub = stub(
-          generateContentMethods,
+          generateContentMethods._generateContentInternal,
           'templateGenerateContent'
           // @ts-ignore
         ).callsFake(async (apiSettings, templateId, params: any) => {
@@ -289,7 +289,7 @@ describe('TemplateChatSession', () => {
         const greetingSpy = spy(getGreeting);
         const farewellSpy = spy(getFarewell);
         const templateGenerateContentStub = stub(
-          generateContentMethods,
+          generateContentMethods._generateContentInternal,
           'templateGenerateContent'
           // @ts-ignore
         ).callsFake(async (apiSettings, templateId, params: any) => {
@@ -358,7 +358,7 @@ describe('TemplateChatSession', () => {
         const greetingSpy = spy(getGreeting);
         const warnStub = stub(logger, 'warn');
         const templateGenerateContentStub = stub(
-          generateContentMethods,
+          generateContentMethods._generateContentInternal,
           'templateGenerateContent'
           // @ts-ignore
         ).callsFake(async (apiSettings, templateId, params: any) => {
@@ -413,7 +413,7 @@ describe('TemplateChatSession', () => {
       it('calls one function automatically on stream', async () => {
         const greetingSpy = spy(getGreeting);
         const templateGenerateContentStreamStub = stub(
-          generateContentMethods,
+          generateContentMethods._generateContentInternal,
           'templateGenerateContentStream'
           // @ts-ignore
         ).callsFake(async (apiSettings, templateId, params: any) => {

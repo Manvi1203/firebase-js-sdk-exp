@@ -126,43 +126,44 @@ export class WebSocketHandlerImpl implements WebSocketHandler {
     const errorQueue: Error[] = [];
     let resolvePromise: (() => void) | null = null;
     let isClosed = false;
+    let pendingMessages = 0;
 
     const messageListener = async (event: MessageEvent): Promise<void> => {
-      let data: string;
-      if (event.data instanceof Blob) {
-        data = await event.data.text();
-      } else if (typeof event.data === 'string') {
-        data = event.data;
-      } else {
-        errorQueue.push(
-          new AIError(
-            AIErrorCode.PARSE_FAILED,
-            `Failed to parse WebSocket response. Expected data to be a Blob or string, but was ${typeof event.data}.`
-          )
-        );
+      pendingMessages++;
+      try {
+        let data: string;
+        if (event.data instanceof Blob) {
+          data = await event.data.text();
+        } else if (typeof event.data === 'string') {
+          data = event.data;
+        } else {
+          errorQueue.push(
+            new AIError(
+              AIErrorCode.PARSE_FAILED,
+              `Failed to parse WebSocket response. Expected data to be a Blob or string, but was ${typeof event.data}.`
+            )
+          );
+          return;
+        }
+
+        try {
+          const obj = JSON.parse(data) as unknown;
+          messageQueue.push(obj);
+        } catch (e) {
+          const err = e as Error;
+          errorQueue.push(
+            new AIError(
+              AIErrorCode.PARSE_FAILED,
+              `Error parsing WebSocket message to JSON: ${err.message}`
+            )
+          );
+        }
+      } finally {
+        pendingMessages--;
         if (resolvePromise) {
           resolvePromise();
           resolvePromise = null;
         }
-        return;
-      }
-
-      try {
-        const obj = JSON.parse(data) as unknown;
-        messageQueue.push(obj);
-      } catch (e) {
-        const err = e as Error;
-        errorQueue.push(
-          new AIError(
-            AIErrorCode.PARSE_FAILED,
-            `Error parsing WebSocket message to JSON: ${err.message}`
-          )
-        );
-      }
-
-      if (resolvePromise) {
-        resolvePromise();
-        resolvePromise = null;
       }
     };
 
@@ -197,14 +198,14 @@ export class WebSocketHandlerImpl implements WebSocketHandler {
     this.ws.addEventListener('close', closeListener);
     this.ws.addEventListener('error', errorListener);
 
-    while (!isClosed) {
+    while (!isClosed || messageQueue.length > 0 || pendingMessages > 0) {
       if (errorQueue.length > 0) {
         const error = errorQueue.shift()!;
         throw error;
       }
       if (messageQueue.length > 0) {
         yield messageQueue.shift()!;
-      } else {
+      } else if (!isClosed || pendingMessages > 0) {
         await new Promise<void>(resolve => {
           resolvePromise = resolve;
         });

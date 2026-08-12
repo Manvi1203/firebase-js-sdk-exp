@@ -97,7 +97,9 @@ describe('GenerativeModel', () => {
       'vertexAI',
       'unary-success-basic-reply-short.json'
     );
-    const makeRequestStub = stub(request, 'makeRequest').resolves(
+    // Stub request._requestInternal to avoid Vitest error:
+    // "TypeError: ES Modules cannot be stubbed"
+    const makeRequestStub = stub(request._requestInternal, 'makeRequest').resolves(
       mockResponse as Response
     );
     await genModel.generateContent('hello');
@@ -136,7 +138,9 @@ describe('GenerativeModel', () => {
       'vertexAI',
       'unary-success-basic-reply-short.json'
     );
-    const makeRequestStub = stub(request, 'makeRequest').resolves(
+    // Stub request._requestInternal to avoid Vitest error:
+    // "TypeError: ES Modules cannot be stubbed"
+    const makeRequestStub = stub(request._requestInternal, 'makeRequest').resolves(
       mockResponse as Response
     );
     await genModel.generateContent('hello');
@@ -186,7 +190,9 @@ describe('GenerativeModel', () => {
       'vertexAI',
       'unary-success-basic-reply-short.json'
     );
-    const makeRequestStub = stub(request, 'makeRequest').resolves(
+    // Stub request._requestInternal to avoid Vitest error:
+    // "TypeError: ES Modules cannot be stubbed"
+    const makeRequestStub = stub(request._requestInternal, 'makeRequest').resolves(
       mockResponse as Response
     );
     await genModel.generateContent({
@@ -224,8 +230,10 @@ describe('GenerativeModel', () => {
     restore();
   });
   it('generateContent singleRequestOptions overrides requestOptions', async () => {
+    // Stub generateContentMethods._generateContentInternal to avoid Vitest error:
+    // "TypeError: ES Modules cannot be stubbed"
     const generateContentStub = stub(
-      generateContentMethods,
+      generateContentMethods._generateContentInternal,
       'generateContent'
     ).rejects('generateContent failed'); // not important
     const requestOptions = {
@@ -271,7 +279,9 @@ describe('GenerativeModel', () => {
       'vertexAI',
       'unary-success-basic-reply-short.json'
     );
-    const makeRequestStub = stub(request, 'makeRequest').resolves(
+    // Stub request._requestInternal to avoid Vitest error:
+    // "TypeError: ES Modules cannot be stubbed"
+    const makeRequestStub = stub(request._requestInternal, 'makeRequest').resolves(
       mockResponse as Response
     );
 
@@ -310,7 +320,9 @@ describe('GenerativeModel', () => {
       'vertexAI',
       'streaming-success-basic-reply-short.txt'
     );
-    const makeRequestStub = stub(request, 'makeRequest').resolves(
+    // Stub request._requestInternal to avoid Vitest error:
+    // "TypeError: ES Modules cannot be stubbed"
+    const makeRequestStub = stub(request._requestInternal, 'makeRequest').resolves(
       mockResponse as Response
     );
 
@@ -350,8 +362,10 @@ describe('GenerativeModel', () => {
     restore();
   });
   it('generateContent singleRequestOptions is merged with requestOptions', async () => {
+    // Stub generateContentMethods._generateContentInternal to avoid Vitest error:
+    // "TypeError: ES Modules cannot be stubbed"
     const generateContentStub = stub(
-      generateContentMethods,
+      generateContentMethods._generateContentInternal,
       'generateContent'
     ).rejects('generateContent failed'); // not important
     const abortController = new AbortController();
@@ -454,7 +468,9 @@ describe('GenerativeModel', () => {
       'vertexAI',
       'unary-success-basic-reply-short.json'
     );
-    const makeRequestStub = stub(request, 'makeRequest').resolves(
+    // Stub request._requestInternal to avoid Vitest error:
+    // "TypeError: ES Modules cannot be stubbed"
+    const makeRequestStub = stub(request._requestInternal, 'makeRequest').resolves(
       mockResponse as Response
     );
     await genModel.startChat().sendMessage('hello');
@@ -494,7 +510,9 @@ describe('GenerativeModel', () => {
       'vertexAI',
       'unary-success-basic-reply-short.json'
     );
-    const makeRequestStub = stub(request, 'makeRequest').resolves(
+    // Stub request._requestInternal to avoid Vitest error:
+    // "TypeError: ES Modules cannot be stubbed"
+    const makeRequestStub = stub(request._requestInternal, 'makeRequest').resolves(
       mockResponse as Response
     );
     await genModel.startChat().sendMessage('hello');
@@ -542,7 +560,9 @@ describe('GenerativeModel', () => {
       'vertexAI',
       'unary-success-basic-reply-short.json'
     );
-    const makeRequestStub = stub(request, 'makeRequest').resolves(
+    // Stub request._requestInternal to avoid Vitest error:
+    // "TypeError: ES Modules cannot be stubbed"
+    const makeRequestStub = stub(request._requestInternal, 'makeRequest').resolves(
       mockResponse as Response
     );
     await genModel.startChat().sendMessage('hello');
@@ -575,7 +595,9 @@ describe('GenerativeModel', () => {
       'vertexAI',
       'unary-success-basic-reply-short.json'
     );
-    const makeRequestStub = stub(request, 'makeRequest').resolves(
+    // Stub request._requestInternal to avoid Vitest error:
+    // "TypeError: ES Modules cannot be stubbed"
+    const makeRequestStub = stub(request._requestInternal, 'makeRequest').resolves(
       mockResponse as Response
     );
     await genModel.startChat().sendMessage('hello');
@@ -616,7 +638,9 @@ describe('GenerativeModel', () => {
       'vertexAI',
       'unary-success-basic-reply-short.json'
     );
-    const makeRequestStub = stub(request, 'makeRequest').resolves(
+    // Stub request._requestInternal to avoid Vitest error:
+    // "TypeError: ES Modules cannot be stubbed"
+    const makeRequestStub = stub(request._requestInternal, 'makeRequest').resolves(
       mockResponse as Response
     );
     await genModel
@@ -668,7 +692,9 @@ describe('GenerativeModel', () => {
       'vertexAI',
       'unary-success-total-tokens.json'
     );
-    const makeRequestStub = stub(request, 'makeRequest').resolves(
+    // Stub request._requestInternal to avoid Vitest error:
+    // "TypeError: ES Modules cannot be stubbed"
+    const makeRequestStub = stub(request._requestInternal, 'makeRequest').resolves(
       mockResponse as Response
     );
     await genModel.countTokens('hello');
@@ -687,9 +713,12 @@ describe('GenerativeModel', () => {
     restore();
   });
   it('countTokens singleRequestOptions overrides requestOptions', async () => {
-    const countTokensStub = stub(countTokens, 'countTokens').rejects(
-      'countTokens failed'
-    );
+    // Stub countTokens._countTokensInternal to avoid Vitest error:
+    // "TypeError: ES Modules cannot be stubbed"
+    const countTokensStub = stub(
+      countTokens._countTokensInternal,
+      'countTokens'
+    ).rejects('countTokens failed');
     const requestOptions = {
       timeout: 1000
     };
@@ -714,9 +743,12 @@ describe('GenerativeModel', () => {
     );
   });
   it('countTokens singleRequestOptions is merged with requestOptions', async () => {
-    const countTokensStub = stub(countTokens, 'countTokens').rejects(
-      'countTokens failed'
-    );
+    // Stub countTokens._countTokensInternal to avoid Vitest error:
+    // "TypeError: ES Modules cannot be stubbed"
+    const countTokensStub = stub(
+      countTokens._countTokensInternal,
+      'countTokens'
+    ).rejects('countTokens failed');
     const abortController = new AbortController();
     const requestOptions = {
       timeout: 1000
@@ -818,14 +850,18 @@ describe('GenerativeModel hybrid dispatch logic', () => {
 
   function stubMakeRequest(stream?: boolean): void {
     if (stream) {
-      makeRequestStub = stub(request, 'makeRequest').resolves(
+      // Stub request._requestInternal to avoid Vitest error:
+      // "TypeError: ES Modules cannot be stubbed"
+      makeRequestStub = stub(request._requestInternal, 'makeRequest').resolves(
         getMockResponseStreaming(
           'vertexAI',
           'streaming-success-basic-reply-short.txt'
         ) as Response
       );
     } else {
-      makeRequestStub = stub(request, 'makeRequest').resolves(
+      // Stub request._requestInternal to avoid Vitest error:
+      // "TypeError: ES Modules cannot be stubbed"
+      makeRequestStub = stub(request._requestInternal, 'makeRequest').resolves(
         getMockResponse(
           'vertexAI',
           'unary-success-basic-reply-short.json'

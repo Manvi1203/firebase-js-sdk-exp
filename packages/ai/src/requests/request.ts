@@ -184,7 +184,7 @@ export async function getHeaders(url: RequestURL): Promise<Headers> {
   return headers;
 }
 
-export async function makeRequest(
+async function defaultMakeRequest(
   requestUrlParams: TemplateRequestURLParams | ModelRequestURLParams,
   body: string
 ): Promise<Response> {
@@ -309,4 +309,19 @@ export async function makeRequest(
     clearTimeout(fetchTimeoutId);
   }
   return response;
+}
+
+/**
+ * Internal handler object to allow stubbing in tests under native ESM.
+ * @internal
+ */
+export const _requestInternal = {
+  makeRequest: defaultMakeRequest
+};
+
+export async function makeRequest(
+  requestUrlParams: TemplateRequestURLParams | ModelRequestURLParams,
+  body: string
+): Promise<Response> {
+  return _requestInternal.makeRequest(requestUrlParams, body);
 }
