@@ -24,12 +24,9 @@ import { _FirebaseService, FirebaseApp } from '@firebase/app-compat';
 import {
   AppCheck as AppCheckServiceExp,
   CustomProvider,
-  initializeAppCheck,
   ReCaptchaV3Provider,
   ReCaptchaEnterpriseProvider,
-  setTokenAutoRefreshEnabled as setTokenAutoRefreshEnabledExp,
-  getToken as getTokenExp,
-  onTokenChanged as onTokenChangedExp
+  _apiInternal
 } from '@firebase/app-check';
 import { PartialObserver, Unsubscribe } from '@firebase/util';
 import { ERROR_FACTORY, AppCheckError } from './errors';
@@ -59,7 +56,7 @@ export class AppCheckService
     } else {
       provider = new CustomProvider({ getToken: siteKeyOrProvider.getToken });
     }
-    this._delegate = initializeAppCheck(this.app, {
+    this._delegate = _apiInternal.initializeAppCheck(this.app, {
       provider,
       isTokenAutoRefreshEnabled
     });
@@ -71,7 +68,7 @@ export class AppCheckService
         appName: this.app.name
       });
     }
-    setTokenAutoRefreshEnabledExp(this._delegate, isTokenAutoRefreshEnabled);
+    _apiInternal.setTokenAutoRefreshEnabled(this._delegate, isTokenAutoRefreshEnabled);
   }
 
   getToken(forceRefresh?: boolean): Promise<AppCheckTokenResult> {
@@ -80,7 +77,7 @@ export class AppCheckService
         appName: this.app.name
       });
     }
-    return getTokenExp(this._delegate, forceRefresh);
+    return _apiInternal.getToken(this._delegate, forceRefresh);
   }
 
   onTokenChanged(
@@ -95,7 +92,7 @@ export class AppCheckService
         appName: this.app.name
       });
     }
-    return onTokenChangedExp(
+    return _apiInternal.onTokenChanged(
       this._delegate,
       /**
        * Exp onTokenChanged() will handle both overloads but we need

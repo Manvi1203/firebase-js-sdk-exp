@@ -8,6 +8,15 @@ import { FirebaseApp } from '@firebase/app';
 import { PartialObserver } from '@firebase/util';
 import { Unsubscribe } from '@firebase/util';
 
+// @public (undocumented)
+export const _apiInternal: {
+    initializeAppCheck: typeof initializeAppCheck;
+    setTokenAutoRefreshEnabled: typeof setTokenAutoRefreshEnabled;
+    getToken: typeof getToken;
+    getLimitedUseToken: typeof getLimitedUseToken;
+    onTokenChanged: typeof onTokenChanged;
+};
+
 // @public
 export interface AppCheck {
     app: FirebaseApp;

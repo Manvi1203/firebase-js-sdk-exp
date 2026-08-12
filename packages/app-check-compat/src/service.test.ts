@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import '../test/setup';
 import { expect, use } from 'chai';
 import { AppCheckService } from './service';
 import firebase, { FirebaseApp } from '@firebase/app-compat';
@@ -37,8 +38,10 @@ function createTestService(app: FirebaseApp): AppCheckService {
 
 function createActivatedTestService(app: FirebaseApp): AppCheckService {
   const service = new AppCheckService(app);
+  // Stub _apiInternal to avoid Vitest error:
+  // "TypeError: ES Modules cannot be stubbed"
   const initializeAppCheckStub = stub(
-    appCheckExp,
+    appCheckExp._apiInternal,
     'initializeAppCheck'
   ).returns({} as AppCheck);
   service.activate('a-site-key');
@@ -67,7 +70,9 @@ describe('Firebase App Check > Service', () => {
     'activate("string") calls modular initializeAppCheck() with a ' +
       'ReCaptchaV3Provider',
     () => {
-      const initializeAppCheckStub = stub(appCheckExp, 'initializeAppCheck');
+      // Stub _apiInternal to avoid Vitest error:
+      // "TypeError: ES Modules cannot be stubbed"
+      const initializeAppCheckStub = stub(appCheckExp._apiInternal, 'initializeAppCheck');
       service = new AppCheckService(app);
       service.activate('my_site_key');
       expect(initializeAppCheckStub).to.be.calledWith(app, {
@@ -82,7 +87,7 @@ describe('Firebase App Check > Service', () => {
     'activate({getToken: () => token}) calls modular initializeAppCheck() with' +
       ' a CustomProvider',
     () => {
-      const initializeAppCheckStub = stub(appCheckExp, 'initializeAppCheck');
+      const initializeAppCheckStub = stub(appCheckExp._apiInternal, 'initializeAppCheck');
       service = new AppCheckService(app);
       const customGetTokenStub = stub();
       service.activate({
@@ -107,7 +112,7 @@ describe('Firebase App Check > Service', () => {
     'activate(new RecaptchaV3Provider(...)) calls modular initializeAppCheck() with' +
       ' a RecaptchaV3Provider',
     () => {
-      const initializeAppCheckStub = stub(appCheckExp, 'initializeAppCheck');
+      const initializeAppCheckStub = stub(appCheckExp._apiInternal, 'initializeAppCheck');
       service = new AppCheckService(app);
       service.activate(new ReCaptchaV3Provider('a-site-key'));
       expect(initializeAppCheckStub).to.be.calledWith(app, {
@@ -122,7 +127,7 @@ describe('Firebase App Check > Service', () => {
     'activate(new CustomProvider(...)) calls modular initializeAppCheck() with' +
       ' a CustomProvider',
     () => {
-      const initializeAppCheckStub = stub(appCheckExp, 'initializeAppCheck');
+      const initializeAppCheckStub = stub(appCheckExp._apiInternal, 'initializeAppCheck');
       service = new AppCheckService(app);
       const customGetTokenStub = stub();
       service.activate(new CustomProvider({ getToken: customGetTokenStub }));
@@ -136,7 +141,7 @@ describe('Firebase App Check > Service', () => {
 
   it('setTokenAutoRefreshEnabled() calls modular setTokenAutoRefreshEnabled()', () => {
     const setTokenAutoRefreshEnabledStub: SinonStub = stub(
-      appCheckExp,
+      appCheckExp._apiInternal,
       'setTokenAutoRefreshEnabled'
     );
     service = createActivatedTestService(app);
@@ -150,14 +155,14 @@ describe('Firebase App Check > Service', () => {
 
   it('getToken() calls modular getToken()', async () => {
     service = createActivatedTestService(app);
-    const getTokenStub = stub(appCheckExp, 'getToken');
+    const getTokenStub = stub(appCheckExp._apiInternal, 'getToken');
     await service.getToken(true);
     expect(getTokenStub).to.be.calledWith(service._delegate, true);
     getTokenStub.restore();
   });
 
   it('onTokenChanged() calls modular onTokenChanged() with observer', () => {
-    const onTokenChangedStub = stub(appCheckExp, 'onTokenChanged');
+    const onTokenChangedStub = stub(appCheckExp._apiInternal, 'onTokenChanged');
     service = createActivatedTestService(app);
     const observer: PartialObserver<AppCheckTokenResult> = {
       next: stub(),
@@ -169,7 +174,7 @@ describe('Firebase App Check > Service', () => {
   });
 
   it('onTokenChanged() calls modular onTokenChanged() with next/error fns', () => {
-    const onTokenChangedStub = stub(appCheckExp, 'onTokenChanged');
+    const onTokenChangedStub = stub(appCheckExp._apiInternal, 'onTokenChanged');
     service = createActivatedTestService(app);
     const nextFn = stub();
     const errorFn = stub();

@@ -323,3 +323,11 @@ export function onTokenChanged(
   );
   return () => _internalApiInternal.removeTokenListener(appCheckInstance.app, nextFn);
 }
+
+export const _apiInternal = {
+  initializeAppCheck,
+  setTokenAutoRefreshEnabled,
+  getToken,
+  getLimitedUseToken,
+  onTokenChanged
+};
