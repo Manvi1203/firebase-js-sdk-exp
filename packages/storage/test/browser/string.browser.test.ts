@@ -22,15 +22,17 @@ import { assertThrows } from '../unit/testshared';
 
 describe('String browser tests', () => {
   it('should reject if atob is undefined', () => {
-    const originalAToB = global.atob;
+    // Fix Vitest error: "ReferenceError: global is not defined"
+    const globalObj = typeof globalThis !== 'undefined' ? globalThis : (typeof window !== 'undefined' ? window : global);
+    const originalAToB = (globalObj as unknown as { atob: unknown }).atob;
     // @ts-ignore
-    global.atob = undefined;
+    (globalObj as unknown as { atob: unknown }).atob = undefined;
     const str = 'CpYlM1-XsGxTd1n6izHMU_yY3Bw=';
 
     const error = assertThrows(() => {
       dataFromString(StringFormat.BASE64URL, str);
     }, 'storage/unsupported-environment');
     expect(error.message).to.equal(missingPolyFill('base-64').message);
-    global.atob = originalAToB;
+    (globalObj as unknown as { atob: unknown }).atob = originalAToB;
   });
 });

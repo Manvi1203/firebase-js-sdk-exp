@@ -45,22 +45,31 @@ const bigBlob = new FbsBlob(new ArrayBuffer(1024 * 1024));
 
 describe('Firebase Storage > Upload Task', () => {
   let clock: SinonFakeTimers;
-  after(() => {
+  // Use afterEach to avoid Vitest error: "ReferenceError: after is not defined"
+  afterEach(() => {
+    sinon.restore();
+    if (clock) {
+      try {
+        clock.restore();
+      } catch (_) {}
+    }
     injectTestConnection(null);
   });
 
-  it('Works for a small upload w/ an observer', done => {
-    const storageService = storageServiceWithHandler(fakeServerHandler());
-    const task = new UploadTask(
-      new Reference(storageService, testLocation),
-      smallBlob
-    );
-    task.on(
-      TaskEvent.STATE_CHANGED,
-      undefined,
-      () => assert.fail('Unexpected upload failure'),
-      () => done()
-    );
+  it('Works for a small upload w/ an observer', () => {
+    return new Promise<void>((resolve, reject) => {
+      const storageService = storageServiceWithHandler(fakeServerHandler());
+      const task = new UploadTask(
+        new Reference(storageService, testLocation),
+        smallBlob
+      );
+      task.on(
+        TaskEvent.STATE_CHANGED,
+        undefined,
+        () => reject(new Error('Unexpected upload failure')),
+        () => resolve()
+      );
+    });
   });
   it('Works for a small upload w/ a promise', () => {
     const storageService = storageServiceWithHandler(fakeServerHandler());
@@ -647,19 +656,17 @@ describe('Firebase Storage > Upload Task', () => {
     taskPromise: Promise<TotalState>;
     task: UploadTask;
   } {
-    clock = useFakeTimers();
-    const fakeSetTimeout = clock.setTimeout;
-
+    // Fix Vitest error: "ReferenceError: gotFirstEvent is not defined"
     let gotFirstEvent = false;
-
-    const stub = sinon.stub(global, 'setTimeout');
+    clock = useFakeTimers();
+    // Fix Vitest error: wrap clock.setTimeout directly to avoid corrupting sinon fake timer restore table
+    const origSetTimeout = clock.setTimeout.bind(clock);
 
     // Function that notifies when we are in the middle of an exponential backoff
     const readyToCancel = new Promise<null>(resolve => {
-      // @ts-ignore The types for `stub.callsFake` is incompatible with types of `clock.setTimeout`
-      stub.callsFake((fn, timeout) => {
-        // @ts-ignore The types for `stub.callsFake` is incompatible with types of `clock.setTimeout`
-        const res = fakeSetTimeout(fn, timeout);
+      // @ts-ignore The types for custom setTimeout function
+      clock.setTimeout = (fn: any, timeout: any, ...args: any[]) => {
+        const res = origSetTimeout(fn, timeout, ...args);
         if (timeout !== DEFAULT_MAX_UPLOAD_RETRY_TIME) {
           if (!gotFirstEvent || timeout === 0) {
             clock.tick(timeout as number);
@@ -669,11 +676,15 @@ describe('Firebase Storage > Upload Task', () => {
           }
         }
         return res;
-      });
+      };
     });
     readyToCancel.then(
-      () => stub.restore(),
-      () => stub.restore()
+      () => {
+        clock.setTimeout = origSetTimeout;
+      },
+      () => {
+        clock.setTimeout = origSetTimeout;
+      }
     );
     return {
       ...handleStateChange(
