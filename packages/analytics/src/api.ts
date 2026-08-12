@@ -776,3 +776,14 @@ export function setConsent(consentSettings: ConsentSettings): void {
     _setConsentDefaultForInit(consentSettings);
   }
 }
+
+/**
+ * @internal
+ */
+export const _apiInternal = {
+  logEvent,
+  setCurrentScreen,
+  setUserId,
+  setUserProperties,
+  setAnalyticsCollectionEnabled
+};

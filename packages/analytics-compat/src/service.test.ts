@@ -36,18 +36,18 @@ describe('Firebase Analytics > Service', () => {
   let setUserPropertiesStub: SinonStub = stub();
   let setAnalyticsCollectionEnabledStub: SinonStub = stub();
 
-  before(() => {
-    logEventStub = stub(analyticsExp, 'logEvent');
-    setUserIdStub = stub(analyticsExp, 'setUserId');
-    setCurrentScreenStub = stub(analyticsExp, 'setCurrentScreen');
-    setUserPropertiesStub = stub(analyticsExp, 'setUserProperties');
+  beforeEach(() => {
+    // Stub analyticsExp._apiInternal to avoid Vitest error:
+    // "TypeError: ES Modules cannot be stubbed"
+    logEventStub = stub(analyticsExp._apiInternal, 'logEvent');
+    setUserIdStub = stub(analyticsExp._apiInternal, 'setUserId');
+    setCurrentScreenStub = stub(analyticsExp._apiInternal, 'setCurrentScreen');
+    setUserPropertiesStub = stub(analyticsExp._apiInternal, 'setUserProperties');
     setAnalyticsCollectionEnabledStub = stub(
-      analyticsExp,
+      analyticsExp._apiInternal,
       'setAnalyticsCollectionEnabled'
     );
-  });
 
-  beforeEach(() => {
     app = firebase.initializeApp({
       apiKey: '456_LETTERS_AND_1234NUMBERS',
       appId: '123lettersand:numbers',
@@ -58,11 +58,6 @@ describe('Firebase Analytics > Service', () => {
 
   afterEach(async () => {
     await app.delete();
-  });
-
-  after(() => {
-    logEventStub.restore();
-    setUserIdStub.restore();
   });
 
   it('logEvent() calls modular logEvent() with only event name', () => {
