@@ -53,9 +53,11 @@ describe('Performance Compat', () => {
   });
 
   it('calls modular trace api when trace is called on compat api', () => {
-    const modularTraceStub = stub(perfModularApi, 'trace').callsFake(() =>
-      getFakeModularPerformanceTrace()
-    );
+    // Stub _apiInternal to avoid Vitest error: "TypeError: ES Modules cannot be stubbed"
+    const modularTraceStub = stub(
+      perfModularApi._apiInternal,
+      'trace'
+    ).callsFake(() => getFakeModularPerformanceTrace());
     performanceCompat.trace('test');
 
     expect(modularTraceStub).to.have.been.calledWithExactly(
