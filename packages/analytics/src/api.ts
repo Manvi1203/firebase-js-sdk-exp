@@ -40,7 +40,8 @@ import { ANALYTICS_TYPE, GtagCommand } from './constants';
 import {
   AnalyticsService,
   initializationPromisesMap,
-  wrappedGtagFunction
+  wrappedGtagFunction,
+  _factoryInternal
 } from './factory';
 import { logger } from './logger';
 import {
@@ -256,8 +257,9 @@ export function setAnalyticsCollectionEnabled(
  */
 export function setDefaultEventParameters(customParams: CustomParams): void {
   // Check if reference to existing gtag function on window object exists
-  if (wrappedGtagFunction) {
-    wrappedGtagFunction(GtagCommand.SET, customParams);
+  const wrappedGtag = _factoryInternal.wrappedGtagFunction;
+  if (wrappedGtag) {
+    wrappedGtag(GtagCommand.SET, customParams);
   } else {
     _setDefaultEventParametersForInit(customParams);
   }
@@ -767,8 +769,9 @@ export type CustomEventName<T> = T extends EventNameString ? never : T;
  */
 export function setConsent(consentSettings: ConsentSettings): void {
   // Check if reference to existing gtag function on window object exists
-  if (wrappedGtagFunction) {
-    wrappedGtagFunction(GtagCommand.CONSENT, 'update', consentSettings);
+  const wrappedGtag = _factoryInternal.wrappedGtagFunction;
+  if (wrappedGtag) {
+    wrappedGtag(GtagCommand.CONSENT, 'update', consentSettings);
   } else {
     _setConsentDefaultForInit(consentSettings);
   }

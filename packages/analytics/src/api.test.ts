@@ -42,7 +42,9 @@ describe('FirebaseAnalytics API tests', () => {
   const wrappedGtag: SinonStub = stub();
 
   beforeEach(() => {
-    initStub = stub(init, '_initializeAnalytics').resolves(
+    // Stub init._initializeAnalyticsInternal to avoid Vitest error:
+    // "TypeError: ES Modules cannot be stubbed"
+    initStub = stub(init._initializeAnalyticsInternal, '_initializeAnalytics').resolves(
       'FAKE_MEASUREMENT_ID'
     );
   });
@@ -120,7 +122,9 @@ describe('FirebaseAnalytics API tests', () => {
       'github_user': 'dwyfrequency',
       'company': 'google'
     };
-    stub(factory, 'wrappedGtagFunction').get(() => wrappedGtag);
+    // Stub factory._factoryInternal to avoid Vitest error:
+    // "TypeError: ES Modules cannot be stubbed"
+    stub(factory._factoryInternal, 'wrappedGtagFunction').get(() => wrappedGtag);
     app = getFullApp(fakeAppParams);
     setDefaultEventParameters(eventParametersForInit);
     expect(wrappedGtag).to.have.been.calledWithExactly(
@@ -133,7 +137,9 @@ describe('FirebaseAnalytics API tests', () => {
       'analytics_storage': 'granted',
       'functionality_storage': 'denied'
     };
-    stub(factory, 'wrappedGtagFunction').get(() => undefined);
+    // Stub factory._factoryInternal to avoid Vitest error:
+    // "TypeError: ES Modules cannot be stubbed"
+    stub(factory._factoryInternal, 'wrappedGtagFunction').get(() => undefined);
     app = getFullApp(fakeAppParams);
     setConsent(consentParametersForInit);
     expect(defaultConsentSettingsForInit).to.deep.equal(
@@ -145,7 +151,9 @@ describe('FirebaseAnalytics API tests', () => {
       'analytics_storage': 'granted',
       'functionality_storage': 'denied'
     };
-    stub(factory, 'wrappedGtagFunction').get(() => wrappedGtag);
+    // Stub factory._factoryInternal to avoid Vitest error:
+    // "TypeError: ES Modules cannot be stubbed"
+    stub(factory._factoryInternal, 'wrappedGtagFunction').get(() => wrappedGtag);
     app = getFullApp(fakeAppParams);
     setConsent(consentParametersForInit);
     expect(wrappedGtag).to.have.been.calledWithExactly(

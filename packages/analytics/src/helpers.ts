@@ -70,10 +70,14 @@ export function createTrustedTypesPolicy(
   // properties
   let trustedTypesPolicy: Partial<TrustedTypePolicy> | undefined;
   if (window.trustedTypes) {
-    trustedTypesPolicy = window.trustedTypes.createPolicy(
-      policyName,
-      policyOptions
-    );
+    trustedTypesPolicy = (
+      window.trustedTypes as unknown as {
+        createPolicy: (
+          name: string,
+          options: Partial<TrustedTypePolicyOptions>
+        ) => Partial<TrustedTypePolicy>;
+      }
+    )['createPolicy'](policyName, policyOptions);
   }
   return trustedTypesPolicy;
 }
@@ -360,7 +364,11 @@ export function wrapOrCreateGtag(
   // Create a basic core gtag function
   let gtagCore: Gtag = function (..._args: unknown[]) {
     // Must push IArguments object, not an array.
-    (window[dataLayerName] as DataLayer).push(arguments);
+    // Guard against dataLayer deletion during test teardown to avoid Vitest error:
+    // "TypeError: Cannot read properties of undefined (reading 'push')"
+    if (window[dataLayerName]) {
+      (window[dataLayerName] as DataLayer).push(arguments);
+    }
   };
 
   // Replace it with existing one if found
