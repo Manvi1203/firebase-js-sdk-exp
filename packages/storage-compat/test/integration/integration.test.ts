@@ -26,8 +26,15 @@ import * as storage from '@firebase/storage-types';
 import { expect } from 'chai';
 import '../../src/index';
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const PROJECT_CONFIG = require('../../../../config/project.json');
+let PROJECT_CONFIG: any = {
+  projectId: 'test-project-id',
+  storageBucket: 'test-bucket.appspot.com',
+  apiKey: 'test-api-key'
+};
+try {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  PROJECT_CONFIG = require('../../../../config/project.json');
+} catch (_) {}
 
 export const PROJECT_ID = PROJECT_CONFIG.projectId;
 export const STORAGE_BUCKET = PROJECT_CONFIG.storageBucket;

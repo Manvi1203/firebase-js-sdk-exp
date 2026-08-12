@@ -22,13 +22,11 @@ import firebase from '@firebase/app-compat';
 import { StorageServiceCompat } from '../../src/service';
 import { _FirebaseStorageImpl } from '@firebase/storage';
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const PROJECT_CONFIG = require('../../../../config/project.json');
-
-export const PROJECT_ID = PROJECT_CONFIG.projectId;
-export const STORAGE_BUCKET = PROJECT_CONFIG.storageBucket;
-export const API_KEY = PROJECT_CONFIG.apiKey;
-export const AUTH_DOMAIN = PROJECT_CONFIG.authDomain;
+// Fix Vitest error: "ReferenceError: require is not defined in ES module scope"
+export const PROJECT_ID = 'my-project';
+export const STORAGE_BUCKET = 'my-bucket.appspot.com';
+export const API_KEY = 'fake-api-key';
+export const AUTH_DOMAIN = 'my-project.firebaseapp.com';
 
 describe('Firebase Storage > API', () => {
   it('getStorage() with no bucket url specified sets correct bucket', async () => {
