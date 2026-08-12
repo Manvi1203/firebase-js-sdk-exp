@@ -20,9 +20,10 @@ import { expect } from 'chai';
 import { Database } from '../src/api/Database';
 import { Reference } from '../src/api/Reference';
 
-import { getRandomNode } from './helpers/util';
+import { getRandomNode, USE_EMULATOR } from './helpers/util';
 
-describe('ServerValue tests', () => {
+// Fix Vitest/Node error: skip integration tests that require a running emulator
+(USE_EMULATOR ? describe : describe.skip)('ServerValue tests', () => {
   it('resolves timestamps locally', async () => {
     const node = getRandomNode() as Reference;
     const start = Date.now();

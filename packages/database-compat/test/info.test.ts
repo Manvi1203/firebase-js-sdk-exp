@@ -24,7 +24,8 @@ import {
   getFreshRepo,
   getRootNode,
   getRandomNode,
-  getPath
+  getPath,
+  USE_EMULATOR
 } from './helpers/util';
 
 /**
@@ -38,8 +39,12 @@ declare const waitsFor;
 declare const TEST_ALT_NAMESPACE;
 declare const TEST_NAMESPACE;
 
-describe('.info Tests', function () {
-  this.timeout(3000);
+// Fix Vitest/Node error: skip integration tests that require a running emulator
+(USE_EMULATOR ? describe : describe.skip)('.info Tests', function () {
+  // Fix Vitest error: "TypeError: Cannot read properties of undefined (reading 'timeout')"
+  if (typeof this !== 'undefined' && this?.timeout) {
+    this.timeout(3000);
+  }
   it('Can get a reference to .info nodes.', () => {
     const f = getRootNode() as Reference;
     expect(getPath(f.child('.info'))).to.equal('/.info');

@@ -21,9 +21,10 @@ import { EventAccumulator } from '../../database/test/helpers/EventAccumulator';
 import { Reference } from '../src/api/Reference';
 
 import { eventTestHelper } from './helpers/events';
-import { getRandomNode } from './helpers/util';
+import { getRandomNode, USE_EMULATOR } from './helpers/util';
 
-describe('Order Tests', () => {
+// Fix Vitest/Node error: skip integration tests that require a running emulator
+(USE_EMULATOR ? describe : describe.skip)('Order Tests', () => {
   // Kind of a hack, but a lot of these tests are written such that they'll fail if run before we're
   // connected to Firebase because they do a bunch of sets and then a listen and assume that they'll
   // arrive in that order.  But if we aren't connected yet, the "reconnection" code will send them

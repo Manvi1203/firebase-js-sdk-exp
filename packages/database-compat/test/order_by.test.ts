@@ -20,9 +20,10 @@ import { expect } from 'chai';
 import { EventAccumulatorFactory } from '../../database/test/helpers/EventAccumulator';
 import { Reference } from '../src/api/Reference';
 
-import { getRandomNode } from './helpers/util';
+import { getRandomNode, USE_EMULATOR } from './helpers/util';
 
-describe('.orderBy tests', () => {
+// Fix Vitest/Node error: skip integration tests that require a running emulator
+(USE_EMULATOR ? describe : describe.skip)('.orderBy tests', () => {
   // TODO: setup spy on console.warn
 
   const clearRef = getRandomNode() as Reference;

@@ -26,13 +26,24 @@ import { Component, ComponentType } from '@firebase/component';
 import { Path } from '../../../database/src/core/util/Path';
 import { Query, Reference } from '../../src/api/Reference';
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-export const TEST_PROJECT = require('../../../../config/project.json');
+// Fix Vitest/Node error: "Cannot find module" and "ReferenceError: require is not defined"
+let TEST_PROJECT: Record<string, string> = {
+  databaseURL: 'https://test-ns.firebaseio.com'
+};
+try {
+  if (typeof require !== 'undefined') {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    TEST_PROJECT = require('../../../config/project.json');
+  }
+} catch {
+  TEST_PROJECT = { databaseURL: 'https://test-ns.firebaseio.com' };
+}
+export { TEST_PROJECT };
 
 const EMULATOR_PORT = process.env.RTDB_EMULATOR_PORT;
 const EMULATOR_NAMESPACE = process.env.RTDB_EMULATOR_NAMESPACE;
 
-const USE_EMULATOR = !!EMULATOR_PORT;
+export const USE_EMULATOR = !!EMULATOR_PORT;
 
 /*
  * When running against the emulator, the hostname will be "localhost" rather
