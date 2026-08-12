@@ -16,7 +16,7 @@
  */
 
 import { RemoteConfig } from './public_types';
-import { activate, fetchConfig } from './api';
+import { _apiInternal } from './api';
 import {
   getModularInstance,
   isIndexedDBAvailable,
@@ -40,8 +40,8 @@ export async function fetchAndActivate(
   remoteConfig: RemoteConfig
 ): Promise<boolean> {
   remoteConfig = getModularInstance(remoteConfig);
-  await fetchConfig(remoteConfig);
-  return activate(remoteConfig);
+  await _apiInternal.fetchConfig(remoteConfig);
+  return _apiInternal.activate(remoteConfig);
 }
 
 /**
@@ -66,3 +66,11 @@ export async function isSupported(): Promise<boolean> {
     return false;
   }
 }
+
+/**
+ * @internal
+ */
+export const _api2Internal = {
+  fetchAndActivate,
+  isSupported
+};

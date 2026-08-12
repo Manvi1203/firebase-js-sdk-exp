@@ -529,10 +529,14 @@ describe('RemoteConfig', () => {
 
   describe('fetchAndActivate', () => {
     let rcActivateStub: sinon.SinonStub<[RemoteConfigType], Promise<boolean>>;
+    let rcFetchConfigStub: sinon.SinonStub<[RemoteConfigType], Promise<void>>;
 
     beforeEach(() => {
-      sinon.stub(api, 'fetchConfig').returns(Promise.resolve());
-      rcActivateStub = sinon.stub(api, 'activate');
+      // Stub _apiInternal to avoid Vitest error: "TypeError: ES Modules cannot be stubbed"
+      rcFetchConfigStub = sinon
+        .stub(api._apiInternal, 'fetchConfig')
+        .returns(Promise.resolve());
+      rcActivateStub = sinon.stub(api._apiInternal, 'activate');
     });
 
     afterEach(() => restore());
@@ -543,8 +547,8 @@ describe('RemoteConfig', () => {
       const response = await fetchAndActivate(rc);
 
       expect(response).to.be.true;
-      expect(api.fetchConfig).to.have.been.calledWith(rc);
-      expect(api.activate).to.have.been.calledWith(rc);
+      expect(rcFetchConfigStub).to.have.been.calledWith(rc);
+      expect(rcActivateStub).to.have.been.calledWith(rc);
     });
 
     it('calls fetch and activate and returns activation boolean if false', async () => {
@@ -553,8 +557,8 @@ describe('RemoteConfig', () => {
       const response = await fetchAndActivate(rc);
 
       expect(response).to.be.false;
-      expect(api.fetchConfig).to.have.been.calledWith(rc);
-      expect(api.activate).to.have.been.calledWith(rc);
+      expect(rcFetchConfigStub).to.have.been.calledWith(rc);
+      expect(rcActivateStub).to.have.been.calledWith(rc);
     });
   });
 
