@@ -45,8 +45,11 @@ import {
 import { FUNCTIONS_TYPE } from './constants';
 import { FunctionsError } from './error';
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-export const TEST_PROJECT = require('../../../config/project.json');
+// Define default TEST_PROJECT object to avoid Vitest error:
+// "ReferenceError: require is not defined"
+export const TEST_PROJECT = {
+  projectId: 'functions-integration-test'
+};
 
 // Chai doesn't handle Error comparisons in a useful way.
 // https://github.com/chaijs/chai/issues/608
@@ -81,7 +84,8 @@ describe('Firebase Functions > Call', () => {
   let app: FirebaseApp;
   const region = 'us-central1';
 
-  before(() => {
+  // Use beforeEach to avoid Vitest error: "ReferenceError: before is not defined"
+  beforeEach(() => {
     const useEmulator = !!process.env.FIREBASE_FUNCTIONS_EMULATOR_ORIGIN;
     const projectId = useEmulator
       ? 'functions-integration-test'
@@ -694,6 +698,8 @@ describe('Firebase Functions > Stream', () => {
     controller.abort();
 
     const streamResult = await streamPromise;
+    // Catch early rejection to avoid Vitest error: "Unhandled Rejection: FirebaseError: Request was cancelled."
+    void streamResult.data.catch(() => {});
 
     // Verify fetch was called with abort signal
     expect(mockFetch.calledOnce).to.be.true;
@@ -749,6 +755,8 @@ describe('Firebase Functions > Stream', () => {
       'streamTest'
     );
     const streamResult = await func.stream({}, { signal: controller.signal });
+    // Catch early rejection to avoid Vitest error: "Unhandled Rejection: FirebaseError: Request was cancelled."
+    void streamResult.data.catch(() => {});
 
     const messages: string[] = [];
     try {
