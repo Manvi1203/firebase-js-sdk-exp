@@ -67,9 +67,11 @@ describe('api', () => {
 
   beforeEach(() => {
     app = getFullApp();
-    storageReadStub = stub(storage, 'readTokenFromStorage').resolves(undefined);
-    storageWriteStub = stub(storage, 'writeTokenToStorage');
-    stub(util, 'getRecaptcha').returns(getFakeGreCAPTCHA());
+    // Stub _storageInternal and _utilInternal to avoid Vitest error:
+    // "TypeError: ES Modules cannot be stubbed"
+    storageReadStub = stub(storage._storageInternal, 'readTokenFromStorage').resolves(undefined);
+    storageWriteStub = stub(storage._storageInternal, 'writeTokenToStorage');
+    stub(util._utilInternal, 'getRecaptcha').returns(getFakeGreCAPTCHA());
   });
 
   afterEach(async () => {
@@ -167,8 +169,8 @@ describe('api', () => {
         token = tokenToWrite;
         return Promise.resolve();
       };
-      stub(indexeddb, 'writeDebugTokenToIndexedDB').callsFake(fakeWrite);
-      stub(indexeddb, 'readDebugTokenFromIndexedDB').resolves(token);
+      stub(indexeddb._indexedDbInternal, 'writeDebugTokenToIndexedDB').callsFake(fakeWrite);
+      stub(indexeddb._indexedDbInternal, 'readDebugTokenFromIndexedDB').resolves(token);
       const consoleStub = stub(console, 'log');
       self.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
       initializeAppCheck(app, {
@@ -184,7 +186,7 @@ describe('api', () => {
     it('does not call initializeDebugMode on second call', async () => {
       self.FIREBASE_APPCHECK_DEBUG_TOKEN = 'abcdefg';
       const consoleStub = stub(console, 'log');
-      const initializeDebugModeSpy = spy(debug, 'initializeDebugMode');
+      const initializeDebugModeSpy = spy(debug._debugInternal, 'initializeDebugMode');
       // First call, should call initializeDebugMode()
       initializeAppCheck(app, {
         provider: new ReCaptchaV3Provider(FAKE_SITE_KEY)
@@ -206,7 +208,7 @@ describe('api', () => {
     });
 
     it('initialize reCAPTCHA when a ReCaptchaV3Provider is provided', () => {
-      const initReCAPTCHAStub = stub(reCAPTCHA, 'initializeV3').returns(
+      const initReCAPTCHAStub = stub(reCAPTCHA._recaptchaInternal, 'initializeV3').returns(
         Promise.resolve({} as any)
       );
       initializeAppCheck(app, {
@@ -219,7 +221,7 @@ describe('api', () => {
     });
 
     it('initialize reCAPTCHA when a ReCaptchaEnterpriseProvider is provided', () => {
-      const initReCAPTCHAStub = stub(reCAPTCHA, 'initializeEnterprise').returns(
+      const initReCAPTCHAStub = stub(reCAPTCHA._recaptchaInternal, 'initializeEnterprise').returns(
         Promise.resolve({} as any)
       );
       initializeAppCheck(app, {
@@ -338,7 +340,7 @@ describe('api', () => {
     it('getToken() calls the internal getToken() function', async () => {
       const app = getFakeApp({ automaticDataCollectionEnabled: true });
       const appCheck = getFakeAppCheck(app);
-      const internalGetToken = stub(internalApi, 'getToken').resolves({
+      const internalGetToken = stub(internalApi._internalApiInternal, 'getToken').resolves({
         token: 'a-token-string'
       });
       await getToken(appCheck, true);
@@ -349,7 +351,7 @@ describe('api', () => {
       const appCheck = getFakeAppCheck(app);
       // If getToken() errors, it returns a dummy token with an error field
       // instead of throwing.
-      stub(internalApi, 'getToken').resolves({
+      stub(internalApi._internalApiInternal, 'getToken').resolves({
         token: 'a-dummy-token',
         error: Error('there was an error')
       });
@@ -363,7 +365,7 @@ describe('api', () => {
       const app = getFakeApp({ automaticDataCollectionEnabled: true });
       const appCheck = getFakeAppCheck(app);
       const internalgetLimitedUseToken = stub(
-        internalApi,
+        internalApi._internalApiInternal,
         'getLimitedUseToken'
       ).resolves({
         token: 'a-token-string'
@@ -391,8 +393,8 @@ describe('api', () => {
         expireTimeMillis: 123,
         issuedAtTimeMillis: 0
       };
-      stub(reCAPTCHA, 'getToken').returns(Promise.resolve(fakeRecaptchaToken));
-      stub(client, 'exchangeToken').returns(
+      stub(reCAPTCHA._recaptchaInternal, 'getToken').returns(Promise.resolve(fakeRecaptchaToken));
+      stub(client._clientInternal, 'exchangeToken').returns(
         Promise.resolve(fakeRecaptchaAppCheckToken)
       );
 
@@ -407,7 +409,7 @@ describe('api', () => {
 
       expect(getStateReference(app).tokenObservers.length).to.equal(3);
 
-      await internalApi.getToken(appCheck as AppCheckService);
+      await internalApi._internalApiInternal.getToken(appCheck as AppCheckService);
 
       expect(listener1).to.be.called;
       expect(listener2).to.be.calledWith({
@@ -437,8 +439,8 @@ describe('api', () => {
         expireTimeMillis: 123,
         issuedAtTimeMillis: 0
       };
-      stub(reCAPTCHA, 'getToken').returns(Promise.resolve(fakeRecaptchaToken));
-      stub(client, 'exchangeToken').returns(
+      stub(reCAPTCHA._recaptchaInternal, 'getToken').returns(Promise.resolve(fakeRecaptchaToken));
+      stub(client._clientInternal, 'exchangeToken').returns(
         Promise.resolve(fakeRecaptchaAppCheckToken)
       );
       storageWriteStub.returns(Promise.resolve(undefined));
@@ -464,7 +466,7 @@ describe('api', () => {
 
       expect(getStateReference(app).tokenObservers.length).to.equal(3);
 
-      await internalApi.getToken(appCheck as AppCheckService);
+      await internalApi._internalApiInternal.getToken(appCheck as AppCheckService);
 
       expect(listener1).to.be.called;
       expect(listener2).to.be.calledWith({
@@ -490,8 +492,8 @@ describe('api', () => {
       expect(getStateReference(app).tokenObservers.length).to.equal(0);
 
       const fakeRecaptchaToken = 'fake-recaptcha-token';
-      stub(reCAPTCHA, 'getToken').returns(Promise.resolve(fakeRecaptchaToken));
-      stub(client, 'exchangeToken').rejects('exchange error');
+      stub(reCAPTCHA._recaptchaInternal, 'getToken').returns(Promise.resolve(fakeRecaptchaToken));
+      stub(client._clientInternal, 'exchangeToken').rejects('exchange error');
       storageWriteStub.returns(Promise.resolve(undefined));
 
       const listener1 = spy();
@@ -500,7 +502,7 @@ describe('api', () => {
 
       const unsubscribe1 = onTokenChanged(appCheck, listener1, errorFn1);
 
-      await internalApi.getToken(appCheck as AppCheckService);
+      await internalApi._internalApiInternal.getToken(appCheck as AppCheckService);
 
       expect(getStateReference(app).tokenObservers.length).to.equal(1);
 

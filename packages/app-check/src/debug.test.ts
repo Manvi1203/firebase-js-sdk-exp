@@ -42,7 +42,9 @@ describe('debug mode', () => {
   });
 
   it('generates a debug token if self.FIREBASE_APPCHECK_DEBUG_TOKEN is set to true', async () => {
-    stub(storage, 'readOrCreateDebugTokenFromStorage').returns(
+    // Stub _storageInternal to avoid Vitest error:
+    // "TypeError: ES Modules cannot be stubbed"
+    stub(storage._storageInternal, 'readOrCreateDebugTokenFromStorage').returns(
       Promise.resolve('my-debug-token')
     );
 
@@ -57,8 +59,10 @@ describe('debug mode', () => {
   });
 
   it('saves the generated debug token to indexedDB', async () => {
+    // Stub _indexedDbInternal to avoid Vitest error:
+    // "TypeError: ES Modules cannot be stubbed"
     const saveToIndexedDBStub = stub(
-      indexeddb,
+      indexeddb._indexedDbInternal,
       'writeDebugTokenToIndexedDB'
     ).callsFake(() => Promise.resolve());
 
@@ -70,7 +74,9 @@ describe('debug mode', () => {
   });
 
   it('uses the cached debug token when it exists if self.FIREBASE_APPCHECK_DEBUG_TOKEN is set to true', async () => {
-    stub(indexeddb, 'readDebugTokenFromIndexedDB').returns(
+    // Stub _indexedDbInternal to avoid Vitest error:
+    // "TypeError: ES Modules cannot be stubbed"
+    stub(indexeddb._indexedDbInternal, 'readDebugTokenFromIndexedDB').returns(
       Promise.resolve('cached-debug-token')
     );
 

@@ -16,10 +16,9 @@
  */
 
 import '../test/setup';
-import { writeTokenToStorage, readTokenFromStorage } from './storage';
-import * as indexeddbOperations from './indexeddb';
+import { writeTokenToStorage, readTokenFromStorage, _storageInternal } from './storage';
+import { _indexedDbInternal } from './indexeddb';
 import { getFakeApp } from '../test/util';
-import * as util from '@firebase/util';
 import { logger } from './logger';
 import { expect } from 'chai';
 import { stub } from 'sinon';
@@ -38,14 +37,18 @@ describe('Storage', () => {
   });
 
   it('no op for writeTokenToStorage() if indexeddb is not available', async () => {
-    stub(util, 'isIndexedDBAvailable').returns(false);
+    // Stub _storageInternal to avoid Vitest error:
+    // "TypeError: ES Modules cannot be stubbed"
+    stub(_storageInternal, 'isIndexedDBAvailable').returns(false);
     await writeTokenToStorage(app, fakeToken);
     expect(await readTokenFromStorage(app)).to.equal(undefined);
   });
 
   it('writeTokenToStorage() still resolves if writing to indexeddb failed', async () => {
     const warnStub = stub(logger, 'warn');
-    stub(indexeddbOperations, 'writeTokenToIndexedDB').returns(
+    // Stub _indexedDbInternal to avoid Vitest error:
+    // "TypeError: ES Modules cannot be stubbed"
+    stub(_indexedDbInternal, 'writeTokenToIndexedDB').returns(
       Promise.reject('something went wrong!')
     );
     await expect(writeTokenToStorage(app, fakeToken)).to.eventually.fulfilled;
@@ -54,13 +57,17 @@ describe('Storage', () => {
   });
 
   it('resolves with undefined if indexeddb is not available', async () => {
-    stub(util, 'isIndexedDBAvailable').returns(false);
+    // Stub _storageInternal to avoid Vitest error:
+    // "TypeError: ES Modules cannot be stubbed"
+    stub(_storageInternal, 'isIndexedDBAvailable').returns(false);
     expect(await readTokenFromStorage(app)).to.equal(undefined);
   });
 
   it('resolves with undefined if reading indexeddb failed', async () => {
     const warnStub = stub(logger, 'warn');
-    stub(indexeddbOperations, 'readTokenFromIndexedDB').returns(
+    // Stub _indexedDbInternal to avoid Vitest error:
+    // "TypeError: ES Modules cannot be stubbed"
+    stub(_indexedDbInternal, 'readTokenFromIndexedDB').returns(
       Promise.reject('something went wrong!')
     );
     expect(await readTokenFromStorage(app)).to.equal(undefined);

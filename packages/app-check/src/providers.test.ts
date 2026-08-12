@@ -40,8 +40,10 @@ describe('ReCaptchaV3Provider', () => {
     clock = useFakeTimers();
     app = getFullApp();
     setInitialState(app, DEFAULT_STATE);
-    stub(util, 'getRecaptcha').returns(getFakeGreCAPTCHA());
-    stub(reCAPTCHA, 'getToken').returns(
+    // Stub _utilInternal and _recaptchaInternal to avoid Vitest error:
+    // "TypeError: ES Modules cannot be stubbed"
+    stub(util._utilInternal, 'getRecaptcha').returns(getFakeGreCAPTCHA());
+    stub(reCAPTCHA._recaptchaInternal, 'getToken').returns(
       Promise.resolve('fake-recaptcha-token')
     );
   });
@@ -53,7 +55,7 @@ describe('ReCaptchaV3Provider', () => {
   });
   it('getToken() gets a token from the exchange endpoint', async () => {
     const provider = new ReCaptchaV3Provider('fake-site-key');
-    const exchangeStub = stub(client, 'exchangeToken').resolves({
+    const exchangeStub = stub(client._clientInternal, 'exchangeToken').resolves({
       token: 'fake-exchange-token',
       issuedAtTimeMillis: 0,
       expireTimeMillis: 10
@@ -70,7 +72,7 @@ describe('ReCaptchaV3Provider', () => {
   });
   it('getToken(true) gets a limited use token from the exchange endpoint', async () => {
     const provider = new ReCaptchaV3Provider('fake-site-key');
-    const exchangeStub = stub(client, 'exchangeToken').resolves({
+    const exchangeStub = stub(client._clientInternal, 'exchangeToken').resolves({
       token: 'fake-exchange-token',
       issuedAtTimeMillis: 0,
       expireTimeMillis: 10
@@ -87,7 +89,7 @@ describe('ReCaptchaV3Provider', () => {
   });
   it('getToken() throttles 1d on 403', async () => {
     const provider = new ReCaptchaV3Provider('fake-site-key');
-    stub(client, 'exchangeToken').rejects(
+    stub(client._clientInternal, 'exchangeToken').rejects(
       new FirebaseError(AppCheckError.FETCH_STATUS_ERROR, 'some-message', {
         httpStatus: 403
       })
@@ -101,7 +103,7 @@ describe('ReCaptchaV3Provider', () => {
   });
   it('getToken() throttles exponentially on 503', async () => {
     const provider = new ReCaptchaV3Provider('fake-site-key');
-    let exchangeTokenStub = stub(client, 'exchangeToken').rejects(
+    let exchangeTokenStub = stub(client._clientInternal, 'exchangeToken').rejects(
       new FirebaseError(AppCheckError.FETCH_STATUS_ERROR, 'some-message', {
         httpStatus: 503
       })
@@ -132,7 +134,7 @@ describe('ReCaptchaV3Provider', () => {
     // (and succeed)
     clock.tick(6000);
     exchangeTokenStub.restore();
-    exchangeTokenStub = stub(client, 'exchangeToken').resolves({
+    exchangeTokenStub = stub(client._clientInternal, 'exchangeToken').resolves({
       token: 'fake-exchange-token',
       issuedAtTimeMillis: 0,
       expireTimeMillis: 10
@@ -149,8 +151,10 @@ describe('ReCaptchaEnterpriseProvider', () => {
     clock = useFakeTimers();
     app = getFullApp();
     setInitialState(app, DEFAULT_STATE);
-    stub(util, 'getRecaptcha').returns(getFakeGreCAPTCHA());
-    stub(reCAPTCHA, 'getToken').returns(
+    // Stub _utilInternal and _recaptchaInternal to avoid Vitest error:
+    // "TypeError: ES Modules cannot be stubbed"
+    stub(util._utilInternal, 'getRecaptcha').returns(getFakeGreCAPTCHA());
+    stub(reCAPTCHA._recaptchaInternal, 'getToken').returns(
       Promise.resolve('fake-recaptcha-token')
     );
   });
@@ -162,7 +166,7 @@ describe('ReCaptchaEnterpriseProvider', () => {
   });
   it('getToken() gets a token from the exchange endpoint', async () => {
     const provider = new ReCaptchaEnterpriseProvider('fake-site-key');
-    const exchangeStub = stub(client, 'exchangeToken').resolves({
+    const exchangeStub = stub(client._clientInternal, 'exchangeToken').resolves({
       token: 'fake-exchange-token',
       issuedAtTimeMillis: 0,
       expireTimeMillis: 10
@@ -179,7 +183,7 @@ describe('ReCaptchaEnterpriseProvider', () => {
   });
   it('getToken(true) gets a token from the exchange endpoint', async () => {
     const provider = new ReCaptchaEnterpriseProvider('fake-site-key');
-    const exchangeStub = stub(client, 'exchangeToken').resolves({
+    const exchangeStub = stub(client._clientInternal, 'exchangeToken').resolves({
       token: 'fake-exchange-token',
       issuedAtTimeMillis: 0,
       expireTimeMillis: 10
@@ -196,7 +200,7 @@ describe('ReCaptchaEnterpriseProvider', () => {
   });
   it('getToken() throttles 1d on 403', async () => {
     const provider = new ReCaptchaEnterpriseProvider('fake-site-key');
-    stub(client, 'exchangeToken').rejects(
+    stub(client._clientInternal, 'exchangeToken').rejects(
       new FirebaseError(AppCheckError.FETCH_STATUS_ERROR, 'some-message', {
         httpStatus: 403
       })
@@ -210,7 +214,7 @@ describe('ReCaptchaEnterpriseProvider', () => {
   });
   it('getToken() throttles exponentially on 503', async () => {
     const provider = new ReCaptchaEnterpriseProvider('fake-site-key');
-    let exchangeTokenStub = stub(client, 'exchangeToken').rejects(
+    let exchangeTokenStub = stub(client._clientInternal, 'exchangeToken').rejects(
       new FirebaseError(AppCheckError.FETCH_STATUS_ERROR, 'some-message', {
         httpStatus: 503
       })
@@ -241,7 +245,7 @@ describe('ReCaptchaEnterpriseProvider', () => {
     // (and succeed)
     clock.tick(6000);
     exchangeTokenStub.restore();
-    exchangeTokenStub = stub(client, 'exchangeToken').resolves({
+    exchangeTokenStub = stub(client._clientInternal, 'exchangeToken').resolves({
       token: 'fake-exchange-token',
       issuedAtTimeMillis: 0,
       expireTimeMillis: 10

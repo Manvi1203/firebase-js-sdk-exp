@@ -16,7 +16,7 @@
  */
 
 import { getDebugState } from './state';
-import { readOrCreateDebugTokenFromStorage } from './storage';
+import { _storageInternal } from './storage';
 import { Deferred, getGlobal } from '@firebase/util';
 
 declare global {
@@ -65,6 +65,12 @@ export function initializeDebugMode(): void {
   if (typeof globals.FIREBASE_APPCHECK_DEBUG_TOKEN === 'string') {
     deferredToken.resolve(globals.FIREBASE_APPCHECK_DEBUG_TOKEN);
   } else {
-    deferredToken.resolve(readOrCreateDebugTokenFromStorage());
+    deferredToken.resolve(_storageInternal.readOrCreateDebugTokenFromStorage());
   }
 }
+
+export const _debugInternal = {
+  isDebugMode,
+  getDebugToken,
+  initializeDebugMode
+};

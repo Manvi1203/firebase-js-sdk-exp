@@ -77,14 +77,18 @@ describe('internal api', () => {
   ): SinonStub {
     getStateReference(app).reCAPTCHAState!.succeeded = isSuccess;
 
-    return stub(reCAPTCHA, 'getToken').returns(Promise.resolve(token));
+    // Stub reCAPTCHA._recaptchaInternal to avoid Vitest error:
+    // "TypeError: ES Modules cannot be stubbed"
+    return stub(reCAPTCHA._recaptchaInternal, 'getToken').returns(Promise.resolve(token));
   }
 
   beforeEach(() => {
     app = getFullApp();
-    storageReadStub = stub(storage, 'readTokenFromStorage').resolves(undefined);
-    storageWriteStub = stub(storage, 'writeTokenToStorage');
-    stub(util, 'getRecaptcha').returns(getFakeGreCAPTCHA());
+    // Stub _storageInternal and _utilInternal to avoid Vitest error:
+    // "TypeError: ES Modules cannot be stubbed"
+    storageReadStub = stub(storage._storageInternal, 'readTokenFromStorage').resolves(undefined);
+    storageWriteStub = stub(storage._storageInternal, 'writeTokenToStorage');
+    stub(util._utilInternal, 'getRecaptcha').returns(getFakeGreCAPTCHA());
   });
 
   afterEach(() => {
@@ -116,7 +120,7 @@ describe('internal api', () => {
 
       const reCAPTCHASpy = stubGetRecaptchaToken();
       const exchangeTokenStub: SinonStub = stub(
-        client,
+        client._clientInternal,
         'exchangeToken'
       ).returns(Promise.resolve(fakeRecaptchaAppCheckToken));
 
@@ -138,7 +142,7 @@ describe('internal api', () => {
       const reCAPTCHASpy = stubGetRecaptchaToken();
 
       const exchangeTokenStub: SinonStub = stub(
-        client,
+        client._clientInternal,
         'exchangeToken'
       ).returns(Promise.resolve(fakeRecaptchaAppCheckToken));
 
@@ -161,7 +165,7 @@ describe('internal api', () => {
       const reCAPTCHASpy = stubGetRecaptchaToken();
 
       const error = new Error('oops, something went wrong');
-      stub(client, 'exchangeToken').returns(Promise.reject(error));
+      stub(client._clientInternal, 'exchangeToken').rejects(error);
 
       const token = await getToken(appCheck as AppCheckService, false, true);
 
@@ -184,7 +188,7 @@ describe('internal api', () => {
       });
 
       const error = new Error('oops, something went wrong');
-      stub(client, 'exchangeToken').returns(Promise.reject(error));
+      stub(client._clientInternal, 'exchangeToken').rejects(error);
 
       const token = await getToken(appCheck as AppCheckService, false, true);
 
@@ -206,7 +210,7 @@ describe('internal api', () => {
       });
 
       const reCAPTCHASpy = stubGetRecaptchaToken('', false);
-      const exchangeTokenStub = stub(client, 'exchangeToken');
+      const exchangeTokenStub = stub(client._clientInternal, 'exchangeToken');
 
       const token = await getToken(appCheck as AppCheckService, false, true);
 
@@ -262,7 +266,7 @@ describe('internal api', () => {
       });
 
       stubGetRecaptchaToken();
-      stub(client, 'exchangeToken').returns(
+      stub(client._clientInternal, 'exchangeToken').returns(
         Promise.resolve(fakeRecaptchaAppCheckToken)
       );
 
@@ -295,7 +299,7 @@ describe('internal api', () => {
         isTokenAutoRefreshEnabled: true
       });
       stubGetRecaptchaToken();
-      stub(client, 'exchangeToken').rejects('exchange error');
+      stub(client._clientInternal, 'exchangeToken').rejects('exchange error');
       const listener1 = spy();
       const errorFn1 = spy();
 
@@ -318,7 +322,7 @@ describe('internal api', () => {
         isTokenAutoRefreshEnabled: true
       });
       stubGetRecaptchaToken();
-      stub(client, 'exchangeToken').returns(
+      stub(client._clientInternal, 'exchangeToken').returns(
         Promise.resolve(fakeRecaptchaAppCheckToken)
       );
       const listener1 = stub().throws(new Error());
@@ -353,7 +357,7 @@ describe('internal api', () => {
         provider: new ReCaptchaV3Provider(FAKE_SITE_KEY)
       });
 
-      const clientStub = stub(client, 'exchangeToken');
+      const clientStub = stub(client._clientInternal, 'exchangeToken');
 
       expect(getStateReference(app).token).to.equal(undefined);
       expect(await getToken(appCheck as AppCheckService)).to.deep.equal({
@@ -371,7 +375,7 @@ describe('internal api', () => {
       });
 
       stubGetRecaptchaToken();
-      stub(client, 'exchangeToken').returns(
+      stub(client._clientInternal, 'exchangeToken').returns(
         Promise.resolve(fakeRecaptchaAppCheckToken)
       );
       storageWriteStub.resetHistory();
@@ -393,7 +397,7 @@ describe('internal api', () => {
         token: fakeRecaptchaAppCheckToken
       });
 
-      const clientStub = stub(client, 'exchangeToken');
+      const clientStub = stub(client._clientInternal, 'exchangeToken');
       expect(await getToken(appCheck as AppCheckService)).to.deep.equal({
         token: fakeRecaptchaAppCheckToken.token
       });
@@ -412,7 +416,7 @@ describe('internal api', () => {
       });
 
       stubGetRecaptchaToken();
-      stub(client, 'exchangeToken').returns(
+      stub(client._clientInternal, 'exchangeToken').returns(
         Promise.resolve({
           token: 'new-recaptcha-app-check-token',
           expireTimeMillis: Date.now() + 60000,
@@ -437,7 +441,7 @@ describe('internal api', () => {
       });
 
       stubGetRecaptchaToken();
-      stub(client, 'exchangeToken').returns(
+      stub(client._clientInternal, 'exchangeToken').returns(
         Promise.resolve({
           token: 'new-recaptcha-app-check-token',
           expireTimeMillis: Date.now() + 60000,
@@ -479,7 +483,7 @@ describe('internal api', () => {
 
       stubGetRecaptchaToken();
       let count = 0;
-      stub(client, 'exchangeToken').callsFake(
+      stub(client._clientInternal, 'exchangeToken').callsFake(
         () =>
           new Promise(res =>
             setTimeout(
@@ -506,16 +510,17 @@ describe('internal api', () => {
       void getToken(appCheck as AppCheckService);
 
       // stored copied state with `token-new-0`
-      await clock.runAllAsync();
+      await clock.tickAsync(3000);
 
       // fetch token with copied state
       const newToken = getToken(appCheck as AppCheckService, true);
 
-      await clock.runAllAsync();
+      await clock.tickAsync(3000);
 
       expect(await newToken).to.deep.equal({
         token: 'recaptcha-app-check-token-new-1'
       });
+      clock.restore();
     });
 
     it('ignores in-memory token if it is invalid and continues to exchange request', async () => {
@@ -532,7 +537,7 @@ describe('internal api', () => {
       });
 
       stubGetRecaptchaToken();
-      stub(client, 'exchangeToken').returns(
+      stub(client._clientInternal, 'exchangeToken').returns(
         Promise.resolve({
           token: 'new-recaptcha-app-check-token',
           expireTimeMillis: Date.now() + 60000,
@@ -553,7 +558,7 @@ describe('internal api', () => {
         provider: new ReCaptchaV3Provider(FAKE_SITE_KEY)
       });
 
-      const clientStub = stub(client, 'exchangeToken');
+      const clientStub = stub(client._clientInternal, 'exchangeToken');
       expect(await getToken(appCheck as AppCheckService)).to.deep.equal({
         token: fakeCachedAppCheckToken.token
       });
@@ -579,7 +584,7 @@ describe('internal api', () => {
       };
 
       stubGetRecaptchaToken();
-      stub(client, 'exchangeToken').returns(Promise.resolve(freshToken));
+      stub(client._clientInternal, 'exchangeToken').returns(Promise.resolve(freshToken));
 
       expect(await getToken(appCheck as AppCheckService)).to.deep.equal({
         token: 'new-recaptcha-app-check-token'
@@ -603,7 +608,7 @@ describe('internal api', () => {
       });
 
       stubGetRecaptchaToken();
-      stub(client, 'exchangeToken').returns(Promise.reject(new Error('blah')));
+      stub(client._clientInternal, 'exchangeToken').returns(Promise.reject(new Error('blah')));
 
       const tokenResult = await getToken(appCheck as AppCheckService, true);
       expect(tokenResult.internalError?.message).to.equal('blah');
@@ -612,7 +617,7 @@ describe('internal api', () => {
 
     it('exchanges debug token if in debug mode and there is no cached token', async () => {
       const exchangeTokenStub: SinonStub = stub(
-        client,
+        client._clientInternal,
         'exchangeToken'
       ).returns(Promise.resolve(fakeRecaptchaAppCheckToken));
       const debugState = getDebugState();
@@ -632,7 +637,7 @@ describe('internal api', () => {
 
     it('exchanges debug token only once if debug mode with no cached token', async () => {
       const exchangeTokenStub: SinonStub = stub(
-        client,
+        client._clientInternal,
         'exchangeToken'
       ).returns(Promise.resolve(fakeRecaptchaAppCheckToken));
       const debugState = getDebugState();
@@ -662,7 +667,7 @@ describe('internal api', () => {
       });
       stubGetRecaptchaToken();
       const warnStub = stub(logger, 'warn');
-      stub(client, 'exchangeToken').returns(
+      stub(client._clientInternal, 'exchangeToken').returns(
         Promise.reject(
           ERROR_FACTORY.create(AppCheckError.FETCH_STATUS_ERROR, {
             httpStatus: 503
@@ -689,7 +694,7 @@ describe('internal api', () => {
       });
       stubGetRecaptchaToken();
       const warnStub = stub(logger, 'warn');
-      stub(client, 'exchangeToken').returns(
+      stub(client._clientInternal, 'exchangeToken').returns(
         Promise.reject(
           ERROR_FACTORY.create(AppCheckError.FETCH_STATUS_ERROR, {
             httpStatus: 403
@@ -746,7 +751,7 @@ describe('internal api', () => {
 
       const reCAPTCHASpy = stubGetRecaptchaToken();
       const exchangeTokenStub: SinonStub = stub(
-        client,
+        client._clientInternal,
         'exchangeToken'
       ).returns(Promise.resolve(fakeRecaptchaAppCheckToken));
 
@@ -770,7 +775,7 @@ describe('internal api', () => {
 
       const reCAPTCHASpy = stubGetRecaptchaToken();
       const exchangeTokenStub: SinonStub = stub(
-        client,
+        client._clientInternal,
         'exchangeToken'
       ).returns(Promise.resolve(fakeRecaptchaAppCheckToken));
 
@@ -788,7 +793,7 @@ describe('internal api', () => {
 
     it('exchanges debug token if in debug mode', async () => {
       const exchangeTokenStub: SinonStub = stub(
-        client,
+        client._clientInternal,
         'exchangeToken'
       ).returns(Promise.resolve(fakeRecaptchaAppCheckToken));
       const debugState = getDebugState();
@@ -878,7 +883,7 @@ describe('internal api', () => {
         ListenerType.INTERNAL,
         listener
       );
-      await clock.runAllAsync();
+      await clock.tickAsync(0);
       expect(listener).to.be.calledWith({
         token: 'fake-memory-app-check-token'
       });
@@ -928,7 +933,7 @@ describe('internal api', () => {
 
       const fakeListener: AppCheckTokenListener = stub();
 
-      const fakeExchange = stub(client, 'exchangeToken').returns(
+      const fakeExchange = stub(client._clientInternal, 'exchangeToken').returns(
         Promise.resolve({
           token: 'new-recaptcha-app-check-token',
           expireTimeMillis: 10 * 60 * 1000,
@@ -976,8 +981,8 @@ describe('internal api', () => {
 
       const fakeListener: AppCheckTokenListener = stub();
 
-      const fakeExchange = stub(client, 'exchangeToken').returns(
-        Promise.reject(new Error('fetch failed or something'))
+      const fakeExchange = stub(client._clientInternal, 'exchangeToken').rejects(
+        new Error('fetch failed or something')
       );
 
       addTokenListener(
@@ -1017,8 +1022,8 @@ describe('internal api', () => {
 
       const fakeListener: AppCheckTokenListener = stub();
 
-      const fakeExchange = stub(client, 'exchangeToken').returns(
-        Promise.reject(new Error('fetch failed or something'))
+      const fakeExchange = stub(client._clientInternal, 'exchangeToken').rejects(
+        new Error('fetch failed or something')
       );
 
       addTokenListener(
@@ -1058,8 +1063,8 @@ describe('internal api', () => {
       const errorHandler = stub();
       const fakeNetworkError = new Error('fetch failed or something');
 
-      const fakeExchange = stub(client, 'exchangeToken').returns(
-        Promise.reject(fakeNetworkError)
+      const fakeExchange = stub(client._clientInternal, 'exchangeToken').rejects(
+        fakeNetworkError
       );
 
       addTokenListener(
@@ -1100,8 +1105,8 @@ describe('internal api', () => {
       const errorHandler = stub();
       const fakeNetworkError = new Error('fetch failed or something');
 
-      const fakeExchange = stub(client, 'exchangeToken').returns(
-        Promise.reject(fakeNetworkError)
+      const fakeExchange = stub(client._clientInternal, 'exchangeToken').rejects(
+        fakeNetworkError
       );
 
       addTokenListener(

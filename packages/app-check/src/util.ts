@@ -29,6 +29,10 @@ export function getRecaptcha(
   return self.grecaptcha;
 }
 
+export const _utilInternal = {
+  getRecaptcha
+};
+
 export function ensureActivated(app: FirebaseApp): void {
   if (!getStateReference(app).activated) {
     throw ERROR_FACTORY.create(AppCheckError.USE_BEFORE_ACTIVATION, {

@@ -70,7 +70,9 @@ describe('recaptcha', () => {
     it('loads reCAPTCHA script if it was not loaded already', async () => {
       const fakeRecaptcha = getFakeGreCAPTCHA();
       let count = 0;
-      stub(utils, 'getRecaptcha').callsFake(() => {
+      // Stub utils._utilInternal to avoid Vitest error:
+      // "TypeError: ES Modules cannot be stubbed"
+      stub(utils._utilInternal, 'getRecaptcha').callsFake(() => {
         count++;
         if (count === 1) {
           return undefined;
@@ -117,7 +119,9 @@ describe('recaptcha', () => {
     it('loads reCAPTCHA script if it was not loaded already', async () => {
       const fakeRecaptcha = getFakeGreCAPTCHA();
       let count = 0;
-      stub(utils, 'getRecaptcha').callsFake(() => {
+      // Stub utils._utilInternal to avoid Vitest error:
+      // "TypeError: ES Modules cannot be stubbed"
+      stub(utils._utilInternal, 'getRecaptcha').callsFake(() => {
         count++;
         if (count === 1) {
           return undefined;

@@ -18,10 +18,7 @@
 import { FirebaseApp } from '@firebase/app';
 import { isIndexedDBAvailable } from '@firebase/util';
 import {
-  readDebugTokenFromIndexedDB,
-  readTokenFromIndexedDB,
-  writeDebugTokenToIndexedDB,
-  writeTokenToIndexedDB
+  _indexedDbInternal
 } from './indexeddb';
 import { logger } from './logger';
 import { AppCheckTokenInternal } from './types';
@@ -32,10 +29,10 @@ import { AppCheckTokenInternal } from './types';
 export async function readTokenFromStorage(
   app: FirebaseApp
 ): Promise<AppCheckTokenInternal | undefined> {
-  if (isIndexedDBAvailable()) {
+  if (_storageInternal.isIndexedDBAvailable()) {
     let token = undefined;
     try {
-      token = await readTokenFromIndexedDB(app);
+      token = await _indexedDbInternal.readTokenFromIndexedDB(app);
     } catch (e) {
       // swallow the error and return undefined
       logger.warn(`Failed to read token from IndexedDB. Error: ${e}`);
@@ -53,8 +50,8 @@ export function writeTokenToStorage(
   app: FirebaseApp,
   token?: AppCheckTokenInternal
 ): Promise<void> {
-  if (isIndexedDBAvailable()) {
-    return writeTokenToIndexedDB(app, token).catch(e => {
+  if (_storageInternal.isIndexedDBAvailable()) {
+    return _indexedDbInternal.writeTokenToIndexedDB(app, token).catch(e => {
       // swallow the error and resolve the promise
       logger.warn(`Failed to write token to IndexedDB. Error: ${e}`);
     });
@@ -70,7 +67,7 @@ export async function readOrCreateDebugTokenFromStorage(): Promise<string> {
    */
   let existingDebugToken: string | undefined = undefined;
   try {
-    existingDebugToken = await readDebugTokenFromIndexedDB();
+    existingDebugToken = await _indexedDbInternal.readDebugTokenFromIndexedDB();
   } catch (_e) {
     // failed to read from indexeddb. We assume there is no existing debug token, and generate a new one.
   }
@@ -84,7 +81,7 @@ export async function readOrCreateDebugTokenFromStorage(): Promise<string> {
     // It renders the debug token useless because you have to manually register(whitelist) the new token in the firebase console again and again.
     // If you see this error trying to use debug token, it probably means you are using a browser that doesn't support indexeddb.
     // You should switch to a different browser that supports indexeddb
-    writeDebugTokenToIndexedDB(newToken).catch(e =>
+    _indexedDbInternal.writeDebugTokenToIndexedDB(newToken).catch(e =>
       logger.warn(`Failed to persist debug token to IndexedDB. Error: ${e}`)
     );
     return newToken;
@@ -92,3 +89,10 @@ export async function readOrCreateDebugTokenFromStorage(): Promise<string> {
     return existingDebugToken;
   }
 }
+
+export const _storageInternal = {
+  isIndexedDBAvailable,
+  readTokenFromStorage,
+  writeTokenToStorage,
+  readOrCreateDebugTokenFromStorage
+};
