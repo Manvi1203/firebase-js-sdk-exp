@@ -30,25 +30,27 @@ describe('Firebase Functions > Service', () => {
   let functionsEmulatorStub: SinonStub = stub();
   let httpsCallableStub: SinonStub = stub();
 
-  before(() => {
-    functionsEmulatorStub = stub(functionsExp, 'connectFunctionsEmulator');
-    httpsCallableStub = stub(functionsExp, 'httpsCallable');
-  });
-
+  // Stub _apiInternal to avoid Vitest error:
+  // "TypeError: ES Modules cannot be stubbed"
   beforeEach(() => {
-    app = firebase.initializeApp({
-      projectId: 'my-project',
-      messagingSenderId: 'messaging-sender-id'
-    });
+    functionsEmulatorStub = stub(
+      functionsExp._apiInternal,
+      'connectFunctionsEmulator'
+    );
+    httpsCallableStub = stub(functionsExp._apiInternal, 'httpsCallable');
+    app = firebase.initializeApp(
+      {
+        projectId: 'my-project',
+        messagingSenderId: 'messaging-sender-id'
+      },
+      Math.random().toString()
+    );
   });
 
   afterEach(async () => {
-    await app.delete();
-  });
-
-  after(() => {
     functionsEmulatorStub.restore();
     httpsCallableStub.restore();
+    await app.delete();
   });
 
   it('useFunctionsEmulator (deprecated) calls modular useEmulator', () => {
