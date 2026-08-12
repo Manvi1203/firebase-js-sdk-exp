@@ -329,7 +329,7 @@ describe('IndexedDbSchema: createOrUpgradeDb', () => {
 
     return withDb(2, db => {
       return db.runTransaction(
-        this.test!.fullTitle(),
+        (this?.test?.fullTitle() || 'test'),
         'readwrite',
         [DbTargetStore, DbTargetGlobalStore, DbMutationBatchStore],
         txn => {
@@ -358,7 +358,7 @@ describe('IndexedDbSchema: createOrUpgradeDb', () => {
         expect(objectStores).to.have.members(V3_STORES);
 
         return db.runTransaction(
-          this.test!.fullTitle(),
+          (this?.test?.fullTitle() || 'test'),
           'readwrite',
           [DbTargetStore, DbTargetGlobalStore, DbMutationBatchStore],
           txn => {
@@ -424,7 +424,7 @@ describe('IndexedDbSchema: createOrUpgradeDb', () => {
 
     return withDb(3, db => {
       return db.runTransaction(
-        this.test!.fullTitle(),
+        (this?.test?.fullTitle() || 'test'),
         'readwrite',
         [DbMutationBatchStore],
         txn => {
@@ -440,7 +440,7 @@ describe('IndexedDbSchema: createOrUpgradeDb', () => {
         expect(version).to.be.equal(4);
         expect(objectStores).to.have.members(V4_STORES);
         return db.runTransaction(
-          this.test!.fullTitle(),
+          (this?.test?.fullTitle() || 'test'),
           'readwrite',
           [DbMutationBatchStore],
           txn => {
@@ -536,7 +536,7 @@ describe('IndexedDbSchema: createOrUpgradeDb', () => {
     return withDb(4, db => {
       // We can only use the V4 stores here, since that's as far as we've upgraded.
       return db.runTransaction(
-        this.test!.fullTitle(),
+        (this?.test?.fullTitle() || 'test'),
         'readwrite',
         V4_STORES,
         txn => {
@@ -601,7 +601,7 @@ describe('IndexedDbSchema: createOrUpgradeDb', () => {
 
         // There is no V5_STORES, continue using V4.
         return db.runTransaction(
-          this.test!.fullTitle(),
+          (this?.test?.fullTitle() || 'test'),
           'readwrite',
           V4_STORES,
           txn => {
@@ -653,7 +653,7 @@ describe('IndexedDbSchema: createOrUpgradeDb', () => {
       ];
       // V5 stores doesn't exist
       return db.runTransaction(
-        this.test!.fullTitle(),
+        (this?.test?.fullTitle() || 'test'),
         'readwrite',
         V4_STORES,
         txn => {
@@ -672,7 +672,7 @@ describe('IndexedDbSchema: createOrUpgradeDb', () => {
     });
     await withDb(6, db => {
       return db.runTransaction(
-        this.test!.fullTitle(),
+        (this?.test?.fullTitle() || 'test'),
         'readwrite',
         V6_STORES,
         txn => {
@@ -698,7 +698,7 @@ describe('IndexedDbSchema: createOrUpgradeDb', () => {
     await withDb(6, db => {
       const serializer = TEST_SERIALIZER;
       return db.runTransaction(
-        this.test!.fullTitle(),
+        (this?.test?.fullTitle() || 'test'),
         'readwrite',
         V6_STORES,
         txn => {
@@ -752,7 +752,7 @@ describe('IndexedDbSchema: createOrUpgradeDb', () => {
     // Now run the migration and verify
     await withDb(7, db => {
       return db.runTransaction(
-        this.test!.fullTitle(),
+        (this?.test?.fullTitle() || 'test'),
         'readwrite',
         V6_STORES,
         txn => {
@@ -807,7 +807,7 @@ describe('IndexedDbSchema: createOrUpgradeDb', () => {
 
     await withDb(7, db => {
       return db.runTransaction(
-        this.test!.fullTitle(),
+        (this?.test?.fullTitle() || 'test'),
         'readwrite',
         V6_STORES,
         txn => {
@@ -851,7 +851,7 @@ describe('IndexedDbSchema: createOrUpgradeDb', () => {
     // Migrate to v8 and verify index entries.
     await withDb(8, db => {
       return db.runTransaction(
-        this.test!.fullTitle(),
+        (this?.test?.fullTitle() || 'test'),
         'readwrite',
         V8_STORES,
         txn => {
@@ -882,7 +882,7 @@ describe('IndexedDbSchema: createOrUpgradeDb', () => {
   it('rewrites canonical IDs during upgrade from version 9 to 10', async function (this: Context) {
     await withDb(9, db => {
       return db.runTransaction(
-        this.test!.fullTitle(),
+        (this?.test?.fullTitle() || 'test'),
         'readwrite',
         V8_STORES,
         txn => {
@@ -908,7 +908,7 @@ describe('IndexedDbSchema: createOrUpgradeDb', () => {
 
     await withDb(10, db => {
       return db.runTransaction(
-        this.test!.fullTitle(),
+        (this?.test?.fullTitle() || 'test'),
         'readwrite',
         V8_STORES,
         txn => {
@@ -945,7 +945,7 @@ describe('IndexedDbSchema: createOrUpgradeDb', () => {
 
     await withDb(8, db => {
       return db.runTransaction(
-        this.test!.fullTitle(),
+        (this?.test?.fullTitle() || 'test'),
         'readwrite',
         V8_STORES,
         txn => {
@@ -981,7 +981,7 @@ describe('IndexedDbSchema: createOrUpgradeDb', () => {
     // Migrate to v13 and verify that new documents are indexed.
     await withDb(13, db => {
       return db.runTransaction(
-        this.test!.fullTitle(),
+        (this?.test?.fullTitle() || 'test'),
         'readwrite',
         V13_STORES,
         txn => {
@@ -1030,7 +1030,7 @@ describe('IndexedDbSchema: createOrUpgradeDb', () => {
 
     await withDb(13, db => {
       return db.runTransaction(
-        this.test!.fullTitle(),
+        (this?.test?.fullTitle() || 'test'),
         'readwrite',
         V13_STORES,
         txn => {
@@ -1136,7 +1136,7 @@ describe('IndexedDbSchema: createOrUpgradeDb', () => {
 
     return withDb(13, db => {
       return db.runTransaction(
-        this.test!.fullTitle(),
+        (this?.test?.fullTitle() || 'test'),
         'readwrite',
         V13_STORES,
         txn => {
@@ -1177,7 +1177,7 @@ describe('IndexedDbSchema: createOrUpgradeDb', () => {
         expect(version).to.be.equal(14);
 
         return db.runTransaction(
-          this.test!.fullTitle(),
+          (this?.test?.fullTitle() || 'test'),
           'readonly',
           V14_STORES,
           txn => {
@@ -1278,7 +1278,7 @@ describe('IndexedDbSchema: createOrUpgradeDb', () => {
         downgradeVersion,
         schemaConverter
       );
-      await db.ensureDb(this.test!.fullTitle());
+      await db.ensureDb(this?.test?.fullTitle() || 'test');
     } catch (e) {
       error = e as FirestoreError;
       expect(
@@ -1566,7 +1566,7 @@ describe('IndexedDb', () => {
       // Running a new IndexedDB transaction should re-open the database and not
       // throw.
       await db.runTransaction(
-        this.test!.fullTitle(),
+        (this?.test?.fullTitle() || 'test'),
         'readwrite',
         V1_STORES,
         () => PersistencePromise.resolve()

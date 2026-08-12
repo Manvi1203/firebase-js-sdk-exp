@@ -504,7 +504,7 @@ describe('SimpleDb', () => {
       ['foob']
     ];
     await db.runTransaction(
-      this.test!.fullTitle(),
+      (this?.test?.fullTitle() || 'test'),
       'readwrite',
       ['users', 'docs'],
       txn => {
@@ -519,7 +519,7 @@ describe('SimpleDb', () => {
     );
 
     await db.runTransaction(
-      this.test!.fullTitle(),
+      (this?.test?.fullTitle() || 'test'),
       'readonly',
       ['docs'],
       txn => {
@@ -562,7 +562,7 @@ describe('SimpleDb', () => {
       expectedOrder.sort(dbKeyComparator);
 
       const actualOrder = await db.runTransaction(
-        this.test!.fullTitle(),
+        (this?.test?.fullTitle() || 'test'),
         'readwrite',
         ['docs'],
         txn => {
@@ -603,7 +603,7 @@ describe('SimpleDb', () => {
     let attemptCount = 0;
 
     const result = await db.runTransaction(
-      this.test!.fullTitle(),
+      (this?.test?.fullTitle() || 'test'),
       'readwrite',
       ['users'],
       txn => {
@@ -630,7 +630,7 @@ describe('SimpleDb', () => {
     let attemptCount = 0;
 
     await expect(
-      db.runTransaction(this.test!.fullTitle(), 'readwrite', ['users'], txn => {
+      db.runTransaction((this?.test?.fullTitle() || 'test'), 'readwrite', ['users'], txn => {
         ++attemptCount;
         const store = txn.store<string[], typeof dummyUser>('users');
         return store
@@ -649,7 +649,7 @@ describe('SimpleDb', () => {
     let attemptCount = 0;
 
     await expect(
-      db.runTransaction(this.test!.fullTitle(), 'readwrite', ['users'], txn => {
+      db.runTransaction((this?.test?.fullTitle() || 'test'), 'readwrite', ['users'], txn => {
         ++attemptCount;
         txn.abort(new FirestoreError(Code.ABORTED, 'Aborted'));
         return PersistencePromise.reject(new Error());

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2021 Google LLC
+ * Copyright 2020 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,9 @@
  * limitations under the License.
  */
 
+import { registerFirestore } from './register';
+registerFirestore();
+
 export {
   aggregateFieldEqual,
   aggregateQuerySnapshotEqual,
@@ -25,32 +28,37 @@ export {
   sum
 } from './api/aggregate';
 
+// Fix Vitest error: type-only exports in src/api.ts
 export {
   AggregateField,
+  AggregateQuerySnapshot
+} from './lite-api/aggregate_types';
+export type {
   AggregateFieldType,
-  AggregateQuerySnapshot,
   AggregateSpec,
   AggregateSpecData,
   AggregateType
 } from './lite-api/aggregate_types';
 
 export {
+  memoryEagerGarbageCollector,
+  memoryLocalCache,
+  memoryLruGarbageCollector,
+  persistentLocalCache,
+  persistentMultipleTabManager,
+  persistentSingleTabManager
+} from './api/cache_config';
+export type {
   FirestoreLocalCache,
   MemoryCacheSettings,
   MemoryEagerGarbageCollector,
-  memoryEagerGarbageCollector,
   MemoryGarbageCollector,
   MemoryLocalCache,
-  memoryLocalCache,
   MemoryLruGarbageCollector,
-  memoryLruGarbageCollector,
   PersistentCacheSettings,
   PersistentLocalCache,
-  persistentLocalCache,
   PersistentMultipleTabManager,
-  persistentMultipleTabManager,
   PersistentSingleTabManager,
-  persistentSingleTabManager,
   PersistentSingleTabManagerSettings,
   PersistentTabManager
 } from './api/cache_config';
@@ -61,7 +69,6 @@ export {
   clearIndexedDbPersistence,
   connectFirestoreEmulator,
   disableNetwork,
-  EmulatorMockTokenOptions,
   enableIndexedDbPersistence,
   enableMultiTabIndexedDbPersistence,
   enableNetwork,
@@ -74,28 +81,28 @@ export {
   terminate,
   waitForPendingWrites
 } from './api/database';
+export type { EmulatorMockTokenOptions } from './api/database';
 
-export {
-  LoadBundleTask,
-  LoadBundleTaskProgress,
-  TaskState
-} from './api/bundle';
+export { LoadBundleTask } from './api/bundle';
+export type { LoadBundleTaskProgress, TaskState } from './api/bundle';
 
-export { FirestoreSettings, PersistenceSettings } from './api/settings';
+export type { FirestoreSettings, PersistenceSettings } from './api/settings';
 export type { PrivateSettings } from './lite-api/settings';
-export { ExperimentalLongPollingOptions } from './api/long_polling_options';
+export type { ExperimentalLongPollingOptions } from './api/long_polling_options';
 
 export {
-  DocumentChange,
-  DocumentChangeType,
   DocumentSnapshot,
   documentSnapshotFromJSON,
-  FirestoreDataConverter,
   QueryDocumentSnapshot,
   QuerySnapshot,
   querySnapshotFromJSON,
   snapshotEqual,
-  SnapshotMetadata,
+  SnapshotMetadata
+} from './api/snapshot';
+export type {
+  DocumentChange,
+  DocumentChangeType,
+  FirestoreDataConverter,
   SnapshotOptions
 } from './api/snapshot';
 
@@ -104,12 +111,14 @@ export {
   collectionGroup,
   CollectionReference,
   doc,
-  DocumentData,
   DocumentReference,
-  PartialWithFieldValue,
   Query,
   queryEqual,
-  refEqual,
+  refEqual
+} from './api/reference';
+export type {
+  DocumentData,
+  PartialWithFieldValue,
   SetOptions,
   UpdateData,
   WithFieldValue
@@ -123,31 +132,33 @@ export {
   limitToLast,
   or,
   orderBy,
-  OrderByDirection,
   query,
   QueryCompositeFilterConstraint,
   QueryConstraint,
-  QueryConstraintType,
   QueryEndAtConstraint,
   QueryFieldFilterConstraint,
-  QueryFilterConstraint,
   QueryLimitConstraint,
-  QueryNonFilterConstraint,
   QueryOrderByConstraint,
   QueryStartAtConstraint,
   startAfter,
   startAt,
-  where,
+  where
+} from './api/filter';
+export type {
+  OrderByDirection,
+  QueryConstraintType,
+  QueryFilterConstraint,
+  QueryNonFilterConstraint,
   WhereFilterOp
 } from './api/filter';
 
-export {
+export type {
   ListenSource,
   SnapshotListenOptions,
   Unsubscribe
 } from './api/reference_impl';
 
-export { TransactionOptions } from './api/transaction_options';
+export type { TransactionOptions } from './api/transaction_options';
 
 export { runTransaction, Transaction } from './api/transaction';
 
@@ -183,7 +194,9 @@ export {
 
 export { VectorValue } from './lite-api/vector_value';
 
-export { LogLevelString as LogLevel, setLogLevel } from './util/log';
+// Fix Vitest error: type-only export for LogLevelString
+export { setLogLevel } from './util/log';
+export type { LogLevelString as LogLevel } from './util/log';
 
 export { Bytes } from './api/bytes';
 
@@ -195,11 +208,12 @@ export { Timestamp } from './api/timestamp';
 
 export { CACHE_SIZE_UNLIMITED } from './api/database';
 
-export { FirestoreError, FirestoreErrorCode } from './util/error';
+export { FirestoreError } from './util/error';
+export type { FirestoreErrorCode } from './util/error';
 
 export { AbstractUserDataWriter } from './lite-api/user_data_writer';
 
-export {
+export type {
   AddPrefixToKeys,
   ChildUpdateFields,
   NestedUpdateFields,
@@ -207,11 +221,11 @@ export {
   UnionToIntersection
 } from '../src/lite-api/types';
 
-export {
+export { setIndexConfiguration } from './api/index_configuration';
+export type {
   Index,
   IndexConfiguration,
-  IndexField,
-  setIndexConfiguration
+  IndexField
 } from './api/index_configuration';
 
 export {
@@ -248,8 +262,6 @@ export type {
 } from './api/credentials';
 export { EmptyAuthCredentialsProvider as _EmptyAuthCredentialsProvider } from './api/credentials';
 export { EmptyAppCheckTokenProvider as _EmptyAppCheckTokenProvider } from './api/credentials';
-export {
-  ExistenceFilterMismatchCallback as _TestingHooksExistenceFilterMismatchCallback,
-  TestingHooks as _TestingHooks
-} from './util/testing_hooks';
-export { ExistenceFilterMismatchInfo as _TestingHooksExistenceFilterMismatchInfo } from './util/testing_hooks_spi';
+export { TestingHooks as _TestingHooks } from './util/testing_hooks';
+export type { ExistenceFilterMismatchCallback as _TestingHooksExistenceFilterMismatchCallback } from './util/testing_hooks';
+export type { ExistenceFilterMismatchInfo as _TestingHooksExistenceFilterMismatchInfo } from './util/testing_hooks_spi';

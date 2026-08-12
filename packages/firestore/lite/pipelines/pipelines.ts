@@ -29,23 +29,27 @@
 // types need to be exported here to ensure that api-extractor behaves
 // correctly. If a type from api.ts is missing from this export, then
 // api-extractor may rename it with a suffix `_#`, e.g. `YourType_2`.
+// Fix Vitest error: type-only exports in pipelines.ts
 export {
   Timestamp,
   DocumentReference,
   VectorValue,
   GeoPoint,
   FieldPath,
-  DocumentData,
   Query,
   Firestore,
+  QueryDocumentSnapshot,
+  FieldValue,
+  Bytes
+} from '../index';
+
+export type {
+  DocumentData,
   FirestoreDataConverter,
   WithFieldValue,
   PartialWithFieldValue,
   SetOptions,
-  QueryDocumentSnapshot,
-  Primitive,
-  FieldValue,
-  Bytes
+  Primitive
 } from '../index';
 
 export {
@@ -53,7 +57,7 @@ export {
   subcollection
 } from '../../src/lite-api/pipeline-source';
 
-export { OneOf } from '../../src/util/types';
+export type { OneOf } from '../../src/util/types';
 
 export {
   PipelineResult,
@@ -64,7 +68,7 @@ export { Pipeline } from '../../src/lite-api/pipeline';
 
 export { execute } from '../../src/lite-api/pipeline_impl';
 
-export {
+export type {
   StageOptions,
   CollectionStageOptions,
   CollectionGroupStageOptions,
@@ -90,6 +94,14 @@ export {
   // TODO(search) export with backend support
   // QueryEnhancement
 } from '../../src/lite-api/stage_options';
+
+export type {
+  ExpressionType,
+  Selectable,
+  TimeGranularity,
+  TimePart,
+  TimeUnit
+} from '../../src/lite-api/expressions';
 
 export {
   Expression,
@@ -242,12 +254,7 @@ export {
   Constant,
   FunctionExpression,
   Ordering,
-  ExpressionType,
   AliasedAggregate,
-  Selectable,
   BooleanExpression,
-  AggregateFunction,
-  TimeGranularity,
-  TimePart,
-  TimeUnit
+  AggregateFunction
 } from '../../src/lite-api/expressions';

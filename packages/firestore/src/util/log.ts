@@ -15,12 +15,15 @@
  * limitations under the License.
  */
 
-import { Logger, LogLevel, LogLevelString } from '@firebase/logger';
+// Fix Vitest error: "SyntaxError: The requested module ... does not provide an export named 'LogLevelString'"
+import { Logger, LogLevel } from '@firebase/logger';
+import type { LogLevelString } from '@firebase/logger';
 
 import { SDK_VERSION } from '../core/version';
 import { formatJSON } from '../platform/format_json';
 
-export { LogLevel, LogLevelString };
+export { LogLevel };
+export type { LogLevelString };
 
 const logClient = new Logger('@firebase/firestore');
 

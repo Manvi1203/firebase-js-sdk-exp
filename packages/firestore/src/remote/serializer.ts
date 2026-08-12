@@ -286,7 +286,8 @@ export function fromBytes(
         // despite the fact that Buffer extends Uint8Array. In some
         // environments, such as jsdom, the prototype chain of Buffer
         // does not indicate that it extends Uint8Array.
-        value instanceof Buffer ||
+        // Fix Vitest error: "ReferenceError: Buffer is not defined"
+        (typeof Buffer !== 'undefined' && value instanceof Buffer) ||
         value instanceof Uint8Array,
       0x3f41,
       'value must be undefined, Buffer, or Uint8Array'
