@@ -15,21 +15,14 @@
  * limitations under the License.
  */
 
-import { getIid } from './iid_service';
+import { _iidServiceInternal } from './iid_service';
 import { NetworkRequest } from '../resources/network_request';
 import { Trace } from '../resources/trace';
 import { Api } from './api_service';
 import { SettingsService } from './settings_service';
-import {
-  getServiceWorkerStatus,
-  getVisibilityState,
-  getEffectiveConnectionType
-} from '../utils/attributes_utils';
-import {
-  isPerfInitialized,
-  getInitializationPromise
-} from './initialization_service';
-import { transportHandler, flushQueuedEvents } from './transport_service';
+import { _attributesUtilsInternal } from '../utils/attributes_utils';
+import { _initializationServiceInternal } from './initialization_service';
+import { _transportServiceInternal } from './transport_service';
 import { SDK_VERSION } from '../constants';
 import { FirebaseApp } from '@firebase/app';
 import { getAppId } from '../utils/app_utils';
@@ -101,8 +94,8 @@ function sendLog(
 ): void {
   if (!logger) {
     logger = {
-      send: transportHandler(serializer),
-      flush: flushQueuedEvents
+      send: _transportServiceInternal.transportHandler(serializer),
+      flush: _transportServiceInternal.flushQueuedEvents
     };
   }
   logger.send(resource, resourceType);
@@ -123,15 +116,17 @@ export function logTrace(trace: Trace): void {
     return;
   }
 
-  if (isPerfInitialized()) {
+  if (_initializationServiceInternal.isPerfInitialized()) {
     sendTraceLog(trace);
   } else {
     // Custom traces can be used before the initialization but logging
     // should wait until after.
-    getInitializationPromise(trace.performanceController).then(
-      () => sendTraceLog(trace),
-      () => sendTraceLog(trace)
-    );
+    _initializationServiceInternal
+      .getInitializationPromise(trace.performanceController)
+      .then(
+        () => sendTraceLog(trace),
+        () => sendTraceLog(trace)
+      );
   }
 }
 
@@ -142,7 +137,7 @@ export function flushLogs(): void {
 }
 
 function sendTraceLog(trace: Trace): void {
-  if (!getIid()) {
+  if (!_iidServiceInternal.getIid()) {
     return;
   }
 
@@ -244,16 +239,27 @@ function serializeTrace(trace: Trace): string {
 function getApplicationInfo(firebaseApp: FirebaseApp): ApplicationInfo {
   return {
     google_app_id: getAppId(firebaseApp),
-    app_instance_id: getIid(),
+    app_instance_id: _iidServiceInternal.getIid(),
     web_app_info: {
       sdk_version: SDK_VERSION,
       page_url: Api.getInstance().getUrl(),
-      service_worker_status: getServiceWorkerStatus(),
-      visibility_state: getVisibilityState(),
-      effective_connection_type: getEffectiveConnectionType()
+      service_worker_status:
+        _attributesUtilsInternal.getServiceWorkerStatus(),
+      visibility_state: _attributesUtilsInternal.getVisibilityState(),
+      effective_connection_type:
+        _attributesUtilsInternal.getEffectiveConnectionType()
     },
     application_process_state: 0
   };
 }
 
 /* eslint-enable camelcase */
+
+/**
+ * @internal
+ */
+export const _perfLoggerInternal = {
+  logTrace,
+  logNetworkRequest,
+  flushLogs
+};

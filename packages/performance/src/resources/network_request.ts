@@ -16,7 +16,7 @@
  */
 
 import { Api } from '../services/api_service';
-import { logNetworkRequest } from '../services/perf_logger';
+import { _perfLoggerInternal } from '../services/perf_logger';
 import { PerformanceController } from '../controllers/perf';
 
 // The order of values of this enum should not be changed.
@@ -79,5 +79,5 @@ export function createNetworkRequestEntry(
     timeToResponseCompletedUs
   };
 
-  logNetworkRequest(networkRequest);
+  _perfLoggerInternal.logNetworkRequest(networkRequest);
 }

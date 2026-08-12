@@ -28,7 +28,7 @@ import { Trace } from '../resources/trace';
 import { WebVitalMetrics } from '../resources/web_vitals';
 
 import { Api } from './api_service';
-import { getIid } from './iid_service';
+import { _iidServiceInternal } from './iid_service';
 
 let webVitalMetrics: WebVitalMetrics = {};
 let sentPageLoadTrace: boolean = false;
@@ -38,7 +38,7 @@ export function setupOobResources(
   performanceController: PerformanceController
 ): void {
   // Do not initialize unless iid is available.
-  if (!getIid()) {
+  if (!_iidServiceInternal.getIid()) {
     return;
   }
   // The load event might not have fired yet, and that means performance
@@ -169,3 +169,11 @@ export function resetForUnitTests(): void {
   firstInputDelay = undefined;
   webVitalMetrics = {};
 }
+
+/**
+ * @internal
+ */
+export const _oobResourcesServiceInternal = {
+  setupOobResources,
+  resetForUnitTests
+};

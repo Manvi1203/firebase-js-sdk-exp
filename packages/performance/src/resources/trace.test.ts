@@ -49,13 +49,16 @@ describe('Firebase Performance > trace', () => {
   );
 
   let trace: Trace;
+  let logTraceStub: SinonStub;
   const createTrace = (): Trace => {
     return new Trace(performanceController, 'test');
   };
 
   beforeEach(() => {
     spy(Api.prototype, 'mark');
-    stub(perfLogger, 'logTrace');
+    // Stub _perfLoggerInternal to avoid Vitest error:
+    // "TypeError: ES Modules cannot be stubbed"
+    logTraceStub = stub(perfLogger._perfLoggerInternal, 'logTrace');
     trace = createTrace();
   });
 
@@ -89,7 +92,7 @@ describe('Firebase Performance > trace', () => {
       trace.start();
       trace.stop();
 
-      expect((perfLogger.logTrace as any).calledOnceWith(trace)).to.be.true;
+      expect((logTraceStub as any).calledOnceWith(trace)).to.be.true;
     });
   });
 
@@ -107,20 +110,20 @@ describe('Firebase Performance > trace', () => {
     it('logs a trace without metrics or custom attributes', () => {
       trace.record(1, 20);
 
-      expect((perfLogger.logTrace as any).calledOnceWith(trace)).to.be.true;
+      expect((logTraceStub as any).calledOnceWith(trace)).to.be.true;
     });
 
     it('logs a trace with metrics', () => {
       trace.record(1, 20, { metrics: { cacheHits: 1 } });
 
-      expect((perfLogger.logTrace as any).calledOnceWith(trace)).to.be.true;
+      expect((logTraceStub as any).calledOnceWith(trace)).to.be.true;
       expect(trace.getMetric('cacheHits')).to.eql(1);
     });
 
     it('logs a trace with custom attributes', () => {
       trace.record(1, 20, { attributes: { level: '1' } });
 
-      expect((perfLogger.logTrace as any).calledOnceWith(trace)).to.be.true;
+      expect((logTraceStub as any).calledOnceWith(trace)).to.be.true;
       expect(trace.getAttributes()).to.eql({ level: '1' });
     });
 
@@ -130,7 +133,7 @@ describe('Firebase Performance > trace', () => {
         metrics: { cacheHits: 1 }
       });
 
-      expect((perfLogger.logTrace as any).calledOnceWith(trace)).to.be.true;
+      expect((logTraceStub as any).calledOnceWith(trace)).to.be.true;
       expect(trace.getAttributes()).to.eql({ level: '1' });
       expect(trace.getMetric('cacheHits')).to.eql(1);
     });
@@ -140,7 +143,7 @@ describe('Firebase Performance > trace', () => {
         metrics: { level: NaN }
       });
 
-      expect((perfLogger.logTrace as any).calledOnceWith(trace)).to.be.true;
+      expect((logTraceStub as any).calledOnceWith(trace)).to.be.true;
       expect(trace.getMetric('level')).to.eql(0);
     });
   });

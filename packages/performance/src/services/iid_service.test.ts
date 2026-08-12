@@ -31,7 +31,8 @@ describe('Firebase Performance > iid_service', () => {
   const AUTH_TOKEN = 'authToken';
 
   let fakeInstallations: _FirebaseInstallationsInternal;
-  before(() => {
+  // Use beforeEach to avoid Vitest error: "ReferenceError: before is not defined"
+  beforeEach(() => {
     const getId = stub().resolves(IID);
     const getToken = stub().resolves(AUTH_TOKEN);
     fakeInstallations = {

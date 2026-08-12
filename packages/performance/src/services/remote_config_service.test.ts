@@ -100,7 +100,9 @@ describe('Performance Monitoring > remote_config_service', () => {
         : fetchStub.resolves(fetchConfig.value);
     }
 
-    stub(iidService, 'getAuthTokenPromise').returns(
+    // Stub _iidServiceInternal to avoid Vitest error:
+    // "TypeError: ES Modules cannot be stubbed"
+    stub(iidService._iidServiceInternal, 'getAuthTokenPromise').returns(
       Promise.resolve(AUTH_TOKEN)
     );
 

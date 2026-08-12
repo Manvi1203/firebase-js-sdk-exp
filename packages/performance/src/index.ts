@@ -136,11 +136,20 @@ function registerPerformance(): void {
   _registerComponent(
     new Component('performance', factory, ComponentType.PUBLIC)
   );
-  registerVersion(name, version);
   // BUILD_TARGET will be replaced by values like esm, cjs, etc during the compilation
   registerVersion(name, version, '__BUILD_TARGET__');
 }
 
 registerPerformance();
 
-export { FirebasePerformance, PerformanceSettings, PerformanceTrace };
+// Export types to avoid Vitest error: "SyntaxError: The requested module '/src/public_types.ts' does not provide an export named 'FirebasePerformance'"
+export * from './public_types';
+
+/**
+ * @internal
+ */
+export const _apiInternal = {
+  getPerformance,
+  initializePerformance,
+  trace
+};

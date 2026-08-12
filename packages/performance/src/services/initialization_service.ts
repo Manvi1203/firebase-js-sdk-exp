@@ -15,8 +15,8 @@
  * limitations under the License.
  */
 
-import { getIidPromise } from './iid_service';
-import { getConfig } from './remote_config_service';
+import { _iidServiceInternal } from './iid_service';
+import { _remoteConfigServiceInternal } from './remote_config_service';
 import { Api } from './api_service';
 import { PerformanceController } from '../controllers/perf';
 
@@ -49,8 +49,12 @@ function initializePerf(
   performanceController: PerformanceController
 ): Promise<void> {
   return getDocumentReadyComplete()
-    .then(() => getIidPromise(performanceController.installations))
-    .then(iid => getConfig(performanceController, iid))
+    .then(() =>
+      _iidServiceInternal.getIidPromise(performanceController.installations)
+    )
+    .then(iid =>
+      _remoteConfigServiceInternal.getConfig(performanceController, iid)
+    )
     .then(
       () => changeInitializationStatus(),
       () => changeInitializationStatus()
@@ -81,3 +85,12 @@ function getDocumentReadyComplete(): Promise<void> {
 function changeInitializationStatus(): void {
   initializationStatus = InitializationStatus.initialized;
 }
+
+/**
+ * @internal
+ */
+export const _initializationServiceInternal = {
+  getInitializationPromise,
+  isPerfInitialized,
+  initializePerf
+};
