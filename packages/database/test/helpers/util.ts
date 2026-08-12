@@ -31,11 +31,26 @@ import { Path } from '../../src/core/util/Path';
 
 import { EventAccumulator } from './EventAccumulator';
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-export const TEST_PROJECT = require('../../../../config/project.json');
+// Fix Vitest error: "ReferenceError: require is not defined" in browser environment
+let TEST_PROJECT: Record<string, string> = {
+  databaseURL: 'https://test-ns.firebaseio.com'
+};
+try {
+  if (typeof require !== 'undefined') {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    TEST_PROJECT = require('../../../../config/project.json');
+  }
+} catch {
+  TEST_PROJECT = { databaseURL: 'https://test-ns.firebaseio.com' };
+}
+export { TEST_PROJECT };
 export const EMULATOR_PORT = process.env.RTDB_EMULATOR_PORT;
 const EMULATOR_NAMESPACE = process.env.RTDB_EMULATOR_NAMESPACE;
 export const USE_EMULATOR = !!EMULATOR_PORT;
+
+export function createTestApp() {
+  return initializeApp({ databaseURL: DATABASE_URL });
+}
 
 let freshRepoId = 0;
 const activeFreshApps: FirebaseApp[] = [];

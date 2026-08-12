@@ -31,7 +31,8 @@ import {
   startAt
 } from '../src';
 
-import { createTestApp } from './exp/integration.test';
+// Fix Vitest error: avoid importing test file which causes duplicate test execution and timeouts
+import { createTestApp } from './helpers/util';
 
 describe('Query Constraints', () => {
   let defaultApp;

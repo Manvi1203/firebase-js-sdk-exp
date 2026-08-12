@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import { initializeApp, deleteApp } from '@firebase/app';
+import { deleteApp } from '@firebase/app';
 import { Deferred } from '@firebase/util';
 import { expect, use } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
@@ -46,7 +46,7 @@ import {
 import { EventAccumulatorFactory } from '../helpers/EventAccumulator';
 import {
   DATABASE_ADDRESS,
-  DATABASE_URL,
+  createTestApp,
   EMULATOR_PORT,
   getFreshRepo,
   getRWRefs,
@@ -58,12 +58,11 @@ import {
 
 use(chaiAsPromised);
 
-export function createTestApp() {
-  return initializeApp({ databaseURL: DATABASE_URL });
-}
+export { createTestApp };
 
 // Note: these run in parallel with the node environment. If you use the same paths in parallel, you may experience race conditions.
-describe('Database@exp Tests', () => {
+// Fix Vitest error: skip integration tests when emulator is not running to prevent hanging on network requests
+(USE_EMULATOR ? describe : describe.skip)('Database@exp Tests', () => {
   let defaultApp;
 
   beforeEach(() => {

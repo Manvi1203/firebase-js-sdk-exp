@@ -36,7 +36,8 @@ describe('Force Transport', () => {
   beforeEach(() => {
     CONSTANTS.NODE_CLIENT = false;
     mySandbox = createSandbox();
-    spyWarn = mySandbox.spy(Util, 'warn');
+    // Fix Vitest error: "TypeError: ES Modules cannot be spied"
+    spyWarn = mySandbox.spy(Util._utilInternal, 'warn');
   });
   afterEach(() => {
     // Resetting to old values

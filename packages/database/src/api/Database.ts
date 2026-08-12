@@ -28,11 +28,12 @@ import {
   getModularInstance,
   createMockUserToken,
   deepEqual,
-  EmulatorMockTokenOptions,
   getDefaultEmulatorHostnameAndPort,
   isCloudWorkstation,
   pingServer
 } from '@firebase/util';
+// Fix Vitest error: "SyntaxError: The requested module ... does not provide an export named 'EmulatorMockTokenOptions'"
+import type { EmulatorMockTokenOptions } from '@firebase/util';
 
 import { AppCheckTokenProvider } from '../core/AppCheckTokenProvider';
 import {
@@ -57,7 +58,8 @@ import { WebSocketConnection } from '../realtime/WebSocketConnection';
 
 import { ReferenceImpl } from './Reference_impl';
 
-export { EmulatorMockTokenOptions } from '@firebase/util';
+// Fix Vitest error: "SyntaxError: The requested module ... does not provide an export named 'EmulatorMockTokenOptions'"
+export type { EmulatorMockTokenOptions } from '@firebase/util';
 /**
  * This variable is also defined in the firebase Node.js Admin SDK. Before
  * modifying this definition, consult the definition in:
