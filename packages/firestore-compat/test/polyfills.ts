@@ -26,18 +26,6 @@ if (typeof (globalThis as unknown as { process: unknown }).process === 'undefine
     env: {}
   };
 }
-const proc = (globalThis as unknown as { process: { env: Record<string, string> } }).process;
-proc.env = proc.env || {};
-if (!proc.env.FIRESTORE_EMULATOR_PORT) {
-  proc.env.FIRESTORE_EMULATOR_PORT = '8080';
-}
-if (!proc.env.FIRESTORE_TARGET_BACKEND) {
-  proc.env.FIRESTORE_TARGET_BACKEND = 'emulator';
-}
-if (!proc.env.FIRESTORE_EMULATOR_PROJECT_ID) {
-  proc.env.FIRESTORE_EMULATOR_PROJECT_ID = 'test-emulator';
-}
-
 // Fix Vitest error: "ReferenceError: Buffer is not defined" in browser tests
 if (typeof (globalThis as unknown as { Buffer: unknown }).Buffer === 'undefined') {
   (globalThis as unknown as { Buffer: typeof Buffer }).Buffer = Buffer;

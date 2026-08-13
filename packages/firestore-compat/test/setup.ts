@@ -15,16 +15,16 @@
  * limitations under the License.
  */
 
+import * as chai from 'chai';
+import * as chaiAsPromised from 'chai-as-promised';
+import { restore } from 'sinon';
+import * as sinonChai from 'sinon-chai';
+
 // Fix Vitest error: register Firestore compat component
 import '../src/index';
 
-import { use } from 'chai';
-import chaiAsPromised from 'chai-as-promised';
-import { restore } from 'sinon';
-import sinonChai from 'sinon-chai';
-
-use(chaiAsPromised);
-use(sinonChai);
+chai.use(sinonChai.default || sinonChai);
+chai.use(chaiAsPromised.default || chaiAsPromised);
 
 // Fix Vitest error: alias before/after to beforeAll/afterAll if missing
 const g = globalThis as unknown as Record<string, unknown>;
