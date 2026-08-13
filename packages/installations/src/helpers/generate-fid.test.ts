@@ -84,7 +84,7 @@ describe('generateFid', () => {
 
   // Pass timeout as 3rd parameter to avoid Vitest error:
   // "TypeError: Cannot read properties of undefined (reading 'timeout')"
-  it(
+  (it as any)(
     'generates FIDs where each character is equally likely to appear in each location',
     () => {
       const numTries = 200000;

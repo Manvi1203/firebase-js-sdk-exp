@@ -16,7 +16,7 @@
  */
 
 import { expect } from 'chai';
-import { stub } from 'sinon';
+import { stub, SinonStub } from 'sinon';
 import '../testing/setup';
 import { onIdChange } from './on-id-change';
 import * as FidChangedModule from '../helpers/fid-changed';
@@ -25,8 +25,8 @@ import { FirebaseInstallationsImpl } from '../interfaces/installation-impl';
 
 describe('onIdChange', () => {
   let installations: FirebaseInstallationsImpl;
-  let addCallbackStub: ReturnType<typeof stub>;
-  let removeCallbackStub: ReturnType<typeof stub>;
+  let addCallbackStub: SinonStub;
+  let removeCallbackStub: SinonStub;
 
   beforeEach(() => {
     installations = getFakeInstallations();
