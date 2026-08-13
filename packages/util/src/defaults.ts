@@ -91,14 +91,7 @@ const getDefaultsFromCookie = (): FirebaseDefaults | undefined => {
   return decoded && JSON.parse(decoded);
 };
 
-/**
- * Get the __FIREBASE_DEFAULTS__ object. It checks in order:
- * (1) if such an object exists as a property of `globalThis`
- * (2) if such an object was provided on a shell environment variable
- * (3) if such an object exists in a cookie
- * @public
- */
-export const getDefaults = (): FirebaseDefaults | undefined => {
+const defaultGetDefaults = (): FirebaseDefaults | undefined => {
   try {
     return (
       getDefaultsFromPostinstall() ||
@@ -117,6 +110,20 @@ export const getDefaults = (): FirebaseDefaults | undefined => {
     return;
   }
 };
+
+export const _defaultsInternal = {
+  getDefaults: defaultGetDefaults
+};
+
+/**
+ * Get the __FIREBASE_DEFAULTS__ object. It checks in order:
+ * (1) if such an object exists as a property of `globalThis`
+ * (2) if such an object was provided on a shell environment variable
+ * (3) if such an object exists in a cookie
+ * @public
+ */
+export const getDefaults = (): FirebaseDefaults | undefined =>
+  _defaultsInternal.getDefaults();
 
 /**
  * Returns emulator host stored in the __FIREBASE_DEFAULTS__ object

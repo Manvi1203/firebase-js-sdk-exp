@@ -543,8 +543,8 @@ apiDescribe('Database transactions', persistence => {
         // still committed successfully. This regression test ensures that the
         // commit will fail even if the code does not await
         // `transaction.get(...)`.
-        // eslint-disable-next-line
-        transaction.get(docRef);
+        // Fix Vitest error: "Unhandled Rejection: FirebaseError: Firestore transactions require all reads to be executed before all writes"
+        transaction.get(docRef).catch(() => {});
       })
         .then(() => {
           expect.fail('transaction should fail');

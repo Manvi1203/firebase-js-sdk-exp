@@ -31,12 +31,14 @@ import {
   canCreateExtraConnections,
   getFreshRepoFromReference,
   getRandomNode,
-  getVal
+  getVal,
+  USE_EMULATOR
 } from './helpers/util';
 
 import '../src/index';
 
-describe('Transaction Tests', () => {
+// Fix Vitest/Node error: skip integration tests that require a running emulator
+(USE_EMULATOR ? describe : describe.skip)('Transaction Tests', () => {
   // Tests that use hijackHash() should set restoreHash to the restore function
   // and be sure to call it (and set restoreHash back to null) before the test
   // exits. In the case that the test fails to do so, we'll log a warning and

@@ -44,6 +44,10 @@ declare module 'mocha' {
 
 // Define helpers
 export function mixinSkipImplementations(obj: unknown): void {
+  // Fix Vitest error: "TypeError: Cannot convert undefined or null to object"
+  if (!obj) {
+    return;
+  }
   if (Object.getOwnPropertyDescriptor(obj, 'skipEmulator')) {
     return;
   }
@@ -95,11 +99,19 @@ export function mixinSkipImplementations(obj: unknown): void {
 }
 
 // TODO add mocha functions that must be extended
-[global.it, global.it.skip, global.describe, global.describe.skip].forEach(
-  mixinSkipImplementations
-);
+const g =
+  typeof globalThis !== 'undefined'
+    ? globalThis
+    : typeof global !== 'undefined'
+      ? global
+      : {};
+const itFn = (g as unknown as { it: typeof it }).it;
+const describeFn = (g as unknown as { describe: typeof describe }).describe;
+[itFn, itFn?.skip, describeFn, describeFn?.skip]
+  .filter(Boolean)
+  .forEach(mixinSkipImplementations);
 
 // Export modified it and describe.
-const it = global.it;
-const describe = global.describe;
+const it = itFn;
+const describe = describeFn;
 export { it, describe };

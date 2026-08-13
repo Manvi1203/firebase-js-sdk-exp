@@ -15,15 +15,15 @@
  * limitations under the License.
  */
 
-import { setupOobResources } from '../services/oob_resources_service';
+import { _oobResourcesServiceInternal } from '../services/oob_resources_service';
 import { SettingsService } from '../services/settings_service';
-import { getInitializationPromise } from '../services/initialization_service';
+import { _initializationServiceInternal } from '../services/initialization_service';
 import { Api } from '../services/api_service';
 import { FirebaseApp } from '@firebase/app';
 import { _FirebaseInstallationsInternal } from '@firebase/installations';
 import { PerformanceSettings, FirebasePerformance } from '../public_types';
 import { validateIndexedDBOpenable } from '@firebase/util';
-import { setupTransportService } from '../services/transport_service';
+import { _transportServiceInternal } from '../services/transport_service';
 import { consoleLogger } from '../utils/console_logger';
 
 export class PerformanceController implements FirebasePerformance {
@@ -59,11 +59,13 @@ export class PerformanceController implements FirebasePerformance {
       validateIndexedDBOpenable()
         .then(isAvailable => {
           if (isAvailable) {
-            setupTransportService();
-            getInitializationPromise(this).then(
-              () => setupOobResources(this),
-              () => setupOobResources(this)
-            );
+            _transportServiceInternal.setupTransportService();
+            _initializationServiceInternal
+              .getInitializationPromise(this)
+              .then(
+                () => _oobResourcesServiceInternal.setupOobResources(this),
+                () => _oobResourcesServiceInternal.setupOobResources(this)
+              );
             this.initialized = true;
           }
         })

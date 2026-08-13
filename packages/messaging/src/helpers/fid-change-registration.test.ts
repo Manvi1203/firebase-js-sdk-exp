@@ -30,18 +30,21 @@ import { FakeServiceWorkerRegistration } from '../testing/fakes/service-worker';
 import { stub } from 'sinon';
 import { expect } from 'chai';
 import * as installationsApi from '@firebase/installations';
-import * as requestsModule from '../internals/requests';
-import * as idbManager from '../internals/idb-manager';
+import {
+  _apiInternal as installationsApiInternal,
+  _FirebaseInstallationsInternal
+} from '@firebase/installations';
+// Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+import { _requestsInternal } from '../internals/requests';
+import { dbDelete, _idbManagerInternal } from '../internals/idb-manager';
 import { Stub } from '../testing/sinon-types';
-import { _FirebaseInstallationsInternal } from '@firebase/installations';
-import { dbDelete } from '../internals/idb-manager';
 
 describe('refreshFidRegistrationIfStored', () => {
   let messaging: MessagingService;
   let requestCreateRegistrationStub: Stub<
-    typeof requestsModule.requestCreateRegistration
+    typeof _requestsInternal.requestCreateRegistration
   >;
-  let dbGetFidRegistrationStub: Stub<typeof idbManager.dbGetFidRegistration>;
+  let dbGetFidRegistrationStub: Stub<typeof _idbManagerInternal.dbGetFidRegistration>;
 
   beforeEach(() => {
     const app = getFakeApp();
@@ -56,17 +59,18 @@ describe('refreshFidRegistrationIfStored', () => {
     messaging.swRegistration =
       new FakeServiceWorkerRegistration() as unknown as ServiceWorkerRegistration;
 
+    // Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
     requestCreateRegistrationStub = stub(
-      requestsModule,
+      _requestsInternal,
       'requestCreateRegistration'
     ).callsFake(async () => ({
       responseFid: 'fid-1'
-    })) as Stub<typeof requestsModule.requestCreateRegistration>;
+    })) as Stub<typeof _requestsInternal.requestCreateRegistration>;
 
     dbGetFidRegistrationStub = stub(
-      idbManager,
+      _idbManagerInternal,
       'dbGetFidRegistration'
-    ).resolves(undefined) as Stub<typeof idbManager.dbGetFidRegistration>;
+    ).resolves(undefined) as Stub<typeof _idbManagerInternal.dbGetFidRegistration>;
   });
 
   afterEach(() => {
@@ -120,11 +124,11 @@ describe('subscribeFidChangeRegistration', () => {
   let installations: installationsApi.Installations;
   let onIdChangeStub: Stub<typeof installationsApi.onIdChange>;
   let requestCreateRegistrationStub: Stub<
-    typeof requestsModule.requestCreateRegistration
+    typeof _requestsInternal.requestCreateRegistration
   >;
   let fidChangeCallback: installationsApi.IdChangeCallbackFn | undefined;
   let unsubscribeStub: ReturnType<typeof stub>;
-  let dbGetFidRegistrationStub: Stub<typeof idbManager.dbGetFidRegistration>;
+  let dbGetFidRegistrationStub: Stub<typeof _idbManagerInternal.dbGetFidRegistration>;
 
   beforeEach(() => {
     stub(Notification, 'permission').value('granted');
@@ -147,7 +151,8 @@ describe('subscribeFidChangeRegistration', () => {
 
     fidChangeCallback = undefined;
     unsubscribeStub = stub();
-    onIdChangeStub = stub(installationsApi, 'onIdChange').callsFake(
+    // Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+    onIdChangeStub = stub(installationsApiInternal, 'onIdChange').callsFake(
       (_installations, cb: installationsApi.IdChangeCallbackFn) => {
         fidChangeCallback = cb;
         return unsubscribeStub;
@@ -155,16 +160,16 @@ describe('subscribeFidChangeRegistration', () => {
     ) as Stub<typeof installationsApi.onIdChange>;
 
     requestCreateRegistrationStub = stub(
-      requestsModule,
+      _requestsInternal,
       'requestCreateRegistration'
     ).callsFake(async () => ({
       responseFid: currentFid
-    })) as Stub<typeof requestsModule.requestCreateRegistration>;
+    })) as Stub<typeof _requestsInternal.requestCreateRegistration>;
 
     dbGetFidRegistrationStub = stub(
-      idbManager,
+      _idbManagerInternal,
       'dbGetFidRegistration'
-    ).resolves(undefined) as Stub<typeof idbManager.dbGetFidRegistration>;
+    ).resolves(undefined) as Stub<typeof _idbManagerInternal.dbGetFidRegistration>;
   });
 
   afterEach(async () => {

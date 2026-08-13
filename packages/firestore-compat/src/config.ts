@@ -84,7 +84,7 @@ export function configureForFirebase(
         const firestoreExp = container.getProvider('firestore').getImmediate()!;
         return firestoreFactory(app, firestoreExp);
       },
-      'PUBLIC' as ComponentType.PUBLIC
+      ComponentType.PUBLIC
     ).setServiceProps({ ...firestoreNamespace })
   );
 }

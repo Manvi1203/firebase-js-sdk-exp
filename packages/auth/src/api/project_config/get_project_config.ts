@@ -27,14 +27,24 @@ export interface GetProjectConfigResponse {
   authorizedDomains: string[];
 }
 
+// Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+export const _projectConfigInternal = {
+  _getProjectConfig(
+    auth: Auth,
+    request: GetProjectConfigRequest = {}
+  ): Promise<GetProjectConfigResponse> {
+    return _performApiRequest<GetProjectConfigRequest, GetProjectConfigResponse>(
+      auth,
+      HttpMethod.GET,
+      Endpoint.GET_PROJECT_CONFIG,
+      request
+    );
+  }
+};
+
 export async function _getProjectConfig(
   auth: Auth,
   request: GetProjectConfigRequest = {}
 ): Promise<GetProjectConfigResponse> {
-  return _performApiRequest<GetProjectConfigRequest, GetProjectConfigResponse>(
-    auth,
-    HttpMethod.GET,
-    Endpoint.GET_PROJECT_CONFIG,
-    request
-  );
+  return _projectConfigInternal._getProjectConfig(auth, request);
 }

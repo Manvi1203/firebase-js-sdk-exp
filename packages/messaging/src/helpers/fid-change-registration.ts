@@ -18,17 +18,15 @@
 import {
   IdChangeUnsubscribeFn,
   Installations,
-  onIdChange
+  _apiInternal as installationsApiInternal
 } from '@firebase/installations';
-import { register } from '../api/register';
-import {
-  dbGetFidRegistration,
-  dbSetFidRegistration
-} from '../internals/idb-manager';
-import { registerFcmRegistrationWithFid } from '../internals/register-fid';
-import { notifyOnRegistered } from '../internals/token-manager';
+import { _registerInternal } from '../api/register';
+// Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+import { _idbManagerInternal } from '../internals/idb-manager';
+import { _registerFidInternal } from '../internals/register-fid';
+import { _tokenManagerInternal } from '../internals/token-manager';
 import { MessagingService } from '../messaging-service';
-import { updateVapidKey } from './updateVapidKey';
+import { _updateVapidKeyInternal } from './updateVapidKey';
 
 /**
  * Re-runs FCM FID registration when push subscription keys change (e.g. `pushsubscriptionchange`
@@ -38,23 +36,26 @@ import { updateVapidKey } from './updateVapidKey';
 export async function refreshFidRegistrationIfStored(
   messaging: MessagingService
 ): Promise<string | undefined> {
-  const stored = await dbGetFidRegistration(
-    messaging.firebaseDependencies
-  ).catch(() => undefined);
+  const stored = await _idbManagerInternal
+    .dbGetFidRegistration(messaging.firebaseDependencies)
+    .catch(() => undefined);
   if (!stored) {
     return undefined;
   }
 
-  await updateVapidKey(messaging, stored.vapidKey);
+  await _updateVapidKeyInternal.updateVapidKey(messaging, stored.vapidKey);
 
   const fid = await messaging.firebaseDependencies.installations.getId();
-  await registerFcmRegistrationWithFid(messaging, fid);
-  await dbSetFidRegistration(messaging.firebaseDependencies, {
-    fid,
-    lastRegisterTime: Date.now(),
-    vapidKey: messaging.vapidKey
-  });
-  notifyOnRegistered(messaging, fid);
+  await _registerFidInternal.registerFcmRegistrationWithFid(messaging, fid);
+  await _idbManagerInternal.dbSetFidRegistration(
+    messaging.firebaseDependencies,
+    {
+      fid,
+      lastRegisterTime: Date.now(),
+      vapidKey: messaging.vapidKey
+    }
+  );
+  _tokenManagerInternal.notifyOnRegistered(messaging, fid);
   return fid;
 }
 
@@ -67,18 +68,26 @@ export function subscribeFidChangeRegistration(
   messaging: MessagingService,
   installations: Installations
 ): IdChangeUnsubscribeFn {
-  return onIdChange(installations, () => {
+  return installationsApiInternal.onIdChange(installations, () => {
     void (async () => {
       if (!messaging.onRegisteredHandler) {
         return;
       }
-      const stored = await dbGetFidRegistration(messaging.firebaseDependencies);
+      const stored = await _idbManagerInternal.dbGetFidRegistration(
+        messaging.firebaseDependencies
+      );
       if (!stored) {
         return;
       }
-      await register(messaging).catch(() => {
+      await _registerInternal.register(messaging).catch(() => {
         // Best-effort: permission may be revoked or SW unavailable after FID rotation.
       });
     })();
   });
 }
+
+// Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+export const _fidChangeRegistrationInternal = {
+  refreshFidRegistrationIfStored,
+  subscribeFidChangeRegistration
+};

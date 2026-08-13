@@ -96,6 +96,7 @@
     "test:integration:local": "run-s --npm-path npm test:node:integration:local test:browser:integration:local test:webdriver",
     "test:browser": "karma start --local",
     "test:browser:unit": "karma start --unit",
+    "test:vitest:browser": "vitest run --config vitest.config.browser.mjs",
     "test:browser:integration": "karma start --integration",
     "test:browser:integration:local": "karma start --integration --local",
     "test:browser:integration:prodbackend": "karma start --integration --prodbackend",

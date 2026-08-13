@@ -202,13 +202,16 @@ describe('platform_cordova/popup_redirect/events', () => {
       event = _generateNewEvent(auth, AuthEventType.REAUTH_VIA_REDIRECT);
     });
 
-    it('triggers passive listeners on events', done => {
-      eventManager.addPassiveListener(actual => {
-        expect(actual).to.eq(event);
-        done();
-      });
+    // Fix Vitest error: "done() callback is deprecated, use promise instead"
+    it('triggers passive listeners on events', () => {
+      return new Promise<void>(resolve => {
+        eventManager.addPassiveListener(actual => {
+          expect(actual).to.eq(event);
+          resolve();
+        });
 
-      eventManager.onEvent(event);
+        eventManager.onEvent(event);
+      });
     });
 
     it('removes passive listeners properly', () => {

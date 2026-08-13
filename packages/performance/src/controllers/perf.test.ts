@@ -48,7 +48,12 @@ describe('Firebase Performance Test', () => {
   describe('#constructor', () => {
     it('does not initialize performance if the required apis are not available', () => {
       stub(Api.prototype, 'requiredApisAvailable').returns(false);
-      stub(initializationService, 'getInitializationPromise');
+      // Stub _initializationServiceInternal to avoid Vitest error:
+      // "TypeError: ES Modules cannot be stubbed"
+      const getInitPromiseStub = stub(
+        initializationService._initializationServiceInternal,
+        'getInitializationPromise'
+      );
       stub(consoleLogger, 'info');
       const performanceController = new PerformanceController(
         fakeFirebaseApp,
@@ -56,7 +61,7 @@ describe('Firebase Performance Test', () => {
       );
       performanceController._init();
 
-      expect(initializationService.getInitializationPromise).not.be.called;
+      expect(getInitPromiseStub).not.be.called;
       expect(consoleLogger.info).to.be.calledWithMatch(
         /.*Fetch.*Promise.*cookies.*/
       );

@@ -71,7 +71,7 @@ async function validateIndexedDB(): Promise<boolean> {
  *
  * @returns Measurement ID.
  */
-export async function _initializeAnalytics(
+const defaultInitializeAnalytics = async (
   app: FirebaseApp,
   dynamicConfigPromisesList: Array<
     Promise<DynamicConfig | MinimalDynamicConfig>
@@ -81,7 +81,7 @@ export async function _initializeAnalytics(
   gtagCore: Gtag,
   dataLayerName: string,
   options?: AnalyticsSettings
-): Promise<string> {
+): Promise<string> => {
   const dynamicConfigPromise = fetchDynamicConfigWithRetry(app);
   // Once fetched, map measurementIds to appId, for ease of lookup in wrapped gtag function.
   dynamicConfigPromise
@@ -161,4 +161,30 @@ export async function _initializeAnalytics(
   }
 
   return dynamicConfig.measurementId;
+};
+
+export const _initializeAnalyticsInternal = {
+  _initializeAnalytics: defaultInitializeAnalytics
+};
+
+export async function _initializeAnalytics(
+  app: FirebaseApp,
+  dynamicConfigPromisesList: Array<
+    Promise<DynamicConfig | MinimalDynamicConfig>
+  >,
+  measurementIdToAppId: { [key: string]: string },
+  installations: _FirebaseInstallationsInternal,
+  gtagCore: Gtag,
+  dataLayerName: string,
+  options?: AnalyticsSettings
+): Promise<string> {
+  return _initializeAnalyticsInternal._initializeAnalytics(
+    app,
+    dynamicConfigPromisesList,
+    measurementIdToAppId,
+    installations,
+    gtagCore,
+    dataLayerName,
+    options
+  );
 }

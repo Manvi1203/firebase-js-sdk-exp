@@ -61,7 +61,9 @@ describe('countTokens()', () => {
       'vertexAI',
       'unary-success-total-tokens.json'
     );
-    const makeRequestStub = stub(request, 'makeRequest').resolves(
+    // Stub request._requestInternal to avoid Vitest error:
+    // "TypeError: ES Modules cannot be stubbed"
+    const makeRequestStub = stub(request._requestInternal, 'makeRequest').resolves(
       mockResponse as Response
     );
     const result = await countTokens(
@@ -89,7 +91,9 @@ describe('countTokens()', () => {
       'vertexAI',
       'unary-success-detailed-token-response.json'
     );
-    const makeRequestStub = stub(request, 'makeRequest').resolves(
+    // Stub request._requestInternal to avoid Vitest error:
+    // "TypeError: ES Modules cannot be stubbed"
+    const makeRequestStub = stub(request._requestInternal, 'makeRequest').resolves(
       mockResponse as Response
     );
     const result = await countTokens(
@@ -120,7 +124,9 @@ describe('countTokens()', () => {
       'vertexAI',
       'unary-success-no-billable-characters.json'
     );
-    const makeRequestStub = stub(request, 'makeRequest').resolves(
+    // Stub request._requestInternal to avoid Vitest error:
+    // "TypeError: ES Modules cannot be stubbed"
+    const makeRequestStub = stub(request._requestInternal, 'makeRequest').resolves(
       mockResponse as Response
     );
     const result = await countTokens(
@@ -168,7 +174,9 @@ describe('countTokens()', () => {
     let makeRequestStub: Sinon.SinonStub;
 
     beforeEach(() => {
-      makeRequestStub = stub(request, 'makeRequest');
+      // Stub request._requestInternal to avoid Vitest error:
+      // "TypeError: ES Modules cannot be stubbed"
+      makeRequestStub = stub(request._requestInternal, 'makeRequest');
     });
 
     afterEach(() => {

@@ -26,3 +26,8 @@ export function _isHttpOrHttps(): boolean {
 export function _getCurrentScheme(): string | null {
   return (typeof self !== 'undefined' && self.location?.protocol) || null;
 }
+
+// Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+export const _locationInternal = {
+  _getCurrentUrl
+};

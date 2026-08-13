@@ -15,9 +15,10 @@
  * limitations under the License.
  */
 
+// Fix Vitest error: type-only exports in api_pipelines.ts
 export { PipelineSource, subcollection } from './lite-api/pipeline-source';
 
-export { OneOf } from './util/types';
+export type { OneOf } from './util/types';
 
 export {
   PipelineResult,
@@ -29,9 +30,9 @@ export { Pipeline } from './api/pipeline';
 
 export { execute } from './api/pipeline_impl';
 
-export { PipelineExecuteOptions } from './lite-api/pipeline_options';
+export type { PipelineExecuteOptions } from './lite-api/pipeline_options';
 
-export {
+export type {
   StageOptions,
   CollectionStageOptions,
   CollectionGroupStageOptions,
@@ -58,17 +59,40 @@ export {
   // QueryEnhancement
 } from './lite-api/stage_options';
 
+export type {
+  ExpressionType,
+  Selectable,
+  TimeGranularity,
+  TimePart,
+  TimeUnit
+} from './lite-api/expressions';
+
 export {
+  Expression,
+  field,
+  and,
   constant,
   add,
   subtract,
   multiply,
+  average,
+  substring,
+  count,
+  mapMerge,
+  mapRemove,
+  ifError,
+  isAbsent,
+  isError,
+  or,
   divide,
-  field,
+  map,
   mod,
+  documentId,
+  parent,
   equal,
   notEqual,
   lessThan,
+  countIf,
   lessThanOrEqual,
   greaterThan,
   greaterThanOrEqual,
@@ -78,10 +102,10 @@ export {
   arrayContainsAny,
   arrayContainsAll,
   arrayFilter,
-  arrayTransform,
-  arrayTransformWithIndex,
   arrayFirst,
   arrayFirstN,
+  arrayTransform,
+  arrayTransformWithIndex,
   arrayGet,
   arraySlice,
   arrayIndexOf,
@@ -133,11 +157,6 @@ export {
   mapValues,
   mapEntries,
   countAll,
-  count,
-  sum,
-  average,
-  and,
-  or,
   minimum,
   maximum,
   first,
@@ -159,16 +178,8 @@ export {
   timestampDiff,
   ascending,
   descending,
-  countIf,
-  isError,
-  ifError,
-  isAbsent,
-  map,
-  mapRemove,
-  mapMerge,
-  documentId,
-  parent,
-  substring,
+  abs,
+  sum,
   countDistinct,
   ceil,
   floor,
@@ -182,41 +193,32 @@ export {
   sqrt,
   trunc,
   stringReverse,
-  length,
-  abs,
+  log10,
   concat,
   currentTimestamp,
   ifAbsent,
   ifNull,
   coalesce,
   join,
-  log10,
+  length,
   arraySum,
-  timestampTruncate,
-  timestampExtract,
   split,
+  timestampTruncate,
   variable,
   currentDocument,
-  score,
-  documentMatches,
-  geoDistance,
-  // TODO(search) add with backend support
+  timestampExtract,
   // snippet,
   // SnippetOptions,
+  score,
   // matches,
-  Expression,
+  documentMatches,
+  geoDistance,
   AliasedExpression,
   Field,
+  Constant,
   FunctionExpression,
   Ordering,
-  BooleanExpression,
-  AggregateFunction,
-  ExpressionType,
   AliasedAggregate,
-  Selectable,
-  TimeGranularity,
-  TimePart,
-  TimeUnit
+  BooleanExpression,
+  AggregateFunction
 } from './lite-api/expressions';
-
-export { _internalPipelineToExecutePipelineRequestProto } from './remote/internal_serializer';

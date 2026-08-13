@@ -23,17 +23,13 @@ import {
   calculateBackoffMillis
 } from '@firebase/util';
 import {
-  exchangeToken,
-  getExchangeRecaptchaEnterpriseTokenRequest,
-  getExchangeRecaptchaV3TokenRequest
+  _clientInternal
 } from './client';
 import { ONE_DAY } from './constants';
 import { AppCheckError, ERROR_FACTORY } from './errors';
 import { CustomProviderOptions } from './public-types';
 import {
-  getToken as getReCAPTCHAToken,
-  initializeV3 as initializeRecaptchaV3,
-  initializeEnterprise as initializeRecaptchaEnterprise
+  _recaptchaInternal
 } from './recaptcha';
 import { getStateReference } from './state';
 import { AppCheckProvider, AppCheckTokenInternal, ThrottleData } from './types';
@@ -70,7 +66,7 @@ export class ReCaptchaV3Provider implements AppCheckProvider {
 
     // Top-level `getToken()` has already checked that App Check is initialized
     // and therefore this._app and this._heartbeatServiceProvider are available.
-    const attestedClaimsToken = await getReCAPTCHAToken(this._app!).catch(
+    const attestedClaimsToken = await _recaptchaInternal.getToken(this._app!).catch(
       _e => {
         // reCaptcha.execute() throws null which is not very descriptive.
         throw ERROR_FACTORY.create(AppCheckError.RECAPTCHA_ERROR);
@@ -82,14 +78,14 @@ export class ReCaptchaV3Provider implements AppCheckProvider {
     }
     let result;
     try {
-      const request = getExchangeRecaptchaV3TokenRequest(
+      const request = _clientInternal.getExchangeRecaptchaV3TokenRequest(
         this._app!,
         attestedClaimsToken
       );
       if (isLimitedUse) {
         request.body['limited_use'] = true;
       }
-      result = await exchangeToken(request, this._heartbeatServiceProvider!);
+      result = await _clientInternal.exchangeToken(request, this._heartbeatServiceProvider!);
     } catch (e) {
       if (
         (e as FirebaseError).code?.includes(AppCheckError.FETCH_STATUS_ERROR)
@@ -119,7 +115,7 @@ export class ReCaptchaV3Provider implements AppCheckProvider {
   initialize(app: FirebaseApp): void {
     this._app = app;
     this._heartbeatServiceProvider = _getProvider(app, 'heartbeat');
-    initializeRecaptchaV3(app, this._siteKey).catch(() => {
+    _recaptchaInternal.initializeV3(app, this._siteKey).catch(() => {
       /* we don't care about the initialization result */
     });
   }
@@ -166,7 +162,7 @@ export class ReCaptchaEnterpriseProvider implements AppCheckProvider {
     throwIfThrottled(this._throttleData);
     // Top-level `getToken()` has already checked that App Check is initialized
     // and therefore this._app and this._heartbeatServiceProvider are available.
-    const attestedClaimsToken = await getReCAPTCHAToken(this._app!).catch(
+    const attestedClaimsToken = await _recaptchaInternal.getToken(this._app!).catch(
       _e => {
         // reCaptcha.execute() throws null which is not very descriptive.
         throw ERROR_FACTORY.create(AppCheckError.RECAPTCHA_ERROR);
@@ -178,14 +174,14 @@ export class ReCaptchaEnterpriseProvider implements AppCheckProvider {
     }
     let result;
     try {
-      const request = getExchangeRecaptchaEnterpriseTokenRequest(
+      const request = _clientInternal.getExchangeRecaptchaEnterpriseTokenRequest(
         this._app!,
         attestedClaimsToken
       );
       if (isLimitedUse) {
         request.body['limited_use'] = true;
       }
-      result = await exchangeToken(request, this._heartbeatServiceProvider!);
+      result = await _clientInternal.exchangeToken(request, this._heartbeatServiceProvider!);
     } catch (e) {
       if (
         (e as FirebaseError).code?.includes(AppCheckError.FETCH_STATUS_ERROR)
@@ -215,7 +211,7 @@ export class ReCaptchaEnterpriseProvider implements AppCheckProvider {
   initialize(app: FirebaseApp): void {
     this._app = app;
     this._heartbeatServiceProvider = _getProvider(app, 'heartbeat');
-    initializeRecaptchaEnterprise(app, this._siteKey).catch(() => {
+    _recaptchaInternal.initializeEnterprise(app, this._siteKey).catch(() => {
       /* we don't care about the initialization result */
     });
   }

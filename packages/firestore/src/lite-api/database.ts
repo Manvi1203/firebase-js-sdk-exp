@@ -51,7 +51,8 @@ import {
   FirestoreSettings
 } from './settings';
 
-export { EmulatorMockTokenOptions } from '@firebase/util';
+// Fix Vitest error: "SyntaxError: The requested module ... does not provide an export named 'EmulatorMockTokenOptions'"
+export type { EmulatorMockTokenOptions } from '@firebase/util';
 
 declare module '@firebase/component' {
   interface NameServiceMapping {

@@ -94,9 +94,15 @@ export class StorageServiceCompat
       mockUserToken?: EmulatorMockTokenOptions | string;
     } = {}
   ): void {
-    connectStorageEmulator(this._delegate, host, port, options);
+    _serviceInternal.connectStorageEmulator(this._delegate, host, port, options);
   }
 }
+
+// Fix Vitest error: "TypeError: Cannot redefine property: connectStorageEmulator"
+// Module namespace objects are non-extensible/immutable in standard ESM.
+export const _serviceInternal = {
+  connectStorageEmulator
+};
 
 function isUrl(path?: string): boolean {
   return /^[A-Za-z]+:\/\//.test(path as string);

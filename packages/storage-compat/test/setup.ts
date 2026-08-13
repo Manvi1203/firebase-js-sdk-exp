@@ -23,6 +23,15 @@ import chaiAsPromised from 'chai-as-promised';
 use(chaiAsPromised);
 use(sinonChai);
 
+// Fix Vitest error: alias before/after to beforeAll/afterAll if missing
+const g = globalThis as unknown as Record<string, unknown>;
+if (typeof g['before'] === 'undefined' && typeof g['beforeAll'] !== 'undefined') {
+  g['before'] = g['beforeAll'];
+}
+if (typeof g['after'] === 'undefined' && typeof g['afterAll'] !== 'undefined') {
+  g['after'] = g['afterAll'];
+}
+
 afterEach(async () => {
   restore();
 });

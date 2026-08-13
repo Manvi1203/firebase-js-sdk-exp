@@ -22,20 +22,37 @@ import { expect } from 'chai';
 import {
   getDoc,
   getFirestore,
+  connectFirestoreEmulator,
   doc,
   enableIndexedDbPersistence,
   disableNetwork,
   setDoc
 } from '../../../src';
+import { USE_EMULATOR, getEmulatorPort } from '../util/settings';
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const firebaseConfig = require('../../../../../config/project.json');
+// Fix Vitest error: "Failed to resolve import config/project.json" / "ReferenceError: require is not defined"
+let firebaseConfig: Record<string, string> = {};
+try {
+  firebaseConfig =
+    typeof require !== 'undefined'
+      ? // eslint-disable-next-line @typescript-eslint/no-require-imports
+        require('../../../../../config/project.json')
+      : {};
+} catch {
+  firebaseConfig = {};
+}
 
 let appCount = 0;
 
 function getNextApp(): FirebaseApp {
   const name = 'initialization-test-app-' + appCount++;
-  return initializeApp(firebaseConfig, name);
+  // Fix Vitest error: provide fallback projectId/apiKey when config/project.json is missing
+  const options = {
+    apiKey: 'fake-api-key',
+    projectId: process.env.FIRESTORE_EMULATOR_PROJECT_ID || 'test-emulator',
+    ...firebaseConfig
+  };
+  return initializeApp(options, name);
 }
 
 describe('Initialization', () => {
@@ -48,12 +65,18 @@ describe('Initialization', () => {
   it('getAuth() before getFirestore()', () => {
     getAuth(app);
     const firestore = getFirestore(app);
+    if (USE_EMULATOR) {
+      connectFirestoreEmulator(firestore, 'localhost', getEmulatorPort());
+    }
     const testDoc = doc(firestore, 'coll/doc');
     return getDoc(testDoc);
   });
 
   it('getFirestore() before getAuth()', () => {
     const firestore = getFirestore(app);
+    if (USE_EMULATOR) {
+      connectFirestoreEmulator(firestore, 'localhost', getEmulatorPort());
+    }
     getAuth(app);
     const testDoc = doc(firestore, 'coll/doc');
     return getDoc(testDoc);
@@ -61,6 +84,9 @@ describe('Initialization', () => {
 
   it('lazy-loaded getAuth()', () => {
     const firestore = getFirestore(app);
+    if (USE_EMULATOR) {
+      connectFirestoreEmulator(firestore, 'localhost', getEmulatorPort());
+    }
     void Promise.resolve(() => getAuth(app));
     const testDoc = doc(firestore, 'coll/doc');
     return getDoc(testDoc);
@@ -68,6 +94,9 @@ describe('Initialization', () => {
 
   it('getDoc() before getAuth()', () => {
     const firestore = getFirestore(app);
+    if (USE_EMULATOR) {
+      connectFirestoreEmulator(firestore, 'localhost', getEmulatorPort());
+    }
     const testDoc = doc(firestore, 'coll/doc');
     const promise = getDoc(testDoc);
     getAuth(app);
@@ -132,6 +161,9 @@ describe('Initialization', () => {
       it('getAuth() before explicitly initializing Firestore', () => {
         getAuth(app);
         const firestore = getFirestore(app);
+        if (USE_EMULATOR) {
+          connectFirestoreEmulator(firestore, 'localhost', getEmulatorPort());
+        }
         void enableIndexedDbPersistence(firestore);
         const testDoc = doc(firestore, 'coll/doc');
         return getDoc(testDoc);
@@ -139,6 +171,9 @@ describe('Initialization', () => {
 
       it('explicitly initialize Firestore before getAuth()', () => {
         const firestore = getFirestore(app);
+        if (USE_EMULATOR) {
+          connectFirestoreEmulator(firestore, 'localhost', getEmulatorPort());
+        }
         void enableIndexedDbPersistence(firestore);
         getAuth(app);
         const testDoc = doc(firestore, 'coll/doc');
@@ -147,6 +182,9 @@ describe('Initialization', () => {
 
       it('getFirestore() followed by getAuth() followed by explicitly initialization', () => {
         const firestore = getFirestore(app);
+        if (USE_EMULATOR) {
+          connectFirestoreEmulator(firestore, 'localhost', getEmulatorPort());
+        }
         getAuth(app);
         void enableIndexedDbPersistence(firestore);
         const testDoc = doc(firestore, 'coll/doc');

@@ -150,9 +150,16 @@ export const fatal = function (...varArgs: string[]) {
   throw new Error(message);
 };
 
+// Fix Vitest error: "TypeError: ES Modules cannot be spied"
+export const _utilInternal = {
+  warn(...varArgs: unknown[]) {
+    const message = 'FIREBASE WARNING: ' + buildLogMessage_(...varArgs);
+    logClient.warn(message);
+  }
+};
+
 export const warn = function (...varArgs: unknown[]) {
-  const message = 'FIREBASE WARNING: ' + buildLogMessage_(...varArgs);
-  logClient.warn(message);
+  _utilInternal.warn(...varArgs);
 };
 
 /**

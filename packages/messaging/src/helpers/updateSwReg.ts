@@ -38,3 +38,8 @@ export async function updateSwReg(
 
   messaging.swRegistration = swRegistration;
 }
+
+// Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+export const _updateSwRegInternal = {
+  updateSwReg
+};

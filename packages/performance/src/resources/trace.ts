@@ -31,7 +31,7 @@ import {
   CUMULATIVE_LAYOUT_SHIFT_ATTRIBUTE_NAME
 } from '../constants';
 import { Api } from '../services/api_service';
-import { logTrace, flushLogs } from '../services/perf_logger';
+import { _perfLoggerInternal } from '../services/perf_logger';
 import { ERROR_FACTORY, ErrorCode } from '../utils/errors';
 import {
   MAX_ATTRIBUTE_VALUE_LENGTH,
@@ -124,7 +124,7 @@ export class Trace implements PerformanceTrace {
       this.traceStopMark
     );
     this.calculateTraceMetrics();
-    logTrace(this);
+    _perfLoggerInternal.logTrace(this);
   }
 
   /**
@@ -167,7 +167,7 @@ export class Trace implements PerformanceTrace {
         }
       }
     }
-    logTrace(this);
+    _perfLoggerInternal.logTrace(this);
   }
 
   /**
@@ -370,8 +370,8 @@ export class Trace implements PerformanceTrace {
 
     // Page load logs are sent at unload time and so should be logged and
     // flushed immediately.
-    logTrace(trace);
-    flushLogs();
+    _perfLoggerInternal.logTrace(trace);
+    _perfLoggerInternal.flushLogs();
   }
 
   static addWebVitalMetric(
@@ -405,6 +405,6 @@ export class Trace implements PerformanceTrace {
       false,
       measureName
     );
-    logTrace(trace);
+    _perfLoggerInternal.logTrace(trace);
   }
 }

@@ -26,8 +26,9 @@ import {
   getFakeInstallations
 } from '../testing/fakes/firebase-dependencies';
 import { unregister } from './unregister';
-import * as idbManager from '../internals/idb-manager';
-import * as requestsModule from '../internals/requests';
+// Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+import { _idbManagerInternal } from '../internals/idb-manager';
+import { _requestsInternal } from '../internals/requests';
 
 describe('unregister', () => {
   let messaging: MessagingService;
@@ -45,13 +46,14 @@ describe('unregister', () => {
     const onUnregisteredSpy = stub();
     messaging.onUnregisteredHandler = onUnregisteredSpy;
 
-    const dbGetStub = stub(idbManager, 'dbGetFidRegistration').resolves({
+    // Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+    const dbGetStub = stub(_idbManagerInternal, 'dbGetFidRegistration').resolves({
       fid,
       lastRegisterTime: Date.now()
     });
-    const dbRemoveStub = stub(idbManager, 'dbRemoveFidRegistration').resolves();
+    const dbRemoveStub = stub(_idbManagerInternal, 'dbRemoveFidRegistration').resolves();
     const deleteRegStub = stub(
-      requestsModule,
+      _requestsInternal,
       'requestDeleteRegistration'
     ).resolves();
     const getIdStub = stub(
@@ -75,12 +77,13 @@ describe('unregister', () => {
     const fid = 'FID_FROM_INSTALLATIONS';
     messaging.onUnregisteredHandler = stub();
 
-    const dbGetStub = stub(idbManager, 'dbGetFidRegistration').resolves(
+    // Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+    const dbGetStub = stub(_idbManagerInternal, 'dbGetFidRegistration').resolves(
       undefined
     );
-    const dbRemoveStub = stub(idbManager, 'dbRemoveFidRegistration').resolves();
+    const dbRemoveStub = stub(_idbManagerInternal, 'dbRemoveFidRegistration').resolves();
     const deleteRegStub = stub(
-      requestsModule,
+      _requestsInternal,
       'requestDeleteRegistration'
     ).resolves();
     const getIdStub = stub(
@@ -103,12 +106,13 @@ describe('unregister', () => {
     const fid = 'FID';
     messaging.onUnregisteredHandler = null;
 
-    stub(idbManager, 'dbGetFidRegistration').resolves({
+    // Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+    stub(_idbManagerInternal, 'dbGetFidRegistration').resolves({
       fid,
       lastRegisterTime: Date.now()
     });
-    stub(idbManager, 'dbRemoveFidRegistration').resolves();
-    stub(requestsModule, 'requestDeleteRegistration').resolves();
+    stub(_idbManagerInternal, 'dbRemoveFidRegistration').resolves();
+    stub(_requestsInternal, 'requestDeleteRegistration').resolves();
 
     await unregister(messaging);
   });
@@ -118,21 +122,22 @@ describe('unregister', () => {
     const onUnregisteredSpy = stub();
     messaging.onUnregisteredHandler = onUnregisteredSpy;
 
-    stub(idbManager, 'dbGetFidRegistration').resolves({
+    // Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+    stub(_idbManagerInternal, 'dbGetFidRegistration').resolves({
       fid,
       lastRegisterTime: Date.now()
     });
-    stub(idbManager, 'dbRemoveFidRegistration').resolves();
+    stub(_idbManagerInternal, 'dbRemoveFidRegistration').resolves();
     const deleteRegStub = stub(
-      requestsModule,
+      _requestsInternal,
       'requestDeleteRegistration'
     ).resolves();
 
     // Guard rails: unregister() should clean up legacy token DB, but must not call legacy
     // requestDeleteToken(). The DB cleanup is best-effort.
-    const legacyDbRemoveStub = stub(idbManager, 'dbRemove').resolves();
+    const legacyDbRemoveStub = stub(_idbManagerInternal, 'dbRemove').resolves();
     const legacyDeleteTokenReqStub = stub(
-      requestsModule,
+      _requestsInternal,
       'requestDeleteToken'
     ).throws(new Error('unexpected requestDeleteToken()'));
 
@@ -154,12 +159,13 @@ describe('unregister', () => {
     const onUnregisteredSpy = stub();
     messaging.onUnregisteredHandler = onUnregisteredSpy;
 
-    stub(idbManager, 'dbGetFidRegistration').resolves({
+    // Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+    stub(_idbManagerInternal, 'dbGetFidRegistration').resolves({
       fid,
       lastRegisterTime: Date.now()
     });
-    const dbRemoveStub = stub(idbManager, 'dbRemoveFidRegistration').resolves();
-    stub(requestsModule, 'requestDeleteRegistration').rejects(
+    const dbRemoveStub = stub(_idbManagerInternal, 'dbRemoveFidRegistration').resolves();
+    stub(_requestsInternal, 'requestDeleteRegistration').rejects(
       new Error('boom')
     );
 

@@ -18,7 +18,7 @@
 import { FirebaseApp } from '@firebase/app';
 import { getStateReference } from './state';
 import { Deferred } from '@firebase/util';
-import { getRecaptcha, ensureActivated } from './util';
+import { _utilInternal, ensureActivated } from './util';
 
 export const RECAPTCHA_URL = 'https://www.google.com/recaptcha/api.js';
 export const RECAPTCHA_ENTERPRISE_URL =
@@ -35,10 +35,10 @@ export function initializeV3(
 
   const divId = makeDiv(app);
 
-  const grecaptcha = getRecaptcha(false);
+  const grecaptcha = _utilInternal.getRecaptcha(false);
   if (!grecaptcha) {
     loadReCAPTCHAV3Script(() => {
-      const grecaptcha = getRecaptcha(false);
+      const grecaptcha = _utilInternal.getRecaptcha(false);
 
       if (!grecaptcha) {
         // it shouldn't happen.
@@ -62,10 +62,10 @@ export function initializeEnterprise(
 
   const divId = makeDiv(app);
 
-  const grecaptcha = getRecaptcha(true);
+  const grecaptcha = _utilInternal.getRecaptcha(true);
   if (!grecaptcha) {
     loadReCAPTCHAEnterpriseScript(() => {
-      const grecaptcha = getRecaptcha(true);
+      const grecaptcha = _utilInternal.getRecaptcha(true);
 
       if (!grecaptcha) {
         // it shouldn't happen.
@@ -166,7 +166,7 @@ function renderInvisibleWidget(
 
 function loadReCAPTCHAV3Script(onload: () => void): void {
   const script = document.createElement('script');
-  script.src = RECAPTCHA_URL;
+  (script as unknown as Record<string, unknown>)['src'] = RECAPTCHA_URL;
   script.onload = onload;
   document.head.appendChild(script);
 }
@@ -174,7 +174,8 @@ function loadReCAPTCHAV3Script(onload: () => void): void {
 function loadReCAPTCHAEnterpriseScript(onload: () => void): void {
   const script = document.createElement('script');
   // This param is required when we plan to render a widget explicitly.
-  script.src = RECAPTCHA_ENTERPRISE_URL + '?render=explicit';
+  (script as unknown as Record<string, unknown>)['src'] =
+    RECAPTCHA_ENTERPRISE_URL + '?render=explicit';
   script.onload = onload;
   document.head.appendChild(script);
 }
@@ -204,3 +205,9 @@ export interface GreCAPTCHARenderOption {
   callback: () => void;
   'error-callback': () => void;
 }
+
+export const _recaptchaInternal = {
+  initializeV3,
+  initializeEnterprise,
+  getToken
+};

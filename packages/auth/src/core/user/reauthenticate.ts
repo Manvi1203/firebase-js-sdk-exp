@@ -28,43 +28,58 @@ import { UserCredentialImpl } from './user_credential_impl';
 import { _isFirebaseServerApp } from '@firebase/app';
 import { _serverAppCurrentUserOperationNotSupportedError } from '../../core/util/assert';
 
+// Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+export const _reauthenticateInternal = {
+  async _reauthenticate(
+    user: UserInternal,
+    credential: AuthCredential,
+    bypassAuthState = false
+  ): Promise<UserCredentialImpl> {
+    const { auth } = user;
+    if (_isFirebaseServerApp(auth.app)) {
+      return Promise.reject(
+        _serverAppCurrentUserOperationNotSupportedError(auth)
+      );
+    }
+    const operationType = OperationType.REAUTHENTICATE;
+
+    try {
+      const response = await _logoutIfInvalidated(
+        user,
+        _processCredentialSavingMfaContextIfNecessary(
+          auth,
+          operationType,
+          credential,
+          user
+        ),
+        bypassAuthState
+      );
+      _assert(response.idToken, auth, AuthErrorCode.INTERNAL_ERROR);
+      const parsed = _parseToken(response.idToken);
+      _assert(parsed, auth, AuthErrorCode.INTERNAL_ERROR);
+
+      const { sub: localId } = parsed;
+      _assert(user.uid === localId, auth, AuthErrorCode.USER_MISMATCH);
+
+      return UserCredentialImpl._forOperation(user, operationType, response);
+    } catch (e) {
+      // Convert user deleted error into user mismatch
+      if ((e as FirebaseError)?.code === `auth/${AuthErrorCode.USER_DELETED}`) {
+        _fail(auth, AuthErrorCode.USER_MISMATCH);
+      }
+      throw e;
+    }
+  }
+};
+
 export async function _reauthenticate(
   user: UserInternal,
   credential: AuthCredential,
   bypassAuthState = false
 ): Promise<UserCredentialImpl> {
-  const { auth } = user;
-  if (_isFirebaseServerApp(auth.app)) {
-    return Promise.reject(
-      _serverAppCurrentUserOperationNotSupportedError(auth)
-    );
-  }
-  const operationType = OperationType.REAUTHENTICATE;
-
-  try {
-    const response = await _logoutIfInvalidated(
-      user,
-      _processCredentialSavingMfaContextIfNecessary(
-        auth,
-        operationType,
-        credential,
-        user
-      ),
-      bypassAuthState
-    );
-    _assert(response.idToken, auth, AuthErrorCode.INTERNAL_ERROR);
-    const parsed = _parseToken(response.idToken);
-    _assert(parsed, auth, AuthErrorCode.INTERNAL_ERROR);
-
-    const { sub: localId } = parsed;
-    _assert(user.uid === localId, auth, AuthErrorCode.USER_MISMATCH);
-
-    return UserCredentialImpl._forOperation(user, operationType, response);
-  } catch (e) {
-    // Convert user deleted error into user mismatch
-    if ((e as FirebaseError)?.code === `auth/${AuthErrorCode.USER_DELETED}`) {
-      _fail(auth, AuthErrorCode.USER_MISMATCH);
-    }
-    throw e;
-  }
+  return _reauthenticateInternal._reauthenticate(
+    user,
+    credential,
+    bypassAuthState
+  );
 }

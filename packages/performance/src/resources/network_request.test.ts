@@ -39,9 +39,16 @@ describe('Firebase Performance > network_request', () => {
     fakeInstallations
   );
 
+  let logNetworkRequestStub: SinonStub;
+
   beforeEach(() => {
     stub(Api.prototype, 'getTimeOrigin').returns(1528521843799.5032);
-    stub(perfLogger, 'logNetworkRequest');
+    // Stub _perfLoggerInternal to avoid Vitest error:
+    // "TypeError: ES Modules cannot be stubbed"
+    logNetworkRequestStub = stub(
+      perfLogger._perfLoggerInternal,
+      'logNetworkRequest'
+    );
   });
 
   afterEach(() => {
@@ -70,9 +77,7 @@ describe('Firebase Performance > network_request', () => {
       createNetworkRequestEntry(performanceController, PERFORMANCE_ENTRY);
 
       expect(
-        (perfLogger.logNetworkRequest as any).calledWith(
-          EXPECTED_NETWORK_REQUEST
-        )
+        (logNetworkRequestStub as any).calledWith(EXPECTED_NETWORK_REQUEST)
       ).to.be.true;
     });
 
@@ -86,7 +91,7 @@ describe('Firebase Performance > network_request', () => {
 
       createNetworkRequestEntry(performanceController, PERFORMANCE_ENTRY);
 
-      expect(perfLogger.logNetworkRequest).to.not.have.been.called;
+      expect(logNetworkRequestStub).to.not.have.been.called;
     });
   });
 });

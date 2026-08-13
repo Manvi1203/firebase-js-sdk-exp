@@ -82,34 +82,47 @@ describe('Performance Monitoring > perf_logger', () => {
   );
 
   beforeEach(() => {
-    getIidStub = stub(iidService, 'getIid');
+    // Stub _*Internal objects to avoid Vitest error: "TypeError: ES Modules cannot be stubbed"
+    getIidStub = stub(iidService._iidServiceInternal, 'getIid');
     addToQueueStub = stub();
-    stub(transportService, 'transportHandler').callsFake(mockTransportHandler);
+    stub(
+      transportService._transportServiceInternal,
+      'transportHandler'
+    ).callsFake(mockTransportHandler);
     stub(Api.prototype, 'getUrl').returns(PAGE_URL);
     stub(Api.prototype, 'getTimeOrigin').returns(TIME_ORIGIN);
-    stub(attributeUtils, 'getEffectiveConnectionType').returns(
-      EFFECTIVE_CONNECTION_TYPE
-    );
-    stub(attributeUtils, 'getServiceWorkerStatus').returns(
-      SERVICE_WORKER_STATUS
-    );
+    stub(
+      attributeUtils._attributesUtilsInternal,
+      'getEffectiveConnectionType'
+    ).returns(EFFECTIVE_CONNECTION_TYPE);
+    stub(
+      attributeUtils._attributesUtilsInternal,
+      'getServiceWorkerStatus'
+    ).returns(SERVICE_WORKER_STATUS);
     clock = useFakeTimers();
   });
 
   describe('logTrace', () => {
     it('will not drop custom events sent before initialization finishes', async () => {
       getIidStub.returns(IID);
-      stub(attributeUtils, 'getVisibilityState').returns(VISIBILITY_STATE);
-      stub(initializationService, 'isPerfInitialized').returns(false);
+      stub(
+        attributeUtils._attributesUtilsInternal,
+        'getVisibilityState'
+      ).returns(VISIBILITY_STATE);
+      stub(
+        initializationService._initializationServiceInternal,
+        'isPerfInitialized'
+      ).returns(false);
 
       // Simulates logging being enabled after initialization completes.
       const initializationPromise = Promise.resolve().then(() => {
         SettingsService.getInstance().loggingEnabled = true;
         SettingsService.getInstance().logTraceAfterSampling = true;
       });
-      stub(initializationService, 'getInitializationPromise').returns(
-        initializationPromise
-      );
+      stub(
+        initializationService._initializationServiceInternal,
+        'getInitializationPromise'
+      ).returns(initializationPromise);
 
       const trace = new Trace(performanceController, TRACE_NAME);
       trace.record(START_TIME, DURATION);
@@ -128,8 +141,14 @@ describe('Performance Monitoring > perf_logger', () => {
 "client_start_time_us":${START_TIME * 1000},"duration_us":${DURATION * 1000},\
 "counters":{"counter1":3},"custom_attributes":{"attr":"val"}}}`;
       getIidStub.returns(IID);
-      stub(attributeUtils, 'getVisibilityState').returns(VISIBILITY_STATE);
-      stub(initializationService, 'isPerfInitialized').returns(true);
+      stub(
+        attributeUtils._attributesUtilsInternal,
+        'getVisibilityState'
+      ).returns(VISIBILITY_STATE);
+      stub(
+        initializationService._initializationServiceInternal,
+        'isPerfInitialized'
+      ).returns(true);
       SettingsService.getInstance().loggingEnabled = true;
       SettingsService.getInstance().logTraceAfterSampling = true;
       const trace = new Trace(performanceController, TRACE_NAME);
@@ -146,8 +165,14 @@ describe('Performance Monitoring > perf_logger', () => {
 
     it('does not log an event if cookies are disabled in the browser', () => {
       stub(Api.prototype, 'requiredApisAvailable').returns(false);
-      stub(attributeUtils, 'getVisibilityState').returns(VISIBILITY_STATE);
-      stub(initializationService, 'isPerfInitialized').returns(true);
+      stub(
+        attributeUtils._attributesUtilsInternal,
+        'getVisibilityState'
+      ).returns(VISIBILITY_STATE);
+      stub(
+        initializationService._initializationServiceInternal,
+        'isPerfInitialized'
+      ).returns(true);
       const trace = new Trace(performanceController, TRACE_NAME);
       trace.record(START_TIME, DURATION);
       clock.tick(1);
@@ -168,8 +193,14 @@ describe('Performance Monitoring > perf_logger', () => {
 "counter25":25,"counter26":26,"counter27":27,"counter28":28,"counter29":29,"counter30":30,\
 "counter31":31,"counter32":32}}}`;
       getIidStub.returns(IID);
-      stub(attributeUtils, 'getVisibilityState').returns(VISIBILITY_STATE);
-      stub(initializationService, 'isPerfInitialized').returns(true);
+      stub(
+        attributeUtils._attributesUtilsInternal,
+        'getVisibilityState'
+      ).returns(VISIBILITY_STATE);
+      stub(
+        initializationService._initializationServiceInternal,
+        'isPerfInitialized'
+      ).returns(true);
       SettingsService.getInstance().loggingEnabled = true;
       SettingsService.getInstance().logTraceAfterSampling = true;
       const trace = new Trace(performanceController, TRACE_NAME);
@@ -193,8 +224,14 @@ describe('Performance Monitoring > perf_logger', () => {
 "client_start_time_us":${START_TIME * 1000},"duration_us":${DURATION * 1000},\
 "custom_attributes":{"attr1":"val1","attr2":"val2","attr3":"val3","attr4":"val4","attr5":"val5"}}}`;
       getIidStub.returns(IID);
-      stub(attributeUtils, 'getVisibilityState').returns(VISIBILITY_STATE);
-      stub(initializationService, 'isPerfInitialized').returns(true);
+      stub(
+        attributeUtils._attributesUtilsInternal,
+        'getVisibilityState'
+      ).returns(VISIBILITY_STATE);
+      stub(
+        initializationService._initializationServiceInternal,
+        'isPerfInitialized'
+      ).returns(true);
       SettingsService.getInstance().loggingEnabled = true;
       SettingsService.getInstance().logTraceAfterSampling = true;
       const trace = new Trace(performanceController, TRACE_NAME);
@@ -226,14 +263,18 @@ describe('Performance Monitoring > perf_logger', () => {
 "_fp":40000,"_fcp":50000,"_fid":90000,"_lcp":3999,"_cls":250,"_inp":100},\
 "custom_attributes":{"lcp_element":"lcp-element","cls_largestShiftTarget":"cls-element",\
 "inp_interactionTarget":"inp-element"}}}`;
-      stub(initializationService, 'isPerfInitialized').returns(true);
+      stub(
+        initializationService._initializationServiceInternal,
+        'isPerfInitialized'
+      ).returns(true);
       getIidStub.returns(IID);
       SettingsService.getInstance().loggingEnabled = true;
       SettingsService.getInstance().logTraceAfterSampling = true;
 
-      stub(attributeUtils, 'getVisibilityState').returns(
-        attributeUtils.VisibilityState.VISIBLE
-      );
+      stub(
+        attributeUtils._attributesUtilsInternal,
+        'getVisibilityState'
+      ).returns(attributeUtils.VisibilityState.VISIBLE);
 
       const navigationTiming: PerformanceNavigationTiming = {
         domComplete: 100,
@@ -338,9 +379,15 @@ describe('Performance Monitoring > perf_logger', () => {
 "response_payload_bytes":${RESOURCE_PERFORMANCE_ENTRY.transferSize},\
 "client_start_time_us":${START_TIME},\
 "time_to_response_completed_us":${TIME_TO_RESPONSE_COMPLETED}}}`;
-      stub(initializationService, 'isPerfInitialized').returns(true);
+      stub(
+        initializationService._initializationServiceInternal,
+        'isPerfInitialized'
+      ).returns(true);
       getIidStub.returns(IID);
-      stub(attributeUtils, 'getVisibilityState').returns(VISIBILITY_STATE);
+      stub(
+        attributeUtils._attributesUtilsInternal,
+        'getVisibilityState'
+      ).returns(VISIBILITY_STATE);
       SettingsService.getInstance().loggingEnabled = true;
       SettingsService.getInstance().logNetworkAfterSampling = true;
       // Calls logNetworkRequest under the hood.
@@ -384,7 +431,10 @@ describe('Performance Monitoring > perf_logger', () => {
         workerStart: 0,
         toJSON: () => {}
       };
-      stub(initializationService, 'isPerfInitialized').returns(true);
+      stub(
+        initializationService._initializationServiceInternal,
+        'isPerfInitialized'
+      ).returns(true);
       getIidStub.returns(IID);
       SettingsService.getInstance().loggingEnabled = true;
       SettingsService.getInstance().logNetworkAfterSampling = true;
@@ -429,7 +479,10 @@ describe('Performance Monitoring > perf_logger', () => {
         workerStart: 0,
         toJSON: () => {}
       };
-      stub(initializationService, 'isPerfInitialized').returns(true);
+      stub(
+        initializationService._initializationServiceInternal,
+        'isPerfInitialized'
+      ).returns(true);
       getIidStub.returns(IID);
       SettingsService.getInstance().loggingEnabled = true;
       SettingsService.getInstance().logNetworkAfterSampling = true;

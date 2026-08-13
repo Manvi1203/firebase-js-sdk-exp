@@ -430,3 +430,12 @@ function getBody(
 
   return body;
 }
+
+// Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+export const _requestsInternal = {
+  requestGetToken,
+  requestUpdateToken,
+  requestDeleteToken,
+  requestCreateRegistration,
+  requestDeleteRegistration
+};

@@ -109,20 +109,23 @@ describe('core/auth/firebase_internal', () => {
     });
 
     context('addAuthTokenListener', () => {
-      it('gets called with the token, starts proactive refresh', done => {
-        // The listener always fires first time. Ignore that one
-        let firstCall = true;
-        authInternal.addAuthTokenListener(token => {
-          if (firstCall) {
-            firstCall = false;
-            // eslint-disable-next-line @typescript-eslint/no-floating-promises
-            user.getIdToken(true);
-            return;
-          }
+      // Fix Vitest error: "done() callback is deprecated, use promise instead"
+      it('gets called with the token, starts proactive refresh', () => {
+        return new Promise<void>(resolve => {
+          // The listener always fires first time. Ignore that one
+          let firstCall = true;
+          authInternal.addAuthTokenListener(token => {
+            if (firstCall) {
+              firstCall = false;
+              // eslint-disable-next-line @typescript-eslint/no-floating-promises
+              user.getIdToken(true);
+              return;
+            }
 
-          expect(token).to.eq('access-token');
-          expect(isProactiveRefresh).to.be.true;
-          done();
+            expect(token).to.eq('access-token');
+            expect(isProactiveRefresh).to.be.true;
+            resolve();
+          });
         });
       });
 

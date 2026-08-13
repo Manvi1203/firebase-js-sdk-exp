@@ -66,7 +66,8 @@ describe('platform_browser/recaptcha/recaptcha_loader', () => {
     beforeEach(() => {
       triggerNetworkTimeout = stubSingleTimeout(networkTimeoutId);
 
-      sinon.stub(jsHelpers, '_loadJS').callsFake(() => {
+      // Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+      sinon.stub(jsHelpers._loadJsInternal, '_loadJS').callsFake(() => {
         return new Promise<void>((resolve, reject) => {
           jsLoader = { resolve, reject };
         }) as unknown as Promise<Event>;
@@ -100,14 +101,15 @@ describe('platform_browser/recaptcha/recaptcha_loader', () => {
         _window()[_JSLOAD_CALLBACK]();
       }
 
-      it('clears the network timeout', () => {
+      // Fix Vitest error: unhandled rejection on floating promise
+      it('clears the network timeout', async () => {
         sinon.spy(_window(), 'clearTimeout');
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        loader.load(auth);
+        const promise = loader.load(auth).catch(() => {});
         spoofJsLoad();
         expect(_window().clearTimeout).to.have.been.calledWith(
           networkTimeoutId
         );
+        await promise;
       });
 
       it('rejects if the grecaptcha object is not on the window', async () => {

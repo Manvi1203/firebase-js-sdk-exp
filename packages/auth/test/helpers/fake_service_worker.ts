@@ -51,8 +51,9 @@ export class FakeServiceWorker {
     listener: EventListenerOrEventListenerObject,
     _options?: boolean | EventListenerOptions
   ): void {
-    this.listeners[type].delete(listener);
-    if (this.listeners[type].size === 0) {
+    // Fix Vitest error: "TypeError: Cannot read properties of undefined (reading 'delete')"
+    this.listeners[type]?.delete(listener);
+    if (this.listeners[type]?.size === 0) {
       delete this.listeners[type];
     }
   }

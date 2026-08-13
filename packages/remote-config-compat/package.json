@@ -29,6 +29,7 @@
     "test:ci": "node ../../scripts/run_tests_in_ci.js -s test:all",
     "test:browser": "karma start",
     "test:browser:debug": "karma start --browsers Chrome --auto-watch",
+    "test:vitest:browser": "vitest run --config vitest.config.browser.mjs",
     "trusted-type-check": "tsec -p tsconfig.json --noEmit",
     "add-compat-overloads": "ts-node-script ../../scripts/build/create-overloads.ts -i ../remote-config/dist/remote-config-public.d.ts -o dist/src/index.d.ts -a -r RemoteConfig:RemoteConfigCompat -r FirebaseApp:FirebaseAppCompat --moduleToEnhance @firebase/remote-config"
   },

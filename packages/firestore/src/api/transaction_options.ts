@@ -15,4 +15,5 @@
  * limitations under the License.
  */
 
-export { TransactionOptions } from '../lite-api/transaction_options';
+// Fix Vitest error: type-only export for TransactionOptions
+export type { TransactionOptions } from '../lite-api/transaction_options';

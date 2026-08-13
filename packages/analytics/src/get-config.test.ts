@@ -45,7 +45,11 @@ function stubFetch(status: number, body: { [key: string]: any }): void {
 }
 
 describe('Dynamic Config Fetch Functions', () => {
-  afterEach(restore);
+  // Use arrow function to avoid Vitest error:
+  // "Error: sandbox.restore() does not take any parameters."
+  afterEach(() => {
+    restore();
+  });
   describe('fetchDynamicConfig() - no retry', () => {
     it('successfully request and receives dynamic config JSON data', async () => {
       stubFetch(200, successObject);

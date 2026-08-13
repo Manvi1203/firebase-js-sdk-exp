@@ -72,6 +72,139 @@ export function createTestService(
       url.hostname,
       Number.parseInt(url.port, 10)
     );
+  } else {
+    // When emulator origin is not set, provide mock fetch implementation matching config/functions/index.js
+    (functions as unknown as { fetchImpl: typeof fetch }).fetchImpl =
+      mockFunctionsFetch;
   }
   return functions;
+}
+
+function mockFunctionsFetch(
+  input: RequestInfo | URL,
+  init?: RequestInit
+): Promise<Response> {
+  const urlStr = typeof input === 'string' ? input : input.toString();
+  const headers = new Headers(init?.headers);
+
+  if (urlStr.includes('dataTestv2')) {
+    return Promise.resolve(
+      new Response(
+        JSON.stringify({
+          data: {
+            message: 'stub response',
+            code: 42,
+            long: {
+              value: '420',
+              '@type': 'type.googleapis.com/google.protobuf.Int64Value'
+            }
+          }
+        }),
+        { status: 200, headers: { 'Content-Type': 'application/json' } }
+      )
+    );
+  }
+  if (urlStr.includes('scalarTestv2')) {
+    return Promise.resolve(
+      new Response(JSON.stringify({ data: 76 }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' }
+      })
+    );
+  }
+  if (urlStr.includes('tokenTestv2')) {
+    return Promise.resolve(
+      new Response(JSON.stringify({ data: {} }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' }
+      })
+    );
+  }
+  if (urlStr.includes('instanceIdTestv2')) {
+    return Promise.resolve(
+      new Response(JSON.stringify({ data: {} }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' }
+      })
+    );
+  }
+  if (urlStr.includes('appCheckTestv2')) {
+    const token = headers.get('X-Firebase-AppCheck') || undefined;
+    return Promise.resolve(
+      new Response(JSON.stringify({ data: { token } }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' }
+      })
+    );
+  }
+  if (urlStr.includes('nullTestv2')) {
+    return Promise.resolve(
+      new Response(JSON.stringify({ data: null }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' }
+      })
+    );
+  }
+  if (urlStr.includes('missingResultTestv2')) {
+    return Promise.resolve(
+      new Response(JSON.stringify({}), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' }
+      })
+    );
+  }
+  if (urlStr.includes('unhandledErrorTestv2')) {
+    return Promise.resolve(new Response('', { status: 500 }));
+  }
+  if (urlStr.includes('unknownErrorTestv2')) {
+    return Promise.resolve(
+      new Response(
+        JSON.stringify({
+          error: {
+            status: 'THIS_IS_NOT_VALID',
+            message: 'this should be ignored'
+          }
+        }),
+        { status: 400, headers: { 'Content-Type': 'application/json' } }
+      )
+    );
+  }
+  if (urlStr.includes('explicitErrorTestv2')) {
+    return Promise.resolve(
+      new Response(
+        JSON.stringify({
+          error: {
+            status: 'OUT_OF_RANGE',
+            message: 'explicit nope',
+            details: {
+              start: 10,
+              end: 20,
+              long: {
+                value: '30',
+                '@type': 'type.googleapis.com/google.protobuf.Int64Value'
+              }
+            }
+          }
+        }),
+        { status: 400, headers: { 'Content-Type': 'application/json' } }
+      )
+    );
+  }
+  if (urlStr.includes('httpErrorTestv2')) {
+    return Promise.resolve(new Response('', { status: 400 }));
+  }
+  if (urlStr.includes('timeoutTestv2')) {
+    return new Promise(resolve => {
+      setTimeout(() => {
+        resolve(
+          new Response(JSON.stringify({ data: true }), {
+            status: 200,
+            headers: { 'Content-Type': 'application/json' }
+          })
+        );
+      }, 500);
+    });
+  }
+
+  return Promise.resolve(new Response('Not Found', { status: 404 }));
 }

@@ -61,12 +61,13 @@ describe('core/strategies/redirect', () => {
   let redirectAction: RedirectAction;
   let eventManager: AuthEventManager;
   let resolver: PopupRedirectResolver;
-  let idpStubs: sinon.SinonStubbedInstance<typeof idpTasks>;
+  let idpStubs: sinon.SinonStubbedInstance<typeof idpTasks._idpInternal>;
   let redirectPersistence: RedirectPersistence;
 
   beforeEach(async () => {
     eventManager = new AuthEventManager({} as unknown as TestAuth);
-    idpStubs = sinon.stub(idpTasks);
+    // Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+    idpStubs = sinon.stub(idpTasks._idpInternal);
     resolver = makeMockPopupRedirectResolver(eventManager);
     _getInstance<PopupRedirectResolverInternal>(resolver)._redirectPersistence =
       RedirectPersistence;

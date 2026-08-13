@@ -22,7 +22,7 @@
  */
 import { sliceBlob, getBlob } from './fs';
 import { StringFormat, dataFromString } from './string';
-import { isNativeBlob, isNativeBlobDefined, isString } from './type';
+import { isNativeBlob, _typeInternal, isString } from './type';
 
 /**
  * @param opt_elideCopy - If true, doesn't copy mutable input data
@@ -91,7 +91,7 @@ export class FbsBlob {
   }
 
   static getBlob(...args: Array<string | FbsBlob>): FbsBlob | null {
-    if (isNativeBlobDefined()) {
+    if (_typeInternal.isNativeBlobDefined()) {
       const blobby: Array<Blob | Uint8Array | string> = args.map(
         (val: string | FbsBlob): Blob | Uint8Array | string => {
           if (val instanceof FbsBlob) {

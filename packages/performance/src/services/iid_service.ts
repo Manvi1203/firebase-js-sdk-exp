@@ -50,3 +50,13 @@ export function getAuthTokenPromise(
 export function getAuthenticationToken(): string | undefined {
   return authToken;
 }
+
+/**
+ * @internal
+ */
+export const _iidServiceInternal = {
+  getIidPromise,
+  getIid,
+  getAuthTokenPromise,
+  getAuthenticationToken
+};

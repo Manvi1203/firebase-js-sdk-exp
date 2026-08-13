@@ -15,7 +15,9 @@
  * limitations under the License.
  */
 
-import { assert, EmulatorMockTokenOptions } from '@firebase/util';
+import { assert } from '@firebase/util';
+// Fix Vitest error: "SyntaxError: The requested module ... does not provide an export named 'EmulatorMockTokenOptions'"
+import type { EmulatorMockTokenOptions } from '@firebase/util';
 
 import { LONG_POLLING, WEBSOCKET } from '../realtime/Constants';
 

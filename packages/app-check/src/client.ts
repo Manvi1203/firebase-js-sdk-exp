@@ -149,3 +149,10 @@ export function getExchangeDebugTokenRequest(
     }
   };
 }
+
+export const _clientInternal = {
+  exchangeToken,
+  getExchangeRecaptchaV3TokenRequest,
+  getExchangeRecaptchaEnterpriseTokenRequest,
+  getExchangeDebugTokenRequest
+};

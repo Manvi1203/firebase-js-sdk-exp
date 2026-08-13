@@ -85,32 +85,45 @@ class IdpCredential extends AuthCredential {
   }
 }
 
+// Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+export const _idpInternal = {
+  _signIn(params: IdpTaskParams): Promise<UserCredentialInternal> {
+    return _signInWithCredential(
+      params.auth,
+      new IdpCredential(params),
+      params.bypassAuthState
+    ) as Promise<UserCredentialInternal>;
+  },
+  _reauth(params: IdpTaskParams): Promise<UserCredentialInternal> {
+    const { auth, user } = params;
+    _assert(user, auth, AuthErrorCode.INTERNAL_ERROR);
+    return _reauthenticate(
+      user,
+      new IdpCredential(params),
+      params.bypassAuthState
+    );
+  },
+  async _link(params: IdpTaskParams): Promise<UserCredentialInternal> {
+    const { auth, user } = params;
+    _assert(user, auth, AuthErrorCode.INTERNAL_ERROR);
+    return _linkUser(user, new IdpCredential(params), params.bypassAuthState);
+  }
+};
+
 export function _signIn(
   params: IdpTaskParams
 ): Promise<UserCredentialInternal> {
-  return _signInWithCredential(
-    params.auth,
-    new IdpCredential(params),
-    params.bypassAuthState
-  ) as Promise<UserCredentialInternal>;
+  return _idpInternal._signIn(params);
 }
 
 export function _reauth(
   params: IdpTaskParams
 ): Promise<UserCredentialInternal> {
-  const { auth, user } = params;
-  _assert(user, auth, AuthErrorCode.INTERNAL_ERROR);
-  return _reauthenticate(
-    user,
-    new IdpCredential(params),
-    params.bypassAuthState
-  );
+  return _idpInternal._reauth(params);
 }
 
 export async function _link(
   params: IdpTaskParams
 ): Promise<UserCredentialInternal> {
-  const { auth, user } = params;
-  _assert(user, auth, AuthErrorCode.INTERNAL_ERROR);
-  return _linkUser(user, new IdpCredential(params), params.bypassAuthState);
+  return _idpInternal._link(params);
 }

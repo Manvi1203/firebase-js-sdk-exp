@@ -209,3 +209,13 @@ export function flushQueuedEvents(): void {
     });
   }
 }
+
+/**
+ * @internal
+ */
+export const _transportServiceInternal = {
+  transportHandler,
+  flushQueuedEvents,
+  setupTransportService,
+  resetTransportService
+};

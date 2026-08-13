@@ -19,8 +19,8 @@ import {
   AppCheck,
   AppCheckOptions,
   AppCheckTokenResult,
-  Unsubscribe,
-  PartialObserver
+  type Unsubscribe,
+  type PartialObserver
 } from './public-types';
 import { ERROR_FACTORY, AppCheckError } from './errors';
 import {
@@ -30,19 +30,12 @@ import {
   setInitialState
 } from './state';
 import { FirebaseApp, getApp, _getProvider } from '@firebase/app';
-import { getModularInstance, ErrorFn, NextFn } from '@firebase/util';
+import { getModularInstance, type ErrorFn, type NextFn } from '@firebase/util';
 import { AppCheckService } from './factory';
 import { AppCheckProvider, ListenerType } from './types';
-import {
-  getToken as getTokenInternal,
-  getLimitedUseToken as getLimitedUseTokenInternal,
-  addTokenListener,
-  removeTokenListener,
-  isValid,
-  notifyTokenListeners
-} from './internal-api';
-import { readTokenFromStorage } from './storage';
-import { getDebugToken, initializeDebugMode, isDebugMode } from './debug';
+import { _internalApiInternal } from './internal-api';
+import { _storageInternal } from './storage';
+import { _debugInternal } from './debug';
 import { logger } from './logger';
 
 declare module '@firebase/component' {
@@ -72,14 +65,14 @@ export function initializeAppCheck(
 
   // Ensure initializeDebugMode() is only called once.
   if (!getDebugState().initialized) {
-    initializeDebugMode();
+    _debugInternal.initializeDebugMode();
   }
 
   // Log a message containing the debug token when `initializeAppCheck()`
   // is called in debug mode.
-  if (isDebugMode()) {
+  if (_debugInternal.isDebugMode()) {
     // Do not block initialization to get the token for the message.
-    void getDebugToken().then(token =>
+    void _debugInternal.getDebugToken().then(token =>
       // Not using logger because I don't think we ever want this accidentally hidden.
       console.log(
         `App Check debug token: ${token}. You will need to add it to your app's App Check settings in the Firebase console for it to work.`
@@ -115,7 +108,7 @@ export function initializeAppCheck(
     // requests the token.
     // Listener function does not need to do anything, its base functionality
     // of calling getToken() already fetches token and writes it to memory/storage.
-    addTokenListener(appCheck, ListenerType.INTERNAL, () => {});
+    _internalApiInternal.addTokenListener(appCheck, ListenerType.INTERNAL, () => {});
   }
 
   return appCheck;
@@ -142,11 +135,11 @@ function _activate(
 
   state.activated = true;
   state.provider = provider; // Read cached token from storage if it exists and store it in memory.
-  state.cachedTokenPromise = readTokenFromStorage(app).then(cachedToken => {
-    if (cachedToken && isValid(cachedToken)) {
+  state.cachedTokenPromise = _storageInternal.readTokenFromStorage(app).then(cachedToken => {
+    if (cachedToken && _internalApiInternal.isValid(cachedToken)) {
       state.token = cachedToken;
       // notify all listeners with the cached token
-      notifyTokenListeners(app, { token: cachedToken.token });
+      _internalApiInternal.notifyTokenListeners(app, { token: cachedToken.token });
     }
     return cachedToken;
   });
@@ -209,7 +202,7 @@ export async function getToken(
   appCheckInstance: AppCheck,
   forceRefresh?: boolean
 ): Promise<AppCheckTokenResult> {
-  const result = await getTokenInternal(
+  const result = await _internalApiInternal.getToken(
     appCheckInstance as AppCheckService,
     forceRefresh
   );
@@ -240,7 +233,7 @@ export async function getToken(
 export function getLimitedUseToken(
   appCheckInstance: AppCheck
 ): Promise<AppCheckTokenResult> {
-  return getLimitedUseTokenInternal(appCheckInstance as AppCheckService);
+  return _internalApiInternal.getLimitedUseToken(appCheckInstance as AppCheckService);
 }
 
 /**
@@ -322,11 +315,19 @@ export function onTokenChanged(
   } else if (onError) {
     errorFn = onError;
   }
-  addTokenListener(
+  _internalApiInternal.addTokenListener(
     appCheckInstance as AppCheckService,
     ListenerType.EXTERNAL,
     nextFn,
     errorFn
   );
-  return () => removeTokenListener(appCheckInstance.app, nextFn);
+  return () => _internalApiInternal.removeTokenListener(appCheckInstance.app, nextFn);
 }
+
+export const _apiInternal = {
+  initializeAppCheck,
+  setTokenAutoRefreshEnabled,
+  getToken,
+  getLimitedUseToken,
+  onTokenChanged
+};

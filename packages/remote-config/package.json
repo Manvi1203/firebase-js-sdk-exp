@@ -28,6 +28,7 @@
     "test:ci": "node ../../scripts/run_tests_in_ci.js -s test:browser",
     "test:browser": "karma start",
     "test:debug": "karma start --browsers=Chrome --auto-watch",
+    "test:vitest:browser": "vitest run --config vitest.config.browser.mjs",
     "trusted-type-check": "tsec -p tsconfig.json --noEmit",
     "prettier": "prettier --cache --write '{src,test}/**/*.{js,ts}'",
     "api-report": "api-extractor run --local --verbose",

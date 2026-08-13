@@ -28,6 +28,13 @@ export const enum DelayMin {
  * depending on the current environment. In general, the long delay is used for
  * mobile environments whereas short delays are used for desktop environments.
  */
+// Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+export const _delayInternal = {
+  isMobileCordova,
+  isReactNative,
+  _isOnline
+};
+
 export class Delay {
   // The default value for the offline delay timeout in ms.
 
@@ -41,11 +48,11 @@ export class Delay {
       longDelay > shortDelay,
       'Short delay should be less than long delay!'
     );
-    this.isMobile = isMobileCordova() || isReactNative();
+    this.isMobile = _delayInternal.isMobileCordova() || _delayInternal.isReactNative();
   }
 
   get(): number {
-    if (!_isOnline()) {
+    if (!_delayInternal._isOnline()) {
       // Pick the shorter timeout.
       return Math.min(DelayMin.OFFLINE, this.shortDelay);
     }

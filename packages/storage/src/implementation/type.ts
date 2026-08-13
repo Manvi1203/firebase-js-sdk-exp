@@ -35,12 +35,19 @@ export function isString(p: unknown): p is string {
 }
 
 export function isNativeBlob(p: unknown): p is Blob {
-  return isNativeBlobDefined() && p instanceof Blob;
+  return _typeInternal.isNativeBlobDefined() && p instanceof Blob;
 }
 
 export function isNativeBlobDefined(): boolean {
   return typeof Blob !== 'undefined';
 }
+
+/**
+ * @internal
+ */
+export const _typeInternal = {
+  isNativeBlobDefined
+};
 
 export function validateNumber(
   argument: string,

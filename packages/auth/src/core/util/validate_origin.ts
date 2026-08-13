@@ -19,35 +19,43 @@ import { _getProjectConfig } from '../../api/project_config/get_project_config';
 import { AuthInternal } from '../../model/auth';
 import { AuthErrorCode } from '../errors';
 import { _fail } from './assert';
-import { _getCurrentUrl } from './location';
+// Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+import { _locationInternal } from './location';
 
 const IP_ADDRESS_REGEX = /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/;
 const HTTP_REGEX = /^https?/;
 
-export async function _validateOrigin(auth: AuthInternal): Promise<void> {
-  // Skip origin validation if we are in an emulated environment
-  if (auth.config.emulator) {
-    return;
-  }
-
-  const { authorizedDomains } = await _getProjectConfig(auth);
-
-  for (const domain of authorizedDomains) {
-    try {
-      if (matchDomain(domain)) {
-        return;
-      }
-    } catch {
-      // Do nothing if there's a URL error; just continue searching
+// Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+export const _validateOriginInternal = {
+  async _validateOrigin(auth: AuthInternal): Promise<void> {
+    // Skip origin validation if we are in an emulated environment
+    if (auth.config.emulator) {
+      return;
     }
-  }
 
-  // In the old SDK, this error also provides helpful messages.
-  _fail(auth, AuthErrorCode.INVALID_ORIGIN);
+    const { authorizedDomains } = await _getProjectConfig(auth);
+
+    for (const domain of authorizedDomains) {
+      try {
+        if (matchDomain(domain)) {
+          return;
+        }
+      } catch {
+        // Do nothing if there's a URL error; just continue searching
+      }
+    }
+
+    // In the old SDK, this error also provides helpful messages.
+    _fail(auth, AuthErrorCode.INVALID_ORIGIN);
+  }
+};
+
+export async function _validateOrigin(auth: AuthInternal): Promise<void> {
+  return _validateOriginInternal._validateOrigin(auth);
 }
 
 function matchDomain(expected: string): boolean {
-  const currentUrl = _getCurrentUrl();
+  const currentUrl = _locationInternal._getCurrentUrl();
   const { protocol, hostname } = new URL(currentUrl);
   if (expected.startsWith('chrome-extension://')) {
     const ceUrl = new URL(expected);

@@ -17,9 +17,7 @@
 
 import { FirebaseFunctions, HttpsCallable } from '@firebase/functions-types';
 import {
-  httpsCallable as httpsCallableExp,
-  httpsCallableFromURL as httpsCallableFromURLExp,
-  connectFunctionsEmulator as useFunctionsEmulatorExp,
+  _apiInternal,
   HttpsCallableOptions,
   Functions as FunctionsServiceExp
 } from '@firebase/functions';
@@ -46,13 +44,13 @@ export class FunctionsService implements FirebaseFunctions, _FirebaseService {
     this._customDomain = this._delegate.customDomain;
   }
   httpsCallable(name: string, options?: HttpsCallableOptions): HttpsCallable {
-    return httpsCallableExp(this._delegate, name, options);
+    return _apiInternal.httpsCallable(this._delegate, name, options);
   }
   httpsCallableFromURL(
     url: string,
     options?: HttpsCallableOptions
   ): HttpsCallable {
-    return httpsCallableFromURLExp(this._delegate, url, options);
+    return _apiInternal.httpsCallableFromURL(this._delegate, url, options);
   }
   /**
    * Deprecated in pre-modularized repo, does not exist in modularized
@@ -74,9 +72,13 @@ export class FunctionsService implements FirebaseFunctions, _FirebaseService {
         'Port missing in origin provided to useFunctionsEmulator()'
       );
     }
-    return useFunctionsEmulatorExp(this._delegate, match[1], Number(match[2]));
+    return _apiInternal.connectFunctionsEmulator(
+      this._delegate,
+      match[1],
+      Number(match[2])
+    );
   }
   useEmulator(host: string, port: number): void {
-    return useFunctionsEmulatorExp(this._delegate, host, port);
+    return _apiInternal.connectFunctionsEmulator(this._delegate, host, port);
   }
 }

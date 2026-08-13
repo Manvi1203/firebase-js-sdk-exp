@@ -15,8 +15,8 @@
  * limitations under the License.
  */
 
-import { deleteInstallationRequest } from '../functions/delete-installation-request';
-import { remove, update } from '../helpers/idb-manager';
+import { _deleteInstallationRequestInternal } from '../functions/delete-installation-request';
+import { _idbManagerInternal } from '../helpers/idb-manager';
 import { RequestStatus } from '../interfaces/installation-entry';
 import { ERROR_FACTORY, ErrorCode } from '../util/errors';
 import { FirebaseInstallationsImpl } from '../interfaces/installation-impl';
@@ -33,7 +33,7 @@ export async function deleteInstallations(
 ): Promise<void> {
   const { appConfig } = installations as FirebaseInstallationsImpl;
 
-  const entry = await update(appConfig, oldEntry => {
+  const entry = await _idbManagerInternal.update(appConfig, oldEntry => {
     if (oldEntry && oldEntry.registrationStatus === RequestStatus.NOT_STARTED) {
       // Delete the unregistered entry without sending a deleteInstallation request.
       return undefined;
@@ -49,8 +49,8 @@ export async function deleteInstallations(
       if (!navigator.onLine) {
         throw ERROR_FACTORY.create(ErrorCode.APP_OFFLINE);
       } else {
-        await deleteInstallationRequest(appConfig, entry);
-        await remove(appConfig);
+        await _deleteInstallationRequestInternal.deleteInstallationRequest(appConfig, entry);
+        await _idbManagerInternal.remove(appConfig);
       }
     }
   }

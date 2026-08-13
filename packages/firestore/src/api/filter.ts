@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2020 Google LLC
+ * Copyright 2022 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 
+// Fix Vitest error: type-only exports in filter.ts
 export {
   and,
   endAt,
@@ -25,18 +26,21 @@ export {
   limit,
   or,
   orderBy,
-  OrderByDirection,
   where,
-  WhereFilterOp,
   query,
   QueryCompositeFilterConstraint,
   QueryConstraint,
-  QueryConstraintType,
-  QueryFilterConstraint,
   QueryFieldFilterConstraint,
   QueryOrderByConstraint,
   QueryLimitConstraint,
   QueryStartAtConstraint,
-  QueryEndAtConstraint,
+  QueryEndAtConstraint
+} from '../lite-api/query';
+
+export type {
+  OrderByDirection,
+  WhereFilterOp,
+  QueryConstraintType,
+  QueryFilterConstraint,
   QueryNonFilterConstraint
 } from '../lite-api/query';

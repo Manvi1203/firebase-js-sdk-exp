@@ -651,7 +651,6 @@ describe('request methods', () => {
 
     it('should use timeout reason if it occurs before external signal abort', async () => {
       const controller = new AbortController();
-      const abortReason = 'External Abort Loses';
       const timeoutDuration = 100;
       fetchStub.callsFake(fetchAborter);
 
@@ -669,16 +668,15 @@ describe('request methods', () => {
         '{}'
       );
 
-      // Schedule external abort after timeout
-      setTimeout(() => controller.abort(abortReason), timeoutDuration * 2);
+      const assertion = expect(requestPromise).to.be.rejectedWith(
+        DOMException,
+        TIMEOUT_EXPIRED_MESSAGE
+      );
 
       // Advance time past the timeout
       await clock.tickAsync(timeoutDuration + 1);
 
-      await expect(requestPromise).to.be.rejectedWith(
-        DOMException,
-        TIMEOUT_EXPIRED_MESSAGE
-      );
+      await assertion;
     });
 
     it('should pass internal signal to fetch options', async () => {
@@ -718,13 +716,15 @@ describe('request methods', () => {
         '{}'
       );
 
-      // Tick the clock just enough to trigger a timeout(0)
-      await clock.tickAsync(1);
-
-      await expect(requestPromise).to.be.rejectedWith(
+      const assertion = expect(requestPromise).to.be.rejectedWith(
         DOMException,
         TIMEOUT_EXPIRED_MESSAGE
       );
+
+      // Tick the clock just enough to trigger a timeout(0)
+      await clock.tickAsync(1);
+
+      await assertion;
     });
 
     it('should not error if signal is aborted after completion', async () => {

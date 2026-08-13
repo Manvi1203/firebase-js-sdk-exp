@@ -21,8 +21,17 @@ import { FirebaseOptions } from '@firebase/app';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 declare const __karma__: any;
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const PROJECT_CONFIG = require('../../../../../config/project.json');
+// Fix Vitest error: "Failed to resolve import config/project.json" / "ReferenceError: require is not defined"
+let PROJECT_CONFIG: Record<string, string> = {};
+try {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  PROJECT_CONFIG =
+    typeof require !== 'undefined'
+      ? require('../../../../../config/project.json')
+      : {};
+} catch {
+  PROJECT_CONFIG = {};
+}
 
 const EMULATOR_HOST = process.env.FIREBASE_AUTH_EMULATOR_HOST;
 const EMULATOR_PROJECT_ID = process.env.GCLOUD_PROJECT;

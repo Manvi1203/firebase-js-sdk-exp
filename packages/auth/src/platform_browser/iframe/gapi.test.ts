@@ -34,13 +34,17 @@ describe('platform_browser/iframe/gapi', () => {
   let library: typeof gapi;
   let auth: TestAuth;
   let loadJsStub: sinon.SinonStub;
-  function onJsLoad(globalLoadFnName: string): void {
+  function onJsLoad(globalLoadFnName?: string): void {
     _window().gapi = library as typeof gapi;
-    _window()[globalLoadFnName]();
+    // Fix Vitest error: check if globalLoadFnName is defined before invoking
+    if (globalLoadFnName && typeof _window()[globalLoadFnName] === 'function') {
+      _window()[globalLoadFnName]();
+    }
   }
 
   beforeEach(async () => {
-    loadJsStub = sinon.stub(js, '_loadJS').callsFake(url => {
+    // Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+    loadJsStub = sinon.stub(js._loadJsInternal, '_loadJS').callsFake(url => {
       onJsLoad(url.split('onload=')[1]);
       return Promise.resolve(new Event('load'));
     });
@@ -107,7 +111,8 @@ describe('platform_browser/iframe/gapi', () => {
     expect(await _loadGapi(auth)).to.eq('test');
     expect(await _loadGapi(auth)).to.eq('test');
 
-    expect(js._loadJS).to.have.been.calledOnce;
+    // Fix Vitest error: "TypeError: [Function _loadJS] is not a spy or a call to a spy!"
+    expect(loadJsStub).to.have.been.calledOnce;
   });
 
   it('rejects with a network error if load fails', async () => {
@@ -133,7 +138,10 @@ describe('platform_browser/iframe/gapi', () => {
       FirebaseError,
       'auth/network-request-failed'
     );
-    expect(_loadGapi(auth)).not.to.eq(firstAttempt);
+    // Fix Vitest error: catch floating rejected promise on second call
+    const secondAttempt = _loadGapi(auth);
+    secondAttempt.catch(() => {});
+    expect(secondAttempt).not.to.eq(firstAttempt);
   });
 
   it('rejects if gapi itself does not load', async () => {

@@ -37,7 +37,7 @@ export class TestService implements _FirebaseService {
 export function createTestComponent(
   name: string,
   multiInstances = false,
-  type = ComponentType.PUBLIC
+  type: ComponentType = ComponentType.PUBLIC
 ): Component {
   const component = new Component(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

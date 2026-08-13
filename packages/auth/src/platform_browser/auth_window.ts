@@ -45,6 +45,13 @@ export function _window(): AuthWindow {
   return window as unknown as AuthWindow;
 }
 
+// Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+export const _authWindowInternal = {
+  _setWindowLocation(url: string): void {
+    _window().location.href = url;
+  }
+};
+
 export function _setWindowLocation(url: string): void {
-  _window().location.href = url;
+  _authWindowInternal._setWindowLocation(url);
 }

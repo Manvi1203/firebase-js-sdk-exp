@@ -23,19 +23,9 @@ import {
   arrayToBase64,
   base64ToArray
 } from '../helpers/array-base64-translator';
-import {
-  dbGet,
-  dbGetFidRegistration,
-  dbRemove,
-  dbRemoveFidRegistration,
-  dbSet
-} from './idb-manager';
-import {
-  requestDeleteRegistration,
-  requestDeleteToken,
-  requestGetToken,
-  requestUpdateToken
-} from './requests';
+// Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+import { _idbManagerInternal } from './idb-manager';
+import { _requestsInternal } from './requests';
 
 import { FirebaseInternalDependencies } from '../interfaces/internal-dependencies';
 import { MessagingService } from '../messaging-service';
@@ -59,7 +49,9 @@ export async function getTokenInternal(
     p256dh: arrayToBase64(pushSubscription.getKey('p256dh')!)
   };
 
-  const tokenDetails = await dbGet(messaging.firebaseDependencies);
+  const tokenDetails = await _idbManagerInternal.dbGet(
+    messaging.firebaseDependencies
+  );
   if (!tokenDetails) {
     // No token, get a new one.
     return getNewToken(messaging.firebaseDependencies, subscriptionOptions);
@@ -68,7 +60,7 @@ export async function getTokenInternal(
   ) {
     // Invalid token, get a new one.
     try {
-      await requestDeleteToken(
+      await _requestsInternal.requestDeleteToken(
         messaging.firebaseDependencies!,
         tokenDetails.token
       );
@@ -99,8 +91,11 @@ async function revokeLegacyFcmTokenAndClearCaches(
   messaging: MessagingService,
   tokenDetails: TokenDetails
 ): Promise<void> {
-  await requestDeleteToken(messaging.firebaseDependencies, tokenDetails.token);
-  await dbRemove(messaging.firebaseDependencies);
+  await _requestsInternal.requestDeleteToken(
+    messaging.firebaseDependencies,
+    tokenDetails.token
+  );
+  await _idbManagerInternal.dbRemove(messaging.firebaseDependencies);
   await removeFidRegistrationBestEffort(messaging.firebaseDependencies);
 }
 
@@ -112,13 +107,16 @@ async function revokeLegacyFcmTokenAndClearCaches(
 async function revokeFidRegistrationIfStored(
   messaging: MessagingService
 ): Promise<void> {
-  const stored = await dbGetFidRegistration(
-    messaging.firebaseDependencies
-  ).catch(() => undefined);
+  const stored = await _idbManagerInternal
+    .dbGetFidRegistration(messaging.firebaseDependencies)
+    .catch(() => undefined);
   const fid = stored?.fid;
 
   if (fid) {
-    await requestDeleteRegistration(messaging.firebaseDependencies, fid);
+    await _requestsInternal.requestDeleteRegistration(
+      messaging.firebaseDependencies,
+      fid
+    );
   }
 
   await removeFidRegistrationBestEffort(messaging.firebaseDependencies);
@@ -136,7 +134,9 @@ async function revokeFidRegistrationIfStored(
 export async function revokeRegistrationInternal(
   messaging: MessagingService
 ): Promise<boolean> {
-  const tokenDetails = await dbGet(messaging.firebaseDependencies);
+  const tokenDetails = await _idbManagerInternal.dbGet(
+    messaging.firebaseDependencies
+  );
   if (tokenDetails) {
     await revokeLegacyFcmTokenAndClearCaches(messaging, tokenDetails);
   } else {
@@ -159,7 +159,7 @@ async function updateToken(
   tokenDetails: TokenDetails
 ): Promise<string> {
   try {
-    const updatedToken = await requestUpdateToken(
+    const updatedToken = await _requestsInternal.requestUpdateToken(
       messaging.firebaseDependencies,
       tokenDetails
     );
@@ -170,7 +170,10 @@ async function updateToken(
       createTime: Date.now()
     };
 
-    await dbSet(messaging.firebaseDependencies, updatedTokenDetails);
+    await _idbManagerInternal.dbSet(
+      messaging.firebaseDependencies,
+      updatedTokenDetails
+    );
     return updatedToken;
   } catch (e) {
     throw e;
@@ -181,7 +184,7 @@ async function getNewToken(
   firebaseDependencies: FirebaseInternalDependencies,
   subscriptionOptions: SubscriptionOptions
 ): Promise<string> {
-  const token = await requestGetToken(
+  const token = await _requestsInternal.requestGetToken(
     firebaseDependencies,
     subscriptionOptions
   );
@@ -190,7 +193,7 @@ async function getNewToken(
     createTime: Date.now(),
     subscriptionOptions
   };
-  await dbSet(firebaseDependencies, tokenDetails);
+  await _idbManagerInternal.dbSet(firebaseDependencies, tokenDetails);
   return tokenDetails.token;
 }
 
@@ -234,7 +237,7 @@ async function removeFidRegistrationBestEffort(
   firebaseDependencies: FirebaseInternalDependencies
 ): Promise<void> {
   try {
-    await dbRemoveFidRegistration(firebaseDependencies);
+    await _idbManagerInternal.dbRemoveFidRegistration(firebaseDependencies);
   } catch {
     // Ignore.
   }
@@ -269,3 +272,12 @@ export function notifyOnUnregistered(
     handler.next(fid);
   }
 }
+
+// Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+export const _tokenManagerInternal = {
+  getTokenInternal,
+  revokeRegistrationInternal,
+  notifyOnRegistered,
+  notifyOnUnregistered
+};
+

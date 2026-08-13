@@ -47,8 +47,10 @@ describe('deleteInstallation', () => {
   beforeEach(() => {
     installations = getFakeInstallations();
 
+    // Stub _deleteInstallationRequestInternal to avoid Vitest error:
+    // "TypeError: ES Modules cannot be stubbed"
     deleteInstallationRequestSpy = stub(
-      deleteInstallationRequestModule,
+      deleteInstallationRequestModule._deleteInstallationRequestInternal,
       'deleteInstallationRequest'
     ).callsFake(
       () => sleep(100) // Request would take some time

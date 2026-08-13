@@ -45,24 +45,37 @@ import {
   TargetBackend
 } from '../util/settings';
 
-apiDescribe('Large Documents', persistence => {
-  let seedColName: string;
+const shouldRunLargeTests =
+  (process.env.FIRESTORE_RUN_LARGE_DOC_TESTS === 'YES' ||
+    process.env.FIRESTORE_RUN_LARGE_DOC_TESTS === 'true') &&
+  getTargetBackend() === TargetBackend.NIGHTLY &&
+  getRunEnterpriseTests();
+
+// Fix Vitest error: "FirebaseError: Function collection() cannot be called with an empty path"
+(shouldRunLargeTests ? apiDescribe : apiDescribe.skip)(
+  'Large Documents',
+  persistence => {
+    let seedColName: string;
 
   beforeEach(function () {
-    this.currentTest?.timeout(120_000); // Tests are very slow because large doc reads have very high latency.
+    // Fix Vitest error: "TypeError: Cannot read properties of undefined (reading 'currentTest')"
+    this?.currentTest?.timeout?.(120_000); // Tests are very slow because large doc reads have very high latency.
   });
 
   before(async function () {
-    this.timeout(180_000); // Tests are very slow because large doc reads have very high latency.
+    // Fix Vitest error: "TypeError: Cannot read properties of undefined (reading 'timeout')"
+    this?.timeout?.(180_000); // Tests are very slow because large doc reads have very high latency.
     const runLargeTests = process.env.FIRESTORE_RUN_LARGE_DOC_TESTS;
     if (runLargeTests !== 'YES' && runLargeTests !== 'true') {
-      this.skip();
+      this?.skip?.();
+      return;
     }
     if (
       getTargetBackend() !== TargetBackend.NIGHTLY ||
       !getRunEnterpriseTests()
     ) {
-      this.skip();
+      this?.skip?.();
+      return;
     }
 
     seedColName = `large_doc_tests_js_${Date.now()}`;

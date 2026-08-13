@@ -104,7 +104,10 @@ describe('platform_browser/recaptcha/recaptcha_verifier', () => {
       sinon.stub(recaptchaLoader, 'load').returns(Promise.reject('nope'));
       const promise = verifier.render();
       await expect(promise).to.be.rejectedWith('nope');
-      expect(verifier.render()).not.to.eq(promise);
+      // Fix Vitest error: unhandled rejection on second render attempt
+      const nextPromise = verifier.render();
+      expect(nextPromise).not.to.eq(promise);
+      await nextPromise.catch(() => {});
     });
   });
 

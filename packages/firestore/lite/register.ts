@@ -60,7 +60,7 @@ export function registerFirestore(): void {
         }
         return firestoreInstance;
       },
-      'PUBLIC' as ComponentType.PUBLIC
+      ComponentType.PUBLIC
     ).setMultipleInstances(true)
   );
   // RUNTIME_ENV and BUILD_TARGET are replaced by real values during the compilation

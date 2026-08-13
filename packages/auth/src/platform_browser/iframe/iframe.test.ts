@@ -52,7 +52,8 @@ describe('platform_browser/iframe/iframe', () => {
     } as unknown as typeof gapi;
     auth = await testAuth();
 
-    sinon.stub(gapiLoader, '_loadGapi').returns(
+    // Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+    sinon.stub(gapiLoader._gapiInternal, '_loadGapi').returns(
       Promise.resolve({
         open: sinon
           .stub()

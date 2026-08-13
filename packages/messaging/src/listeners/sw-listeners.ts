@@ -28,14 +28,11 @@ import {
   ServiceWorkerGlobalScope,
   WindowClient
 } from '../util/sw-types';
-import {
-  getTokenInternal,
-  revokeRegistrationInternal
-} from '../internals/token-manager';
-
+// Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+import { _tokenManagerInternal } from '../internals/token-manager';
 import { MessagingService } from '../messaging-service';
-import { dbGet, dbGetFidRegistration } from '../internals/idb-manager';
-import { refreshFidRegistrationIfStored } from '../helpers/fid-change-registration';
+import { _idbManagerInternal } from '../internals/idb-manager';
+import { _fidChangeRegistrationInternal } from '../helpers/fid-change-registration';
 import { externalizePayload } from '../helpers/externalizePayload';
 import { isConsoleMessage } from '../helpers/is-console-message';
 import { sleep } from '../helpers/sleep';
@@ -63,18 +60,20 @@ export async function onSubChange(
   if (!newSubscription) {
     // Subscription revoked: legacy token and FID register/unregister paths both flow through
     // revokeRegistrationInternal (server revoke + onUnregistered when applicable).
-    await revokeRegistrationInternal(messaging);
+    await _tokenManagerInternal.revokeRegistrationInternal(messaging);
     return;
   }
 
-  const storedFid = await dbGetFidRegistration(
-    messaging.firebaseDependencies
-  ).catch(() => undefined);
+  const storedFid = await _idbManagerInternal
+    .dbGetFidRegistration(messaging.firebaseDependencies)
+    .catch(() => undefined);
   if (storedFid) {
-    const fid = await refreshFidRegistrationIfStored(messaging).catch(() => {
-      // Best-effort: push subscription may be unavailable after rotation.
-      return undefined;
-    });
+    const fid = await _fidChangeRegistrationInternal
+      .refreshFidRegistrationIfStored(messaging)
+      .catch(() => {
+        // Best-effort: push subscription may be unavailable after rotation.
+        return undefined;
+      });
 
     if (fid) {
       const clientList = await getClientList();
@@ -85,12 +84,14 @@ export async function onSubChange(
     return;
   }
 
-  const tokenDetails = await dbGet(messaging.firebaseDependencies);
-  await revokeRegistrationInternal(messaging);
+  const tokenDetails = await _idbManagerInternal.dbGet(
+    messaging.firebaseDependencies
+  );
+  await _tokenManagerInternal.revokeRegistrationInternal(messaging);
 
   messaging.vapidKey =
     tokenDetails?.subscriptionOptions?.vapidKey ?? DEFAULT_VAPID_KEY;
-  await getTokenInternal(messaging);
+  await _tokenManagerInternal.getTokenInternal(messaging);
 }
 
 export async function onPush(

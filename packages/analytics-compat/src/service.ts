@@ -23,11 +23,7 @@ import {
 } from '@firebase/analytics-types';
 import {
   Analytics as AnalyticsServiceExp,
-  logEvent as logEventExp,
-  setAnalyticsCollectionEnabled as setAnalyticsCollectionEnabledExp,
-  setCurrentScreen as setCurrentScreenExp,
-  setUserId as setUserIdExp,
-  setUserProperties as setUserPropertiesExp
+  _apiInternal
 } from '@firebase/analytics';
 import { _FirebaseService, FirebaseApp } from '@firebase/app-compat';
 
@@ -42,7 +38,7 @@ export class AnalyticsService implements FirebaseAnalytics, _FirebaseService {
     eventParams?: EventParams | CustomParams,
     options?: AnalyticsCallOptions
   ): void {
-    logEventExp(this._delegate, eventName as '', eventParams, options);
+    _apiInternal.logEvent(this._delegate, eventName as '', eventParams, options);
   }
 
   /**
@@ -50,21 +46,21 @@ export class AnalyticsService implements FirebaseAnalytics, _FirebaseService {
    * See {@link https://firebase.google.com/docs/analytics/screenviews | Track Screenviews}.
    */
   setCurrentScreen(screenName: string, options?: AnalyticsCallOptions): void {
-    setCurrentScreenExp(this._delegate, screenName, options);
+    _apiInternal.setCurrentScreen(this._delegate, screenName, options);
   }
 
   setUserId(id: string, options?: AnalyticsCallOptions): void {
-    setUserIdExp(this._delegate, id, options);
+    _apiInternal.setUserId(this._delegate, id, options);
   }
 
   setUserProperties(
     properties: CustomParams,
     options?: AnalyticsCallOptions
   ): void {
-    setUserPropertiesExp(this._delegate, properties, options);
+    _apiInternal.setUserProperties(this._delegate, properties, options);
   }
 
   setAnalyticsCollectionEnabled(enabled: boolean): void {
-    setAnalyticsCollectionEnabledExp(this._delegate, enabled);
+    _apiInternal.setAnalyticsCollectionEnabled(this._delegate, enabled);
   }
 }

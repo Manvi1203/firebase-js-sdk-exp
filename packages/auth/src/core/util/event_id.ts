@@ -15,10 +15,17 @@
  * limitations under the License.
  */
 
-export function _generateEventId(prefix = '', digits = 10): string {
-  let random = '';
-  for (let i = 0; i < digits; i++) {
-    random += Math.floor(Math.random() * 10);
+// Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+export const _eventIdInternal = {
+  _generateEventId(prefix = '', digits = 10): string {
+    let random = '';
+    for (let i = 0; i < digits; i++) {
+      random += Math.floor(Math.random() * 10);
+    }
+    return prefix + random;
   }
-  return prefix + random;
+};
+
+export function _generateEventId(prefix = '', digits = 10): string {
+  return _eventIdInternal._generateEventId(prefix, digits);
 }

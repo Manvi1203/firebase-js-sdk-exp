@@ -25,13 +25,16 @@ import { stub } from 'sinon';
 describe('Installations Compat', () => {
   let installationsCompat!: InstallationsCompat;
   const installations = getFakeInstallations();
-  before(() => {
+  // Use beforeEach to avoid Vitest error: "ReferenceError: before is not defined"
+  beforeEach(() => {
     installationsCompat = new InstallationsCompat(getFakeApp(), installations);
   });
 
   it('getId calls modular getId()', async () => {
     const fakeFid = 'fake-fid';
-    const modularGetIdStub = stub(modularApi, 'getId').callsFake(() =>
+    // Stub _apiInternal to avoid Vitest error:
+    // "TypeError: ES Modules cannot be stubbed"
+    const modularGetIdStub = stub(modularApi._apiInternal, 'getId').callsFake(() =>
       Promise.resolve(fakeFid)
     );
 
@@ -43,7 +46,9 @@ describe('Installations Compat', () => {
 
   it('getToken calls modular getToken()', async () => {
     const fakeToken = 'fake-token';
-    const modularGetTokenStub = stub(modularApi, 'getToken').callsFake(() =>
+    // Stub _apiInternal to avoid Vitest error:
+    // "TypeError: ES Modules cannot be stubbed"
+    const modularGetTokenStub = stub(modularApi._apiInternal, 'getToken').callsFake(() =>
       Promise.resolve(fakeToken)
     );
 
@@ -57,7 +62,9 @@ describe('Installations Compat', () => {
   });
 
   it('delete calls modular deleteInstallations()', async () => {
-    const modularDeleteStub = stub(modularApi, 'deleteInstallations').callsFake(
+    // Stub _apiInternal to avoid Vitest error:
+    // "TypeError: ES Modules cannot be stubbed"
+    const modularDeleteStub = stub(modularApi._apiInternal, 'deleteInstallations').callsFake(
       () => Promise.resolve()
     );
 
@@ -69,7 +76,9 @@ describe('Installations Compat', () => {
   it('onIdChange calls modular onIdChange()', () => {
     const fakeIdChangeCallbackFn = stub();
     const fakeIdChangeUnsubscribeFn = stub();
-    const modularOnIdChangeStub = stub(modularApi, 'onIdChange').callsFake(
+    // Stub _apiInternal to avoid Vitest error:
+    // "TypeError: ES Modules cannot be stubbed"
+    const modularOnIdChangeStub = stub(modularApi._apiInternal, 'onIdChange').callsFake(
       () => fakeIdChangeUnsubscribeFn
     );
 

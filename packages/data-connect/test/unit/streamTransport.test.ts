@@ -25,7 +25,8 @@ import { DataConnectOptions } from '../../src/api/DataConnect';
 import { Code, DataConnectError } from '../../src/core/error';
 import { AuthTokenProvider } from '../../src/core/FirebaseAuthProvider';
 import { SDK_VERSION } from '../../src/core/version';
-import * as logger from '../../src/logger';
+// Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+import { _loggerInternal } from '../../src/logger';
 import {
   CallerSdkType,
   CallerSdkTypeEnum,
@@ -1160,7 +1161,8 @@ describe('AbstractDataConnectStreamTransport', () => {
         });
 
         it('should asynchronously clean up and log error if sendMessage fails', async () => {
-          const logErrorStub = sinon.stub(logger, 'logError');
+          // Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+          const logErrorStub = sinon.stub(_loggerInternal, 'logError');
           const observer = {
             onData: sinon.spy(),
             onDisconnect: sinon.spy(),
@@ -1301,7 +1303,8 @@ describe('AbstractDataConnectStreamTransport', () => {
       };
 
       it('should log an error if an unrecognized requestId is received', async () => {
-        const logErrorStub = sinon.stub(logger, 'logError');
+        // Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+        const logErrorStub = sinon.stub(_loggerInternal, 'logError');
         const unknownRequestId = 'unknown-999';
         const response: DataConnectResponse<unknown> = {
           data: {},
@@ -1395,8 +1398,9 @@ describe('AbstractDataConnectStreamTransport', () => {
         });
 
         it('should clean map correctly when handleResponse rejects', async () => {
-          void transport.invokeQuery(queryName1, variables1);
-          void transport.invokeQuery(queryName2, variables2);
+          // Fix Vitest error: "Unhandled Rejection: DataConnectOperationError"
+          transport.invokeQuery(queryName1, variables1).catch(() => {});
+          transport.invokeQuery(queryName2, variables2).catch(() => {});
 
           const expectedKey1 = transport.getMapKey(queryName1, variables1);
           const request1 =

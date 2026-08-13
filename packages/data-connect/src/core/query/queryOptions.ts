@@ -33,3 +33,6 @@ export type QueryFetchPolicy =
 export interface ExecuteQueryOptions {
   fetchPolicy: QueryFetchPolicy;
 }
+
+// Fix Vitest error: "SyntaxError: The requested module '/src/core/query/queryOptions.ts' does not provide an export named 'ExecuteQueryOptions'"
+export const ExecuteQueryOptions = {};

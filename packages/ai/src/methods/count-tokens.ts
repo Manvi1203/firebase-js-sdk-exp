@@ -56,7 +56,7 @@ export async function countTokensOnCloud(
   return response.json();
 }
 
-export async function countTokens(
+async function defaultCountTokens(
   apiSettings: ApiSettings,
   model: string,
   params: CountTokensRequest,
@@ -70,4 +70,28 @@ export async function countTokens(
     );
   }
   return countTokensOnCloud(apiSettings, model, params, requestOptions);
+}
+
+/**
+ * Internal handler object to allow stubbing in tests under native ESM.
+ * @internal
+ */
+export const _countTokensInternal = {
+  countTokens: defaultCountTokens
+};
+
+export async function countTokens(
+  apiSettings: ApiSettings,
+  model: string,
+  params: CountTokensRequest,
+  chromeAdapter?: ChromeAdapter,
+  requestOptions?: RequestOptions
+): Promise<CountTokensResponse> {
+  return _countTokensInternal.countTokens(
+    apiSettings,
+    model,
+    params,
+    chromeAdapter,
+    requestOptions
+  );
 }

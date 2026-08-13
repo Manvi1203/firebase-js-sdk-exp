@@ -20,6 +20,14 @@ import '@firebase/installations';
 import { Messaging } from './interfaces/public-types';
 import { registerMessagingInSw } from './helpers/register';
 
+import {
+  onBackgroundMessage,
+  onRegistered,
+  onUnregistered,
+  getMessagingInSw,
+  experimentalSetDeliveryMetricsExportedToBigQueryEnabled
+} from './api';
+
 export * from './interfaces/public-types';
 export {
   onBackgroundMessage,
@@ -27,8 +35,16 @@ export {
   onUnregistered,
   getMessagingInSw as getMessaging,
   experimentalSetDeliveryMetricsExportedToBigQueryEnabled
-} from './api';
+};
 export { isSwSupported as isSupported } from './api/isSupported';
+
+/**
+ * @internal
+ * Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+ */
+export const _messagingSwInternal = {
+  onBackgroundMessage
+};
 
 declare module '@firebase/component' {
   interface NameServiceMapping {

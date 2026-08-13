@@ -5,7 +5,9 @@
   "scripts": {
     "test": "karma start",
     "test:ci": "node ../../scripts/run_tests_in_ci.js -s test",
-    "test:debug": "karma start --browsers Chrome --auto-watch"
+    "test:debug": "karma start --browsers Chrome --auto-watch",
+    "test:vitest:browser": "vitest run --config vitest.config.browser.mjs",
+    "test:vitest:browser:watch": "vitest --config vitest.config.browser.mjs"
   },
   "dependencies": {
     "@firebase/app": "0.16.0",

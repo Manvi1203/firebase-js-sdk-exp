@@ -28,8 +28,7 @@ import * as fetch from '../../../test/helpers/mock_fetch';
 import { Endpoint } from '../../api';
 import { UserInternal } from '../../model/user';
 import { _castAuth } from './auth_impl';
-import { connectAuthEmulator } from './emulator';
-import * as Util from '@firebase/util';
+import { connectAuthEmulator, _emulatorInternal } from './emulator';
 
 use(sinonChai);
 use(chaiAsPromised);
@@ -42,7 +41,8 @@ describe('core/auth/emulator', () => {
   let utilStub: sinon.SinonStub;
 
   beforeEach(async () => {
-    utilStub = sinon.stub(Util, 'pingServer');
+    // Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+    utilStub = sinon.stub(_emulatorInternal, 'pingServer');
     auth = await testAuth();
     user = testUser(_castAuth(auth), 'uid', 'email', true);
     fetch.setUp();

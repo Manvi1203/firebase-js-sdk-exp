@@ -61,13 +61,14 @@ describe('core/strategies/abstract_popup_redirect_operation', () => {
   let auth: TestAuth;
   let resolver: PopupRedirectResolverInternal;
   let eventManager: EventManager;
-  let idpStubs: sinon.SinonStubbedInstance<typeof idp>;
+  let idpStubs: sinon.SinonStubbedInstance<typeof idp._idpInternal>;
 
   beforeEach(async () => {
     auth = await testAuth();
     eventManager = new AuthEventManager(auth);
     resolver = _getInstance(makeMockPopupRedirectResolver(eventManager));
-    idpStubs = sinon.stub(idp);
+    // Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+    idpStubs = sinon.stub(idp._idpInternal);
   });
 
   afterEach(() => {
@@ -151,11 +152,11 @@ describe('core/strategies/abstract_popup_redirect_operation', () => {
       expect(cred.operationType).to.eq(OperationType.SIGN_IN);
     });
 
-    it('bubbles up any error', done => {
+    // Fix Vitest error: "done() callback is deprecated, use promise instead"
+    it('bubbles up any error', () => {
       finishPromise(ERROR);
-      operation.execute().catch(e => {
+      return operation.execute().catch(e => {
         expect(e).to.eq(ERROR);
-        done();
       });
     });
 
@@ -190,12 +191,13 @@ describe('core/strategies/abstract_popup_redirect_operation', () => {
         };
       }
 
+      // Fix Vitest error: "TypeError: [Function _signIn] is not a spy or a call to a spy!"
       it('routes SIGN_IN_VIA_POPUP', async () => {
         const type = AuthEventType.SIGN_IN_VIA_POPUP;
         updateFilter(type);
         finishPromise(authEvent({ type }));
         await operation.execute();
-        expect(idp._signIn).to.have.been.calledWith(expectedIdpTaskParams());
+        expect(idp._idpInternal._signIn).to.have.been.calledWith(expectedIdpTaskParams());
       });
 
       it('routes SIGN_IN_VIA_REDIRECT', async () => {
@@ -203,7 +205,7 @@ describe('core/strategies/abstract_popup_redirect_operation', () => {
         updateFilter(type);
         finishPromise(authEvent({ type }));
         await operation.execute();
-        expect(idp._signIn).to.have.been.calledWith(expectedIdpTaskParams());
+        expect(idp._idpInternal._signIn).to.have.been.calledWith(expectedIdpTaskParams());
       });
 
       it('routes LINK_VIA_POPUP', async () => {
@@ -211,7 +213,7 @@ describe('core/strategies/abstract_popup_redirect_operation', () => {
         updateFilter(type);
         finishPromise(authEvent({ type }));
         await operation.execute();
-        expect(idp._link).to.have.been.calledWith(expectedIdpTaskParams());
+        expect(idp._idpInternal._link).to.have.been.calledWith(expectedIdpTaskParams());
       });
 
       it('routes LINK_VIA_REDIRECT', async () => {
@@ -219,7 +221,7 @@ describe('core/strategies/abstract_popup_redirect_operation', () => {
         updateFilter(type);
         finishPromise(authEvent({ type }));
         await operation.execute();
-        expect(idp._link).to.have.been.calledWith(expectedIdpTaskParams());
+        expect(idp._idpInternal._link).to.have.been.calledWith(expectedIdpTaskParams());
       });
 
       it('routes REAUTH_VIA_POPUP', async () => {
@@ -227,7 +229,7 @@ describe('core/strategies/abstract_popup_redirect_operation', () => {
         updateFilter(type);
         finishPromise(authEvent({ type }));
         await operation.execute();
-        expect(idp._reauth).to.have.been.calledWith(expectedIdpTaskParams());
+        expect(idp._idpInternal._reauth).to.have.been.calledWith(expectedIdpTaskParams());
       });
 
       it('routes REAUTH_VIA_REDIRECT', async () => {
@@ -235,7 +237,7 @@ describe('core/strategies/abstract_popup_redirect_operation', () => {
         updateFilter(type);
         finishPromise(authEvent({ type }));
         await operation.execute();
-        expect(idp._reauth).to.have.been.calledWith(expectedIdpTaskParams());
+        expect(idp._idpInternal._reauth).to.have.been.calledWith(expectedIdpTaskParams());
       });
 
       it('includes the bypassAuthState parameter', async () => {
@@ -251,7 +253,7 @@ describe('core/strategies/abstract_popup_redirect_operation', () => {
         updateFilter(type);
         finishPromise(authEvent({ type }));
         await operation.execute();
-        expect(idp._reauth).to.have.been.calledWith({
+        expect(idp._idpInternal._reauth).to.have.been.calledWith({
           ...expectedIdpTaskParams(),
           bypassAuthState: true
         });

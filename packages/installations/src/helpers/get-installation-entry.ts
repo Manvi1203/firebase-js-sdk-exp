@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import { createInstallationRequest } from '../functions/create-installation-request';
+import { _createInstallationRequestInternal } from '../functions/create-installation-request';
 import {
   AppConfig,
   FirebaseInstallationsImpl
@@ -29,8 +29,8 @@ import {
 import { PENDING_TIMEOUT_MS } from '../util/constants';
 import { ERROR_FACTORY, ErrorCode, isServerError } from '../util/errors';
 import { sleep } from '../util/sleep';
-import { generateFid, INVALID_FID } from './generate-fid';
-import { remove, set, update } from './idb-manager';
+import { _generateFidInternal, INVALID_FID } from './generate-fid';
+import { _idbManagerInternal } from './idb-manager';
 
 export interface InstallationEntryWithRegistrationPromise {
   installationEntry: InstallationEntry;
@@ -47,7 +47,7 @@ export async function getInstallationEntry(
 ): Promise<InstallationEntryWithRegistrationPromise> {
   let registrationPromise: Promise<RegisteredInstallationEntry> | undefined;
 
-  const installationEntry = await update(installations.appConfig, oldEntry => {
+  const installationEntry = await _idbManagerInternal.update(installations.appConfig, oldEntry => {
     const installationEntry = updateOrCreateInstallationEntry(oldEntry);
     const entryWithPromise = triggerRegistrationIfNecessary(
       installations,
@@ -76,7 +76,7 @@ function updateOrCreateInstallationEntry(
   oldEntry: InstallationEntry | undefined
 ): InstallationEntry {
   const entry: InstallationEntry = oldEntry || {
-    fid: generateFid(),
+    fid: _generateFidInternal.generateFid(),
     registrationStatus: RequestStatus.NOT_STARTED
   };
 
@@ -100,6 +100,9 @@ function triggerRegistrationIfNecessary(
       const registrationPromiseWithError = Promise.reject(
         ERROR_FACTORY.create(ErrorCode.APP_OFFLINE)
       );
+      // Attach no-op catch to prevent Vitest error:
+      // "Unhandled Rejection: FirebaseError: Installations: Could not process request. Application offline."
+      registrationPromiseWithError.catch(() => {});
       return {
         installationEntry,
         registrationPromise: registrationPromiseWithError
@@ -120,9 +123,13 @@ function triggerRegistrationIfNecessary(
   } else if (
     installationEntry.registrationStatus === RequestStatus.IN_PROGRESS
   ) {
+    const registrationPromise = waitUntilFidRegistration(installations);
+    // Attach no-op catch to prevent Vitest error:
+    // "Unhandled Rejection: FirebaseError: Installations: Could not process request. Application offline."
+    registrationPromise.catch(() => {});
     return {
       installationEntry,
-      registrationPromise: waitUntilFidRegistration(installations)
+      registrationPromise
     };
   } else {
     return { installationEntry };
@@ -135,19 +142,19 @@ async function registerInstallation(
   installationEntry: InProgressInstallationEntry
 ): Promise<RegisteredInstallationEntry> {
   try {
-    const registeredInstallationEntry = await createInstallationRequest(
+    const registeredInstallationEntry = await _createInstallationRequestInternal.createInstallationRequest(
       installations,
       installationEntry
     );
-    return set(installations.appConfig, registeredInstallationEntry);
+    return _idbManagerInternal.set(installations.appConfig, registeredInstallationEntry);
   } catch (e) {
     if (isServerError(e) && e.customData.serverCode === 409) {
       // Server returned a "FID cannot be used" error.
       // Generate a new ID next time.
-      await remove(installations.appConfig);
+      await _idbManagerInternal.remove(installations.appConfig);
     } else {
       // Registration failed. Set FID as not registered.
-      await set(installations.appConfig, {
+      await _idbManagerInternal.set(installations.appConfig, {
         fid: installationEntry.fid,
         registrationStatus: RequestStatus.NOT_STARTED
       });
@@ -201,7 +208,7 @@ async function waitUntilFidRegistration(
 function updateInstallationRequest(
   appConfig: AppConfig
 ): Promise<InstallationEntry> {
-  return update(appConfig, oldEntry => {
+  return _idbManagerInternal.update(appConfig, oldEntry => {
     if (!oldEntry) {
       throw ERROR_FACTORY.create(ErrorCode.INSTALLATION_NOT_FOUND);
     }
@@ -228,3 +235,7 @@ function hasInstallationRequestTimedOut(
     installationEntry.registrationTime + PENDING_TIMEOUT_MS < Date.now()
   );
 }
+
+export const _getInstallationEntryInternal = {
+  getInstallationEntry
+};

@@ -52,8 +52,8 @@ describe('platform_cordova/popup_redirect/popup_redirect', () => {
   let auth: TestAuth;
   let resolver: PopupRedirectResolverInternal;
   let provider: AuthProvider;
-  let utilsStubs: sinon.SinonStubbedInstance<typeof utils>;
-  let eventsStubs: sinon.SinonStubbedInstance<Partial<typeof events>>;
+  let utilsStubs: sinon.SinonStubbedInstance<typeof utils._cordovaUtilsInternal>;
+  let eventsStubs: sinon.SinonStubbedInstance<typeof events._cordovaEventsInternal>;
   let universalLinksCb:
     | ((eventData: Record<string, string> | null) => unknown)
     | null;
@@ -64,13 +64,14 @@ describe('platform_cordova/popup_redirect/popup_redirect', () => {
     resolver =
       new (cordovaPopupRedirectResolver as SingletonInstantiator<PopupRedirectResolverInternal>)();
     provider = new GoogleAuthProvider();
-    utilsStubs = sinon.stub(utils);
+    // Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+    utilsStubs = sinon.stub(utils._cordovaUtilsInternal);
     eventsStubs = {
-      _generateNewEvent: sinon.stub(events, '_generateNewEvent'),
-      _savePartialEvent: sinon.stub(events, '_savePartialEvent'),
-      _getAndRemoveEvent: sinon.stub(events, '_getAndRemoveEvent'),
-      _eventFromPartialAndUrl: sinon.stub(events, '_eventFromPartialAndUrl'),
-      _getDeepLinkFromCallback: sinon.stub(events, '_getDeepLinkFromCallback')
+      _generateNewEvent: sinon.stub(events._cordovaEventsInternal, '_generateNewEvent'),
+      _savePartialEvent: sinon.stub(events._cordovaEventsInternal, '_savePartialEvent'),
+      _getAndRemoveEvent: sinon.stub(events._cordovaEventsInternal, '_getAndRemoveEvent'),
+      _eventFromPartialAndUrl: sinon.stub(events._cordovaEventsInternal, '_eventFromPartialAndUrl'),
+      _getDeepLinkFromCallback: sinon.stub(events._cordovaEventsInternal, '_getDeepLinkFromCallback')
     };
 
     win.universalLinks = {
@@ -155,7 +156,8 @@ describe('platform_cordova/popup_redirect/popup_redirect', () => {
           postBody: null,
           tenantId: null
         });
-        expect(events._getAndRemoveEvent).to.have.been.called;
+        // Fix Vitest error: "TypeError: [Function _getAndRemoveEvent] is not a spy or a call to a spy!"
+        expect(eventsStubs._getAndRemoveEvent).to.have.been.called;
       });
     });
 
@@ -223,7 +225,8 @@ describe('platform_cordova/popup_redirect/popup_redirect', () => {
         eventsStubs._eventFromPartialAndUrl!.returns(finalEvent as AuthEvent);
         await universalLinksCb!({ url: 'foo-bar' });
         expect(await promise).to.eq(finalEvent);
-        expect(events._eventFromPartialAndUrl).to.have.been.calledWith(
+        // Fix Vitest error: "TypeError: [Function _eventFromPartialAndUrl] is not a spy or a call to a spy!"
+        expect(eventsStubs._eventFromPartialAndUrl).to.have.been.calledWith(
           { type: AuthEventType.REAUTH_VIA_REDIRECT },
           'foo-bar'
         );
@@ -260,7 +263,8 @@ describe('platform_cordova/popup_redirect/popup_redirect', () => {
         eventsStubs._eventFromPartialAndUrl!.returns(finalEvent as AuthEvent);
         win.handleOpenURL(`${PACKAGE_NAME}://foo`);
         expect(await promise).to.eq(finalEvent);
-        expect(events._eventFromPartialAndUrl).to.have.been.calledWith(
+        // Fix Vitest error: "TypeError: [Function _eventFromPartialAndUrl] is not a spy or a call to a spy!"
+        expect(eventsStubs._eventFromPartialAndUrl).to.have.been.calledWith(
           { type: AuthEventType.REAUTH_VIA_REDIRECT },
           `${PACKAGE_NAME}://foo`
         );

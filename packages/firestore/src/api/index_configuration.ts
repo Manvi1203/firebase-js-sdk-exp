@@ -29,10 +29,9 @@ import { logWarn } from '../util/log';
 
 import { ensureFirestoreConfigured, Firestore } from './database';
 
-export {
-  connectFirestoreEmulator,
-  EmulatorMockTokenOptions
-} from '../lite-api/database';
+export { connectFirestoreEmulator } from '../lite-api/database';
+// Fix Vitest error: type-only export for EmulatorMockTokenOptions
+export type { EmulatorMockTokenOptions } from '../lite-api/database';
 
 /**
  * A single field element in an index configuration.

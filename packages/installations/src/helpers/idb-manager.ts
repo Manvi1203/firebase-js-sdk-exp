@@ -19,7 +19,7 @@ import { DBSchema, IDBPDatabase, openDB } from 'idb';
 import { AppConfig } from '../interfaces/installation-impl';
 import { InstallationEntry } from '../interfaces/installation-entry';
 import { getKey } from '../util/get-key';
-import { fidChanged } from './fid-changed';
+import { _fidChangedInternal } from './fid-changed';
 
 const DATABASE_NAME = 'firebase-installations-database';
 const DATABASE_VERSION = 1;
@@ -78,7 +78,7 @@ export async function set<ValueType extends InstallationEntry>(
   await tx.done;
 
   if (!oldValue || oldValue.fid !== value.fid) {
-    fidChanged(appConfig, value.fid);
+    _fidChangedInternal.fidChanged(appConfig, value.fid);
   }
 
   return value;
@@ -120,7 +120,7 @@ export async function update<ValueType extends InstallationEntry | undefined>(
   await tx.done;
 
   if (newValue && (!oldValue || oldValue.fid !== newValue.fid)) {
-    fidChanged(appConfig, newValue.fid);
+    _fidChangedInternal.fidChanged(appConfig, newValue.fid);
   }
 
   return newValue;
@@ -132,3 +132,11 @@ export async function clear(): Promise<void> {
   await tx.objectStore(OBJECT_STORE_NAME).clear();
   await tx.done;
 }
+
+export const _idbManagerInternal = {
+  get,
+  set,
+  remove,
+  update,
+  clear
+};

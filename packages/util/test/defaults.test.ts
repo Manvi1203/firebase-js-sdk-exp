@@ -68,7 +68,11 @@ describe('getDefaultEmulatorHost', () => {
   context('with no config and something unexpected throws', () => {
     let consoleInfoStub: SinonStub;
     before(() => {
-      stub(global, 'getGlobal').throws(new Error('getGlobal threw!'));
+      // Stub global._globalInternal to avoid Vitest error:
+      // "TypeError: ES Modules cannot be stubbed"
+      stub(global._globalInternal, 'getGlobal').throws(
+        new Error('getGlobal threw!')
+      );
       consoleInfoStub = stub(console, 'info');
     });
     after(() => {

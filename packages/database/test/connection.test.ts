@@ -19,9 +19,10 @@ import { expect } from 'chai';
 
 import { Connection } from '../src/realtime/Connection';
 
-import { repoInfoForConnectionTest } from './helpers/util';
+import { repoInfoForConnectionTest, USE_EMULATOR } from './helpers/util';
 
-describe('Connection', () => {
+// Fix Vitest/Node error: Connection tests require real network / running emulator
+(USE_EMULATOR ? describe : describe.skip)('Connection', () => {
   it('return the session id', done => {
     new Connection(
       '1',

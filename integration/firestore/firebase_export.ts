@@ -15,7 +15,8 @@
  * limitations under the License.
  */
 
-import { FirebaseApp, initializeApp } from '@firebase/app';
+import { FirebaseApp, initializeApp, deleteApp } from '@firebase/app';
+export { FirebaseApp, initializeApp, deleteApp };
 import {
   Firestore,
   FirestoreSettings,

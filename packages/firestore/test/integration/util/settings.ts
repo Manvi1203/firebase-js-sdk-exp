@@ -32,8 +32,17 @@ export enum TargetBackend {
   PROD = 'prod'
 }
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const PROJECT_CONFIG = require('../../../../../config/project.json');
+// Fix Vitest error: "Failed to resolve import config/project.json" / "ReferenceError: require is not defined"
+let PROJECT_CONFIG: Record<string, string> = {};
+try {
+  PROJECT_CONFIG =
+    typeof require !== 'undefined'
+      ? // eslint-disable-next-line @typescript-eslint/no-require-imports
+        require('../../../../../config/project.json')
+      : {};
+} catch {
+  PROJECT_CONFIG = {};
+}
 
 export const TARGET_DB_ID: string | '(default)' = getTargetDbId();
 
@@ -68,6 +77,18 @@ export function getRunEnterpriseTests(): boolean {
     return true;
   }
   return !!process.env.RUN_ENTERPRISE_TESTS;
+}
+
+export function getRunMultiDbTests(): boolean {
+  const karma = typeof __karma__ !== 'undefined' ? __karma__ : undefined;
+  if (karma && karma.config.runMultiDbTests !== undefined) {
+    return !!karma.config.runMultiDbTests;
+  }
+  const multiDb =
+    typeof process !== 'undefined' &&
+    process.env &&
+    process.env.FIRESTORE_RUN_MULTI_DB_TESTS;
+  return multiDb === 'true' || multiDb === 'YES';
 }
 
 function parseTargetBackend(targetBackend: string): TargetBackend {

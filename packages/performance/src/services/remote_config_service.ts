@@ -24,7 +24,7 @@ import { consoleLogger } from '../utils/console_logger';
 import { ERROR_FACTORY, ErrorCode } from '../utils/errors';
 
 import { Api } from './api_service';
-import { getAuthTokenPromise } from './iid_service';
+import { _iidServiceInternal } from './iid_service';
 import { SettingsService } from './settings_service';
 import { PerformanceController } from '../controllers/perf';
 import { getProjectId, getApiKey, getAppId } from '../utils/app_utils';
@@ -133,7 +133,8 @@ function getRemoteConfig(
   iid: string
 ): Promise<RemoteConfigResponse | undefined> {
   // Perf needs auth token only to retrieve remote config.
-  return getAuthTokenPromise(performanceController.installations)
+  return _iidServiceInternal
+    .getAuthTokenPromise(performanceController.installations)
     .then(authToken => {
       const projectId = getProjectId(performanceController.app);
       const apiKey = getApiKey(performanceController.app);
@@ -248,3 +249,10 @@ function configValid(expiry: string): boolean {
 function shouldLogAfterSampling(samplingRate: number): boolean {
   return Math.random() <= samplingRate;
 }
+
+/**
+ * @internal
+ */
+export const _remoteConfigServiceInternal = {
+  getConfig
+};

@@ -16,9 +16,10 @@
  */
 
 // APIs that don't depend on @firebase/app
+// Fix Vitest error: "SyntaxError: The requested module ... does not provide an export named 'EmulatorMockTokenOptions'"
+export type { EmulatorMockTokenOptions } from './api/Database';
 export {
   Database,
-  EmulatorMockTokenOptions,
   enableLogging,
   goOffline,
   goOnline,
@@ -26,7 +27,8 @@ export {
   forceLongPolling,
   connectDatabaseEmulator
 } from './api/Database';
-export {
+// Fix Vitest error: "SyntaxError: The requested module '/src/api/Reference.ts' does not provide an export named 'Query'"
+export type {
   Query,
   DatabaseReference,
   ListenOptions,
@@ -34,12 +36,15 @@ export {
   ThenableReference
 } from './api/Reference';
 export { OnDisconnect } from './api/OnDisconnect';
-export {
-  DataSnapshot,
+// Fix Vitest error: "SyntaxError: The requested module '/src/api/Reference_impl.ts' does not provide an export named 'QueryConstraintType'"
+export type {
   EventType,
   IteratedDataSnapshot,
+  QueryConstraintType
+} from './api/Reference_impl';
+export {
+  DataSnapshot,
   QueryConstraint,
-  QueryConstraintType,
   endAt,
   endBefore,
   equalTo,
@@ -71,9 +76,10 @@ export {
   child
 } from './api/Reference_impl';
 export { increment, serverTimestamp } from './api/ServerValue';
+// Fix Vitest error: "SyntaxError: The requested module '/src/api/Transaction.ts' does not provide an export named 'TransactionOptions'"
+export type { TransactionOptions } from './api/Transaction';
 export {
   runTransaction,
-  TransactionOptions,
   TransactionResult
 } from './api/Transaction';
 
@@ -88,7 +94,8 @@ export {
   validatePathString as _validatePathString,
   validateWritablePath as _validateWritablePath
 } from './core/util/validation';
-export { UserCallback as _UserCallback } from './core/view/EventRegistration';
+// Fix Vitest error: "SyntaxError: The requested module '/src/core/view/EventRegistration.ts' does not provide an export named 'UserCallback'"
+export type { UserCallback as _UserCallback } from './core/view/EventRegistration';
 export { QueryParams as _QueryParams } from './core/view/QueryParams';
 
 /* eslint-disable camelcase */

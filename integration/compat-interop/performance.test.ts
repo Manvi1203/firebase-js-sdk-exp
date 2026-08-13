@@ -17,18 +17,30 @@
 
 import { getModularInstance } from '@firebase/util';
 import { expect } from 'chai';
-import { getPerformance } from '@firebase/performance';
+import { getPerformance, FirebasePerformance } from '@firebase/performance';
 import firebase from '@firebase/app-compat';
 import '@firebase/performance-compat';
+import { Compat } from '@firebase/util';
+import { PerformanceCompat } from '@firebase/performance-compat';
 
 import { TEST_PROJECT_CONFIG } from './util';
 
-firebase.initializeApp(TEST_PROJECT_CONFIG);
-
-const compatPerf = firebase.performance();
-const modularPerf = getPerformance();
-
 describe('Performance compat interop', () => {
+  let app: firebase.app.App;
+  let compatPerf: PerformanceCompat & Compat<PerformanceCompat>;
+  let modularPerf: FirebasePerformance;
+
+  beforeEach(() => {
+    // Performance SDK requires the default app instance
+    app = firebase.initializeApp(TEST_PROJECT_CONFIG);
+    compatPerf = firebase.performance(app) as unknown as PerformanceCompat & Compat<PerformanceCompat>;
+    modularPerf = getPerformance(app as unknown as any);
+  });
+
+  afterEach(async () => {
+    await app.delete();
+  });
+
   it('Performance compat instance references modular Performance instance', () => {
     expect(getModularInstance(compatPerf)).to.equal(modularPerf);
   });

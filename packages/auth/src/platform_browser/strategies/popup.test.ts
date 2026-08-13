@@ -62,7 +62,7 @@ describe('platform_browser/strategies/popup', () => {
   let authPopup: AuthPopup;
   let underlyingWindow: { closed: boolean };
   let auth: TestAuth;
-  let idpStubs: sinon.SinonStubbedInstance<typeof idpTasks>;
+  let idpStubs: sinon.SinonStubbedInstance<typeof idpTasks._idpInternal>;
   let pendingTimeouts: TimerMap;
 
   beforeEach(async () => {
@@ -72,8 +72,9 @@ describe('platform_browser/strategies/popup', () => {
     authPopup = new AuthPopup(underlyingWindow as Window);
     provider = new OAuthProvider(ProviderId.GOOGLE);
     resolver = makeMockPopupRedirectResolver(eventManager, authPopup);
-    idpStubs = sinon.stub(idpTasks);
-    sinon.stub(eid, '_generateEventId').returns(MATCHING_EVENT_ID);
+    // Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+    idpStubs = sinon.stub(idpTasks._idpInternal);
+    sinon.stub(eid._eventIdInternal, '_generateEventId').returns(MATCHING_EVENT_ID);
     pendingTimeouts = stubTimeouts();
     sinon.stub(window, 'clearTimeout');
   });

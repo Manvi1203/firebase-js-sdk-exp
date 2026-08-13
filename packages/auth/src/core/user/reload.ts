@@ -28,50 +28,57 @@ import { _logoutIfInvalidated } from './invalidation';
 import { UserMetadata } from './user_metadata';
 import { getModularInstance } from '@firebase/util';
 
+// Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+export const _reloadInternal = {
+  async _reloadWithoutSaving(user: UserInternal): Promise<void> {
+    const auth = user.auth;
+    const idToken = await user.getIdToken();
+    const response = await _logoutIfInvalidated(
+      user,
+      getAccountInfo(auth, { idToken })
+    );
+
+    _assert(response?.users.length, auth, AuthErrorCode.INTERNAL_ERROR);
+
+    const coreAccount = response.users[0];
+
+    user._notifyReloadListener(coreAccount);
+
+    const newProviderData = coreAccount.providerUserInfo?.length
+      ? extractProviderData(coreAccount.providerUserInfo)
+      : [];
+
+    const providerData = mergeProviderData(user.providerData, newProviderData);
+
+    // Preserves the non-nonymous status of the stored user, even if no more
+    // credentials (federated or email/password) are linked to the user. If
+    // the user was previously anonymous, then use provider data to update.
+    // On the other hand, if it was not anonymous before, it should never be
+    // considered anonymous now.
+    const oldIsAnonymous = user.isAnonymous;
+    const newIsAnonymous =
+      !(user.email && coreAccount.passwordHash) && !providerData?.length;
+    const isAnonymous = !oldIsAnonymous ? false : newIsAnonymous;
+
+    const updates: Partial<UserInternal> = {
+      uid: coreAccount.localId,
+      displayName: coreAccount.displayName || null,
+      photoURL: coreAccount.photoUrl || null,
+      email: coreAccount.email || null,
+      emailVerified: coreAccount.emailVerified || false,
+      phoneNumber: coreAccount.phoneNumber || null,
+      tenantId: coreAccount.tenantId || null,
+      providerData,
+      metadata: new UserMetadata(coreAccount.createdAt, coreAccount.lastLoginAt),
+      isAnonymous
+    };
+
+    Object.assign(user, updates);
+  }
+};
+
 export async function _reloadWithoutSaving(user: UserInternal): Promise<void> {
-  const auth = user.auth;
-  const idToken = await user.getIdToken();
-  const response = await _logoutIfInvalidated(
-    user,
-    getAccountInfo(auth, { idToken })
-  );
-
-  _assert(response?.users.length, auth, AuthErrorCode.INTERNAL_ERROR);
-
-  const coreAccount = response.users[0];
-
-  user._notifyReloadListener(coreAccount);
-
-  const newProviderData = coreAccount.providerUserInfo?.length
-    ? extractProviderData(coreAccount.providerUserInfo)
-    : [];
-
-  const providerData = mergeProviderData(user.providerData, newProviderData);
-
-  // Preserves the non-nonymous status of the stored user, even if no more
-  // credentials (federated or email/password) are linked to the user. If
-  // the user was previously anonymous, then use provider data to update.
-  // On the other hand, if it was not anonymous before, it should never be
-  // considered anonymous now.
-  const oldIsAnonymous = user.isAnonymous;
-  const newIsAnonymous =
-    !(user.email && coreAccount.passwordHash) && !providerData?.length;
-  const isAnonymous = !oldIsAnonymous ? false : newIsAnonymous;
-
-  const updates: Partial<UserInternal> = {
-    uid: coreAccount.localId,
-    displayName: coreAccount.displayName || null,
-    photoURL: coreAccount.photoUrl || null,
-    email: coreAccount.email || null,
-    emailVerified: coreAccount.emailVerified || false,
-    phoneNumber: coreAccount.phoneNumber || null,
-    tenantId: coreAccount.tenantId || null,
-    providerData,
-    metadata: new UserMetadata(coreAccount.createdAt, coreAccount.lastLoginAt),
-    isAnonymous
-  };
-
-  Object.assign(user, updates);
+  return _reloadInternal._reloadWithoutSaving(user);
 }
 
 /**

@@ -28,3 +28,8 @@ export async function updateVapidKey(
     messaging.vapidKey = DEFAULT_VAPID_KEY;
   }
 }
+
+// Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+export const _updateVapidKeyInternal = {
+  updateVapidKey
+};

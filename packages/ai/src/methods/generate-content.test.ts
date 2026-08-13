@@ -102,7 +102,9 @@ describe('generateContent()', () => {
       'vertexAI',
       'unary-success-basic-reply-short.json'
     );
-    const makeRequestStub = stub(request, 'makeRequest').resolves(
+    // Stub request._requestInternal to avoid Vitest error:
+    // "TypeError: ES Modules cannot be stubbed"
+    const makeRequestStub = stub(request._requestInternal, 'makeRequest').resolves(
       mockResponse as Response
     );
     const result = await generateContent(
@@ -127,7 +129,9 @@ describe('generateContent()', () => {
       'vertexAI',
       'unary-success-basic-reply-long.json'
     );
-    const makeRequestStub = stub(request, 'makeRequest').resolves(
+    // Stub request._requestInternal to avoid Vitest error:
+    // "TypeError: ES Modules cannot be stubbed"
+    const makeRequestStub = stub(request._requestInternal, 'makeRequest').resolves(
       mockResponse as Response
     );
     const result = await generateContent(
@@ -153,7 +157,9 @@ describe('generateContent()', () => {
       'vertexAI',
       'unary-success-basic-response-long-usage-metadata.json'
     );
-    const makeRequestStub = stub(request, 'makeRequest').resolves(
+    // Stub request._requestInternal to avoid Vitest error:
+    // "TypeError: ES Modules cannot be stubbed"
+    const makeRequestStub = stub(request._requestInternal, 'makeRequest').resolves(
       mockResponse as Response
     );
     const result = await generateContent(
@@ -191,7 +197,9 @@ describe('generateContent()', () => {
       'vertexAI',
       'unary-success-citations.json'
     );
-    const makeRequestStub = stub(request, 'makeRequest').resolves(
+    // Stub request._requestInternal to avoid Vitest error:
+    // "TypeError: ES Modules cannot be stubbed"
+    const makeRequestStub = stub(request._requestInternal, 'makeRequest').resolves(
       mockResponse as Response
     );
     const result = await generateContent(
@@ -221,7 +229,9 @@ describe('generateContent()', () => {
       'vertexAI',
       'unary-success-google-search-grounding.json'
     );
-    const makeRequestStub = stub(request, 'makeRequest').resolves(
+    // Stub request._requestInternal to avoid Vitest error:
+    // "TypeError: ES Modules cannot be stubbed"
+    const makeRequestStub = stub(request._requestInternal, 'makeRequest').resolves(
       mockResponse as Response
     );
     const result = await generateContent(
@@ -265,66 +275,69 @@ describe('generateContent()', () => {
       },
       JSON.stringify(fakeRequestParams)
     );
+  });
 
-    it('url context', async () => {
-      const mockResponse = getMockResponse(
-        'vertexAI',
-        'unary-success-url-context.json'
-      );
-      const makeRequestStub = stub(request, 'makeRequest').resolves(
-        mockResponse as Response
-      );
-      const result = await generateContent(
-        fakeApiSettings,
-        'model',
-        fakeRequestParams
-      );
-      expect(result.response.text()).to.include(
-        'The temperature is 67°F (19°C)'
-      );
-      const groundingMetadata =
-        result.response.candidates?.[0].groundingMetadata;
-      expect(groundingMetadata).to.not.be.undefined;
-      expect(groundingMetadata!.searchEntryPoint?.renderedContent).to.contain(
-        'div'
-      );
-      expect(groundingMetadata!.groundingChunks?.length).to.equal(2);
-      expect(groundingMetadata!.groundingChunks?.[0].web?.uri).to.contain(
-        'https://vertexaisearch.cloud.google.com'
-      );
-      expect(groundingMetadata!.groundingChunks?.[0].web?.title).to.equal(
-        'accuweather.com'
-      );
-      expect(groundingMetadata!.groundingSupports?.length).to.equal(3);
-      expect(
-        groundingMetadata!.groundingSupports?.[0].groundingChunkIndices
-      ).to.deep.equal([0]);
-      expect(groundingMetadata!.groundingSupports?.[0].segment).to.deep.equal({
-        endIndex: 56,
-        text: 'The current weather in London, United Kingdom is cloudy.'
-      });
-      expect(groundingMetadata!.groundingSupports?.[0].segment?.partIndex).to.be
-        .undefined;
-      expect(groundingMetadata!.groundingSupports?.[0].segment?.startIndex).to
-        .be.undefined;
-
-      expect(makeRequestStub).to.be.calledWith(
-        {
-          model: 'model',
-          task: Task.GENERATE_CONTENT,
-          apiSettings: fakeApiSettings,
-          stream: false
-        },
-        match.any
-      );
+  it('url context', async () => {
+    const mockResponse = getMockResponse(
+      'vertexAI',
+      'unary-success-url-context.json'
+    );
+    // Stub request._requestInternal to avoid Vitest error:
+    // "TypeError: ES Modules cannot be stubbed"
+    const makeRequestStub = stub(request._requestInternal, 'makeRequest').resolves(
+      mockResponse as Response
+    );
+    const result = await generateContent(
+      fakeApiSettings,
+      'model',
+      fakeRequestParams
+    );
+    expect(result.response.text()).to.include(
+      'The Berkshire Hathaway Inc. website serves as the official homepage'
+    );
+    const groundingMetadata =
+      result.response.candidates?.[0].groundingMetadata;
+    expect(groundingMetadata).to.not.be.undefined;
+    expect(groundingMetadata!.groundingChunks?.length).to.equal(1);
+    expect(groundingMetadata!.groundingChunks?.[0].web?.uri).to.contain(
+      'https://berkshirehathaway.com'
+    );
+    expect(groundingMetadata!.groundingChunks?.[0].web?.title).to.equal(
+      'BERKSHIRE HATHAWAY INC.'
+    );
+    expect(groundingMetadata!.groundingSupports?.length).to.equal(2);
+    expect(
+      groundingMetadata!.groundingSupports?.[0].groundingChunkIndices
+    ).to.deep.equal([0]);
+    expect(groundingMetadata!.groundingSupports?.[0].segment).to.deep.equal({
+      startIndex: 273,
+      endIndex: 450,
+      text: "The site also features letters from Warren Buffett and Charlie Munger, details on corporate governance and sustainability, and links to Berkshire Hathaway's operating companies."
     });
+    expect(
+      result.response.candidates?.[0].urlContextMetadata?.urlMetadata?.[0]
+        .retrievedUrl
+    ).to.equal('https://berkshirehathaway.com');
+
+    expect(makeRequestStub).to.be.calledWith(
+      {
+        model: 'model',
+        task: Task.GENERATE_CONTENT,
+        apiSettings: fakeApiSettings,
+        stream: false,
+        singleRequestOptions: undefined
+      },
+      JSON.stringify(fakeRequestParams)
+    );
   });
   it('google maps grounding', async () => {
     const mockResponse = getMockResponse(
       'vertexAI',
       'unary-success-google-maps-grounding.json'
     );
-    const makeRequestStub = stub(request, 'makeRequest').resolves(
+    // Stub request._requestInternal to avoid Vitest error:
+    // "TypeError: ES Modules cannot be stubbed"
+    const makeRequestStub = stub(request._requestInternal, 'makeRequest').resolves(
       mockResponse as Response
     );
     const result = await generateContent(
@@ -382,7 +395,9 @@ describe('generateContent()', () => {
       'vertexAI',
       'unary-success-code-execution.json'
     );
-    stub(request, 'makeRequest').resolves(mockResponse as Response);
+    // Stub request._requestInternal to avoid Vitest error:
+    // "TypeError: ES Modules cannot be stubbed"
+    stub(request._requestInternal, 'makeRequest').resolves(mockResponse as Response);
     const result = await generateContent(
       fakeApiSettings,
       'model',
@@ -401,7 +416,9 @@ describe('generateContent()', () => {
       'vertexAI',
       'unary-failure-prompt-blocked-safety.json'
     );
-    const makeRequestStub = stub(request, 'makeRequest').resolves(
+    // Stub request._requestInternal to avoid Vitest error:
+    // "TypeError: ES Modules cannot be stubbed"
+    const makeRequestStub = stub(request._requestInternal, 'makeRequest').resolves(
       mockResponse as Response
     );
     const result = await generateContent(
@@ -426,7 +443,9 @@ describe('generateContent()', () => {
       'vertexAI',
       'unary-failure-finish-reason-safety.json'
     );
-    const makeRequestStub = stub(request, 'makeRequest').resolves(
+    // Stub request._requestInternal to avoid Vitest error:
+    // "TypeError: ES Modules cannot be stubbed"
+    const makeRequestStub = stub(request._requestInternal, 'makeRequest').resolves(
       mockResponse as Response
     );
     const result = await generateContent(
@@ -451,7 +470,9 @@ describe('generateContent()', () => {
       'vertexAI',
       'unary-failure-empty-content.json'
     );
-    const makeRequestStub = stub(request, 'makeRequest').resolves(
+    // Stub request._requestInternal to avoid Vitest error:
+    // "TypeError: ES Modules cannot be stubbed"
+    const makeRequestStub = stub(request._requestInternal, 'makeRequest').resolves(
       mockResponse as Response
     );
     const result = await generateContent(
@@ -476,7 +497,9 @@ describe('generateContent()', () => {
       'vertexAI',
       'unary-success-empty-part.json'
     );
-    stub(request, 'makeRequest').resolves(mockResponse as Response);
+    // Stub request._requestInternal to avoid Vitest error:
+    // "TypeError: ES Modules cannot be stubbed"
+    stub(request._requestInternal, 'makeRequest').resolves(mockResponse as Response);
     const result = await generateContent(
       fakeApiSettings,
       'model',
@@ -492,7 +515,9 @@ describe('generateContent()', () => {
       'vertexAI',
       'unary-success-unknown-enum-safety-ratings.json'
     );
-    const makeRequestStub = stub(request, 'makeRequest').resolves(
+    // Stub request._requestInternal to avoid Vitest error:
+    // "TypeError: ES Modules cannot be stubbed"
+    const makeRequestStub = stub(request._requestInternal, 'makeRequest').resolves(
       mockResponse as Response
     );
     const result = await generateContent(
@@ -548,7 +573,9 @@ describe('generateContent()', () => {
     let makeRequestStub: Sinon.SinonStub;
 
     beforeEach(() => {
-      makeRequestStub = stub(request, 'makeRequest');
+      // Stub request._requestInternal to avoid Vitest error:
+      // "TypeError: ES Modules cannot be stubbed"
+      makeRequestStub = stub(request._requestInternal, 'makeRequest');
     });
 
     afterEach(() => {
@@ -665,7 +692,9 @@ describe('templateGenerateContent', () => {
       'vertexAI',
       'unary-success-basic-reply-short.json'
     );
-    const makeRequestStub = stub(request, 'makeRequest').resolves(
+    // Stub request._requestInternal to avoid Vitest error:
+    // "TypeError: ES Modules cannot be stubbed"
+    const makeRequestStub = stub(request._requestInternal, 'makeRequest').resolves(
       mockResponse as Response
     );
     const templateId = 'my-template';
@@ -702,7 +731,9 @@ describe('templateGenerateContentStream', () => {
       'vertexAI',
       'streaming-success-basic-reply-short.txt'
     );
-    const makeRequestStub = stub(request, 'makeRequest').resolves(
+    // Stub request._requestInternal to avoid Vitest error:
+    // "TypeError: ES Modules cannot be stubbed"
+    const makeRequestStub = stub(request._requestInternal, 'makeRequest').resolves(
       mockResponse as Response
     );
     const templateId = 'my-stream-template';

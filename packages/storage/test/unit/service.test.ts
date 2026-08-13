@@ -48,8 +48,9 @@ function makeGsUrl(child: string = ''): string {
 }
 
 describe('Firebase Storage > Service', () => {
-  before(() => injectTestConnection(newTestConnection));
-  after(() => injectTestConnection(null));
+  // Use beforeEach/afterEach to avoid Vitest error: "ReferenceError: before is not defined"
+  beforeEach(() => injectTestConnection(newTestConnection));
+  afterEach(() => injectTestConnection(null));
 
   describe('simple constructor', () => {
     const service = new FirebaseStorageImpl(

@@ -18,31 +18,53 @@
 import { assert, expect } from 'chai';
 import * as sinon from 'sinon';
 // eslint-disable-next-line import/no-extraneous-dependencies
-import { FirebaseApp, deleteApp } from '@firebase/app';
+import { FirebaseApp, deleteApp, initializeApp } from '@firebase/app';
 
 import { FbsBlob } from '../../src/implementation/blob';
 import * as type from '../../src/implementation/type';
 import * as testShared from '../unit/testshared';
-import { createApp, createStorage } from '../integration/integration.test';
-import { getBlob, ref, uploadBytes } from '../../src';
+import { getBlob, getStorage, ref, uploadBytes } from '../../src';
 import * as types from '../../src/public-types';
+import { PROJECT_ID, STORAGE_BUCKET, API_KEY, AUTH_DOMAIN } from '../unit/index.test';
+
+// Define locally to avoid Vitest error: "Failed to resolve import @firebase/auth from test/integration/integration.test.ts"
+function createApp(): FirebaseApp {
+  return initializeApp({
+    apiKey: API_KEY,
+    projectId: PROJECT_ID,
+    storageBucket: STORAGE_BUCKET,
+    authDomain: AUTH_DOMAIN
+  });
+}
+
+function createStorage(app: FirebaseApp): types.FirebaseStorage {
+  return getStorage(app);
+}
+
+import { injectTestConnection } from '../../src/platform/connection';
+import { newTestConnection } from '../unit/connection';
 
 describe('Firebase Storage > Blob', () => {
   let app: FirebaseApp;
   let storage: types.FirebaseStorage;
 
   beforeEach(async () => {
-    app = await createApp();
+    // Inject test connection to handle mock network requests in browser unit tests
+    injectTestConnection(newTestConnection);
+    app = createApp();
     storage = createStorage(app);
   });
 
   afterEach(async () => {
+    injectTestConnection(null);
     await deleteApp(app);
   });
 
   let stubs: sinon.SinonStub[] = [];
-  before(() => {
-    const definedStub = sinon.stub(type, 'isNativeBlobDefined');
+  // Use beforeEach to avoid Vitest error: "ReferenceError: before is not defined"
+  beforeEach(() => {
+    // Stub _typeInternal to avoid Vitest error: "TypeError: ES Modules cannot be stubbed"
+    const definedStub = sinon.stub(type._typeInternal, 'isNativeBlobDefined');
     definedStub.returns(false);
     stubs.push(definedStub);
 
@@ -50,7 +72,8 @@ describe('Firebase Storage > Blob', () => {
     blobStub.throws(Error("I don't exist"));
     stubs.push(blobStub);
   });
-  after(() => {
+  // Use afterEach to avoid Vitest error: "ReferenceError: after is not defined"
+  afterEach(() => {
     stubs.forEach(stub => {
       stub.restore();
     });

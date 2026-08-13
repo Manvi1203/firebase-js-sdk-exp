@@ -57,7 +57,7 @@ export function registerFirestore(
         firestoreInstance._setSettings(settings);
         return firestoreInstance;
       },
-      'PUBLIC' as ComponentType.PUBLIC
+      ComponentType.PUBLIC
     ).setMultipleInstances(true)
   );
   registerVersion(name, version, variant);

@@ -124,3 +124,13 @@ export function httpsCallableFromURL<
     options
   );
 }
+
+/**
+ * @internal
+ */
+export const _apiInternal = {
+  connectFunctionsEmulator,
+  httpsCallable,
+  httpsCallableFromURL,
+  getFunctions
+};

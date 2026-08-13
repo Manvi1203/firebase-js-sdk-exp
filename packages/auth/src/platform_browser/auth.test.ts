@@ -89,7 +89,9 @@ describe('core/auth/auth_impl', () => {
     auth = authImpl;
   });
 
-  afterEach(sinon.restore);
+  afterEach(() => {
+    sinon.restore();
+  });
 
   describe('#setPersistence', () => {
     it('swaps underlying persistence', async () => {
@@ -113,7 +115,9 @@ describe('core/auth/auth_impl', () => {
 });
 
 describe('core/auth/initializeAuth', () => {
-  afterEach(sinon.restore);
+  afterEach(() => {
+    sinon.restore();
+  });
 
   describe('persistence manager creation', () => {
     let createManagerStub: sinon.SinonSpy;
@@ -124,8 +128,9 @@ describe('core/auth/initializeAuth', () => {
     beforeEach(async () => {
       oldAuth = await testAuth();
       createManagerStub = sinon.spy(PersistenceUserManager, 'create');
+      // Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
       reloadStub = sinon
-        .stub(reload, '_reloadWithoutSaving')
+        .stub(reload._reloadInternal, '_reloadWithoutSaving')
         .returns(Promise.resolve());
       completeRedirectFnStub = sinon
         .stub(
@@ -213,7 +218,7 @@ describe('core/auth/initializeAuth', () => {
         )
         .returns(Promise.resolve(user.toJSON()));
       await initAndWait(inMemoryPersistence);
-      expect(reload._reloadWithoutSaving).not.to.have.been.called;
+      expect(reloadStub).not.to.have.been.called;
     });
 
     it('does not early-initialize the resolver if _shouldInitProactively is false', async () => {
@@ -261,7 +266,7 @@ describe('core/auth/initializeAuth', () => {
         .returns(Promise.resolve(null));
 
       await initAndWait(inMemoryPersistence);
-      expect(reload._reloadWithoutSaving).to.have.been.called;
+      expect(reloadStub).to.have.been.called;
     });
 
     it('Does not reload if the event ids match', async () => {
@@ -279,7 +284,7 @@ describe('core/auth/initializeAuth', () => {
         .returns(Promise.resolve(user.toJSON()));
 
       await initAndWait(inMemoryPersistence, browserPopupRedirectResolver);
-      expect(reload._reloadWithoutSaving).not.to.have.been.called;
+      expect(reloadStub).not.to.have.been.called;
     });
 
     it('Reloads if the event ids do not match', async () => {
@@ -299,7 +304,7 @@ describe('core/auth/initializeAuth', () => {
         .returns(Promise.resolve(user.toJSON()));
 
       await initAndWait(inMemoryPersistence, browserPopupRedirectResolver);
-      expect(reload._reloadWithoutSaving).to.have.been.called;
+      expect(reloadStub).to.have.been.called;
     });
 
     it('Nulls out the current user if reload fails', async () => {
@@ -457,7 +462,7 @@ describe('core/auth/initializeAuth', () => {
         );
 
         expect(auth.currentUser!.uid).to.eq(oldUser.uid);
-        expect(reload._reloadWithoutSaving).to.have.been.called;
+        expect(reloadStub).to.have.been.called;
         expect(overrideSpy).not.to.have.been.called;
       });
 
@@ -494,7 +499,7 @@ describe('core/auth/initializeAuth', () => {
         );
         expect(user).not.to.be.null;
         expect(auth.currentUser!.uid).to.eq(oldUser.uid);
-        expect(reload._reloadWithoutSaving).to.have.been.called;
+        expect(reloadStub).to.have.been.called;
         expect(overrideSpy).to.have.been.called;
       });
 
@@ -522,7 +527,7 @@ describe('core/auth/initializeAuth', () => {
         );
         expect(completeRedirectFnStub).to.have.been.called;
         expect(auth.currentUser).to.be.null;
-        expect(reload._reloadWithoutSaving).not.to.have.been.called;
+        expect(reloadStub).not.to.have.been.called;
       });
     });
   });

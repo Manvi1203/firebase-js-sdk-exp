@@ -15,4 +15,22 @@
  * limitations under the License.
  */
 
-export const TEST_PROJECT_CONFIG = require('../../config/project.json');
+let projectConfig: Record<string, unknown> = {
+  apiKey: 'AIzaSyFakeKeyForTesting1234567890',
+  authDomain: 'test-app.firebaseapp.com',
+  databaseURL: 'https://test-app.firebaseio.com',
+  projectId: 'test-app',
+  storageBucket: 'test-app.appspot.com',
+  messagingSenderId: '1234567890',
+  appId: '1:1234567890:web:abcdef123456'
+};
+
+try {
+  // Fix Vitest / Node error: "Cannot find module '../../config/project.json'"
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  projectConfig = require('../../config/project.json');
+} catch {
+  // Use default fallback config if config/project.json is not present
+}
+
+export const TEST_PROJECT_CONFIG = projectConfig;

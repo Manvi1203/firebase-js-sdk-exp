@@ -17,7 +17,8 @@
 
 import { SDK_VERSION } from '@firebase/app';
 import { querystring } from '@firebase/util';
-import { DefaultConfig } from '../../../internal';
+// Fix Vitest error: "SyntaxError: The requested module ... does not provide an export named 'DefaultConfig'"
+import { DefaultConfig } from '../../core/auth/auth_impl';
 
 import { AuthErrorCode } from '../../core/errors';
 import { _assert, _createError } from '../../core/util/assert';

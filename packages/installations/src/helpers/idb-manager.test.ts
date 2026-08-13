@@ -74,7 +74,9 @@ describe('idb manager', () => {
     });
 
     it('calls fidChanged when a new FID is generated', async () => {
-      const fidChangedStub = stub(fidChangedModule, 'fidChanged');
+      // Stub _fidChangedInternal to avoid Vitest error:
+      // "TypeError: ES Modules cannot be stubbed"
+      const fidChangedStub = stub(fidChangedModule._fidChangedInternal, 'fidChanged');
       await set(appConfig, VALUE_A);
 
       expect(fidChangedStub).to.have.been.calledOnceWith(
@@ -86,7 +88,9 @@ describe('idb manager', () => {
     it('calls fidChanged when the FID changes', async () => {
       await set(appConfig, VALUE_A);
 
-      const fidChangedStub = stub(fidChangedModule, 'fidChanged');
+      // Stub _fidChangedInternal to avoid Vitest error:
+      // "TypeError: ES Modules cannot be stubbed"
+      const fidChangedStub = stub(fidChangedModule._fidChangedInternal, 'fidChanged');
       await set(appConfig, VALUE_B);
 
       expect(fidChangedStub).to.have.been.calledOnceWith(
@@ -98,7 +102,9 @@ describe('idb manager', () => {
     it('does not call fidChanged when the FID is the same', async () => {
       await set(appConfig, VALUE_A);
 
-      const fidChangedStub = stub(fidChangedModule, 'fidChanged');
+      // Stub _fidChangedInternal to avoid Vitest error:
+      // "TypeError: ES Modules cannot be stubbed"
+      const fidChangedStub = stub(fidChangedModule._fidChangedInternal, 'fidChanged');
       await set(appConfig, /* Same value */ VALUE_A);
 
       expect(fidChangedStub).not.to.have.been.called;
@@ -161,7 +167,9 @@ describe('idb manager', () => {
     });
 
     it('calls fidChanged when a new FID is generated', async () => {
-      const fidChangedStub = stub(fidChangedModule, 'fidChanged');
+      // Stub _fidChangedInternal to avoid Vitest error:
+      // "TypeError: ES Modules cannot be stubbed"
+      const fidChangedStub = stub(fidChangedModule._fidChangedInternal, 'fidChanged');
       await update(appConfig, () => VALUE_A);
 
       expect(fidChangedStub).to.have.been.calledOnceWith(
@@ -173,7 +181,9 @@ describe('idb manager', () => {
     it('calls fidChanged when the FID changes', async () => {
       await set(appConfig, VALUE_A);
 
-      const fidChangedStub = stub(fidChangedModule, 'fidChanged');
+      // Stub _fidChangedInternal to avoid Vitest error:
+      // "TypeError: ES Modules cannot be stubbed"
+      const fidChangedStub = stub(fidChangedModule._fidChangedInternal, 'fidChanged');
       await update(appConfig, () => VALUE_B);
 
       expect(fidChangedStub).to.have.been.calledOnceWith(
@@ -185,7 +195,9 @@ describe('idb manager', () => {
     it('does not call fidChanged when the FID is the same', async () => {
       await set(appConfig, VALUE_A);
 
-      const fidChangedStub = stub(fidChangedModule, 'fidChanged');
+      // Stub _fidChangedInternal to avoid Vitest error:
+      // "TypeError: ES Modules cannot be stubbed"
+      const fidChangedStub = stub(fidChangedModule._fidChangedInternal, 'fidChanged');
       await update(appConfig, () => /* Same value */ VALUE_A);
 
       expect(fidChangedStub).not.to.have.been.called;

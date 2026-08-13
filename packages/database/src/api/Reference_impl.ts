@@ -65,7 +65,9 @@ import {
   validateWritablePath
 } from '../core/util/validation';
 import { Change } from '../core/view/Change';
-import { CancelEvent, DataEvent, EventType } from '../core/view/Event';
+import { CancelEvent, DataEvent } from '../core/view/Event';
+// Fix Vitest error: "SyntaxError: The requested module '/src/core/view/Event.ts' does not provide an export named 'EventType'"
+import type { EventType } from '../core/view/Event';
 import {
   CallbackContext,
   EventRegistration,
@@ -1607,7 +1609,8 @@ export function onChildRemoved(
   );
 }
 
-export { EventType };
+// Fix Vitest error: "SyntaxError: The requested module '/src/core/view/Event.ts' does not provide an export named 'EventType'"
+export type { EventType };
 
 /**
  * Detaches a callback previously attached with the corresponding `on*()` (`onValue`, `onChildAdded`) listener.

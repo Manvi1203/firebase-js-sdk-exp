@@ -62,16 +62,18 @@ describe('platform_browser/popup_redirect', () => {
     resolver =
       new (browserPopupRedirectResolver as SingletonInstantiator<PopupRedirectResolverInternal>)();
 
-    sinon.stub(validateOrigin, '_validateOrigin').returns(Promise.resolve());
+    // Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+    sinon.stub(validateOrigin._validateOriginInternal, '_validateOrigin').returns(Promise.resolve());
     iframeSendStub = sinon.stub();
-    loadGapiStub = sinon.stub(gapiLoader, '_loadGapi');
+    loadGapiStub = sinon.stub(gapiLoader._gapiInternal, '_loadGapi');
     setGapiStub();
 
-    sinon.stub(authWindow._window(), 'gapi').value({
+    // Fix Vitest error: "TypeError: Cannot stub non-existent property gapi"
+    (authWindow._window() as any).gapi = {
       iframes: {
         CROSS_ORIGIN_IFRAMES_FILTER: 'cross-origin-iframes-filter'
       }
-    });
+    };
   });
 
   function setGapiStub(): void {
@@ -91,6 +93,7 @@ describe('platform_browser/popup_redirect', () => {
 
   afterEach(() => {
     sinon.restore();
+    delete (authWindow._window() as any).gapi;
   });
 
   context('#_openPopup', () => {
@@ -187,7 +190,8 @@ describe('platform_browser/popup_redirect', () => {
     beforeEach(async () => {
       provider = new OAuthProvider(ProviderId.GOOGLE);
       await resolver._initialize(auth);
-      sinon.stub(authWindow, '_setWindowLocation').callsFake(url => {
+      // Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+      sinon.stub(authWindow._authWindowInternal, '_setWindowLocation').callsFake(url => {
         newWindowLocation = url;
       });
     });
@@ -301,7 +305,8 @@ describe('platform_browser/popup_redirect', () => {
     });
 
     it('rejects immediately if origin validation fails', async () => {
-      (validateOrigin._validateOrigin as sinon.SinonStub).returns(
+      // Fix Vitest error: "TypeError: validateOrigin._validateOrigin.returns is not a function"
+      (validateOrigin._validateOriginInternal._validateOrigin as sinon.SinonStub).returns(
         Promise.reject(new Error('invalid-origin'))
       );
       await expect(
@@ -315,12 +320,14 @@ describe('platform_browser/popup_redirect', () => {
       await resolver._initialize(auth);
 
       await resolver._originValidation(auth);
-      expect(validateOrigin._validateOrigin).to.have.been.calledWith(auth);
+      // Fix Vitest error: "TypeError: [Function _validateOrigin] is not a spy or a call to a spy!"
+      expect(validateOrigin._validateOriginInternal._validateOrigin).to.have.been.calledWith(auth);
     });
 
     it('rejects if origin validation fails', async () => {
       await resolver._initialize(auth);
-      (validateOrigin._validateOrigin as sinon.SinonStub).returns(
+      // Fix Vitest error: "TypeError: [Function _validateOrigin] is not a spy or a call to a spy!"
+      (validateOrigin._validateOriginInternal._validateOrigin as sinon.SinonStub).returns(
         Promise.reject(new Error('invalid-origin'))
       );
 
@@ -444,19 +451,25 @@ describe('platform_browser/popup_redirect', () => {
       expect(args[3]).to.eq('cross-origin-iframes-filter');
     });
 
-    it('passes through true value from the response to the callback', done => {
-      setIframeResponse([{ webStorageSupport: true }]);
-      resolver._isIframeWebStorageSupported(auth, supported => {
-        expect(supported).to.be.true;
-        done();
+    // Fix Vitest error: "done() callback is deprecated, use promise instead"
+    it('passes through true value from the response to the callback', () => {
+      return new Promise<void>(resolve => {
+        setIframeResponse([{ webStorageSupport: true }]);
+        resolver._isIframeWebStorageSupported(auth, supported => {
+          expect(supported).to.be.true;
+          resolve();
+        });
       });
     });
 
-    it('passes through false value from the response to callback', done => {
-      setIframeResponse([{ webStorageSupport: false }]);
-      resolver._isIframeWebStorageSupported(auth, supported => {
-        expect(supported).to.be.false;
-        done();
+    // Fix Vitest error: "done() callback is deprecated, use promise instead"
+    it('passes through false value from the response to callback', () => {
+      return new Promise<void>(resolve => {
+        setIframeResponse([{ webStorageSupport: false }]);
+        resolver._isIframeWebStorageSupported(auth, supported => {
+          expect(supported).to.be.false;
+          resolve();
+        });
       });
     });
 

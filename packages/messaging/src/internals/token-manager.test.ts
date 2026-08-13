@@ -17,16 +17,16 @@
 
 import '../testing/setup';
 
+// Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
 import { unregister } from '../api/unregister';
-import * as apiModule from './requests';
-
+import { _requestsInternal } from './requests';
 import {
   dbGet,
   dbGetFidRegistration,
   dbSet,
-  dbSetFidRegistration
+  dbSetFidRegistration,
+  _idbManagerInternal
 } from './idb-manager';
-import * as idbManager from './idb-manager';
 import { getTokenInternal, revokeRegistrationInternal } from './token-manager';
 import {
   getFakeAnalyticsProvider,
@@ -46,11 +46,15 @@ import { getFakeTokenDetails } from '../testing/fakes/token-details';
 describe('Token Manager', () => {
   let tokenDetails: TokenDetails;
   let messaging: MessagingService;
-  let requestGetTokenStub: Stub<(typeof apiModule)['requestGetToken']>;
-  let requestUpdateTokenStub: Stub<(typeof apiModule)['requestUpdateToken']>;
-  let requestDeleteTokenStub: Stub<(typeof apiModule)['requestDeleteToken']>;
+  let requestGetTokenStub: Stub<(typeof _requestsInternal)['requestGetToken']>;
+  let requestUpdateTokenStub: Stub<
+    (typeof _requestsInternal)['requestUpdateToken']
+  >;
+  let requestDeleteTokenStub: Stub<
+    (typeof _requestsInternal)['requestDeleteToken']
+  >;
   let requestDeleteRegistrationStub: Stub<
-    (typeof apiModule)['requestDeleteRegistration']
+    (typeof _requestsInternal)['requestDeleteRegistration']
   >;
 
   beforeEach(() => {
@@ -64,15 +68,22 @@ describe('Token Manager', () => {
     messaging.vapidKey = 'dmFwaWQta2V5LXZhbHVl';
     messaging.swRegistration = new FakeServiceWorkerRegistration();
 
-    requestGetTokenStub = stub(apiModule, 'requestGetToken').resolves(
+    // Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+    requestGetTokenStub = stub(_requestsInternal, 'requestGetToken').resolves(
       'token-value' // new token.
     );
-    requestUpdateTokenStub = stub(apiModule, 'requestUpdateToken').resolves(
+    requestUpdateTokenStub = stub(
+      _requestsInternal,
+      'requestUpdateToken'
+    ).resolves(
       tokenDetails.token // same as current token.
     );
-    requestDeleteTokenStub = stub(apiModule, 'requestDeleteToken').resolves();
+    requestDeleteTokenStub = stub(
+      _requestsInternal,
+      'requestDeleteToken'
+    ).resolves();
     requestDeleteRegistrationStub = stub(
-      apiModule,
+      _requestsInternal,
       'requestDeleteRegistration'
     ).resolves();
     useFakeTimers({ now: 1234567890 });
@@ -291,8 +302,9 @@ describe('Token Manager', () => {
     });
 
     it('also cleans up stored FID registration metadata', async () => {
+      // Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
       const dbRemoveFidStub = stub(
-        idbManager,
+        _idbManagerInternal,
         'dbRemoveFidRegistration'
       ).resolves();
 

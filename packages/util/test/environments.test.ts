@@ -30,7 +30,9 @@ describe('isNode()', () => {
   let getDefaultsFromGlobalStub: SinonStub;
 
   beforeEach(async () => {
-    getDefaultsFromGlobalStub = stub(defaults, 'getDefaults');
+    // Stub defaults._defaultsInternal to avoid Vitest error:
+    // "TypeError: ES Modules cannot be stubbed"
+    getDefaultsFromGlobalStub = stub(defaults._defaultsInternal, 'getDefaults');
   });
 
   afterEach(async () => {

@@ -130,3 +130,14 @@ export function isValidCustomAttributeName(name: string): boolean {
 export function isValidCustomAttributeValue(value: string): boolean {
   return value.length !== 0 && value.length <= MAX_ATTRIBUTE_VALUE_LENGTH;
 }
+
+/**
+ * @internal
+ */
+export const _attributesUtilsInternal = {
+  getServiceWorkerStatus,
+  getVisibilityState,
+  getEffectiveConnectionType,
+  isValidCustomAttributeName,
+  isValidCustomAttributeValue
+};

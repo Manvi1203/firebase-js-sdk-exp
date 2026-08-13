@@ -17,15 +17,13 @@
 
 import { ERROR_FACTORY, ErrorCode } from '../util/errors';
 import { MessagingService } from '../messaging-service';
-import { updateSwReg } from '../helpers/updateSwReg';
-import { updateVapidKey } from '../helpers/updateVapidKey';
+// Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+import { _updateSwRegInternal } from '../helpers/updateSwReg';
+import { _updateVapidKeyInternal } from '../helpers/updateVapidKey';
 import { RegisterOptions } from '../interfaces/public-types';
-import { registerFcmRegistrationWithFid } from '../internals/register-fid';
-import {
-  dbGetFidRegistration,
-  dbSetFidRegistration
-} from '../internals/idb-manager';
-import { notifyOnRegistered } from '../internals/token-manager';
+import { _registerFidInternal } from '../internals/register-fid';
+import { _idbManagerInternal } from '../internals/idb-manager';
+import { _tokenManagerInternal } from '../internals/token-manager';
 
 const FID_REGISTRATION_REFRESH_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 
@@ -61,15 +59,20 @@ export async function register(
     throw ERROR_FACTORY.create(ErrorCode.INVALID_ON_REGISTERED_HANDLER);
   }
 
-  await updateVapidKey(messaging, options?.vapidKey);
-  await updateSwReg(messaging, options?.serviceWorkerRegistration);
+  await _updateVapidKeyInternal.updateVapidKey(messaging, options?.vapidKey);
+  await _updateSwRegInternal.updateSwReg(
+    messaging,
+    options?.serviceWorkerRegistration
+  );
 
   // Keep the queue alive after a failed register() so future calls can retry.
   const prev = messaging._registerNotifyChain.catch(() => {});
   messaging._registerNotifyChain = prev.then(async () => {
     const fid = await messaging.firebaseDependencies.installations.getId();
 
-    const stored = await dbGetFidRegistration(messaging.firebaseDependencies);
+    const stored = await _idbManagerInternal.dbGetFidRegistration(
+      messaging.firebaseDependencies
+    );
     const now = Date.now();
     const shouldRefresh =
       !stored ||
@@ -77,12 +80,15 @@ export async function register(
       now >= stored.lastRegisterTime + FID_REGISTRATION_REFRESH_MS;
 
     if (shouldRefresh) {
-      await registerFcmRegistrationWithFid(messaging, fid);
-      await dbSetFidRegistration(messaging.firebaseDependencies, {
-        fid,
-        lastRegisterTime: now,
-        vapidKey: messaging.vapidKey
-      });
+      await _registerFidInternal.registerFcmRegistrationWithFid(messaging, fid);
+      await _idbManagerInternal.dbSetFidRegistration(
+        messaging.firebaseDependencies,
+        {
+          fid,
+          lastRegisterTime: now,
+          vapidKey: messaging.vapidKey
+        }
+      );
     }
 
     const handler = messaging.onRegisteredHandler;
@@ -90,7 +96,12 @@ export async function register(
       throw ERROR_FACTORY.create(ErrorCode.INVALID_ON_REGISTERED_HANDLER);
     }
 
-    notifyOnRegistered(messaging, fid);
+    _tokenManagerInternal.notifyOnRegistered(messaging, fid);
   });
   return messaging._registerNotifyChain;
 }
+
+// Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+export const _registerInternal = {
+  register
+};

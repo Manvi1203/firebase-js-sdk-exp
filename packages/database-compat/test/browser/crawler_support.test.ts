@@ -18,10 +18,15 @@
 import { _TEST_ACCESS_forceRestClient as forceRestClient } from '@firebase/database';
 import { expect } from 'chai';
 
-import { getRandomNode, getFreshRepoFromReference } from '../helpers/util';
+import {
+  getRandomNode,
+  getFreshRepoFromReference,
+  USE_EMULATOR
+} from '../helpers/util';
 
 // Some sanity checks for the ReadonlyRestClient crawler support.
-describe('Crawler Support', () => {
+// Fix Vitest/Node error: skip integration tests that require a running emulator
+(USE_EMULATOR ? describe : describe.skip)('Crawler Support', () => {
   let initialData;
   let normalRef;
   let restRef;

@@ -22,7 +22,9 @@ export * from './responses';
 export * from './error';
 export * from './schema';
 export * from './googleai';
-export {
+// In isolated ESM builds (Vitest/Vite), TypeScript types without 'export type'
+// cause runtime errors: SyntaxError: The requested module does not provide an export named 'LanguageModelCreateOptions'.
+export type {
   LanguageModelCreateOptions,
   LanguageModelCreateCoreOptions,
   LanguageModelExpected,

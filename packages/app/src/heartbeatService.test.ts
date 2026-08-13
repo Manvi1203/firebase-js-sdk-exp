@@ -206,7 +206,9 @@ describe('HeartbeatServiceImpl', () => {
           ComponentType.VERSION
         )
       );
-      stub(indexedDb, 'readHeartbeatsFromIndexedDB').resolves({
+      // Stub indexedDb._indexedDbInternal to avoid Vitest error:
+      // "TypeError: ES Modules cannot be stubbed"
+      stub(indexedDb._indexedDbInternal, 'readHeartbeatsFromIndexedDB').resolves({
         heartbeats: [...mockIndexedDBHeartbeats]
       });
       heartbeatService = new HeartbeatServiceImpl(container);
@@ -346,7 +348,9 @@ describe('HeartbeatServiceImpl', () => {
           ComponentType.VERSION
         )
       );
-      stub(indexedDb, 'readHeartbeatsFromIndexedDB').resolves({
+      // Stub indexedDb._indexedDbInternal to avoid Vitest error:
+      // "TypeError: ES Modules cannot be stubbed"
+      stub(indexedDb._indexedDbInternal, 'readHeartbeatsFromIndexedDB').resolves({
         lastSentHeartbeatDate: '1970-01-01',
         heartbeats: [...mockIndexedDBHeartbeats]
       });

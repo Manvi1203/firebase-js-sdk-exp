@@ -105,3 +105,7 @@ mocks-lookup.ts
 
 # temp changeset output
 changeset-temp.json
+
+# Vitest browser runner artifacts
+**/__screenshots__/
+**/.vitest-attachments/

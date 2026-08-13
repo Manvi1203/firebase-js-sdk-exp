@@ -15,8 +15,22 @@
  * limitations under the License.
  */
 
+import { deleteInstallations } from './delete-installations';
+import { getId } from './get-id';
+import { getToken } from './get-token';
+import { onIdChange } from './on-id-change';
+import { getInstallations } from './get-installations';
+
 export * from './get-id';
 export * from './get-token';
 export * from './delete-installations';
 export * from './on-id-change';
 export * from './get-installations';
+
+export const _apiInternal = {
+  deleteInstallations,
+  getId,
+  getToken,
+  onIdChange,
+  getInstallations
+};

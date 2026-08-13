@@ -30,7 +30,7 @@ import { Code } from '../../../src/util/error';
 import {
   getLogLevel,
   setLogLevel,
-  LogLevelString
+  type LogLevelString
 } from '../../../src/util/log';
 import { Deferred, Rejecter, Resolver } from '../../../src/util/promise';
 

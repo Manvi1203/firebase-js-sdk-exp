@@ -17,18 +17,29 @@
 
 import { getModularInstance } from '@firebase/util';
 import { expect } from 'chai';
-import { getRemoteConfig } from '@firebase/remote-config';
+import { getRemoteConfig, RemoteConfig } from '@firebase/remote-config';
 import firebase from '@firebase/app-compat';
 import '@firebase/remote-config-compat';
+import { Compat } from '@firebase/util';
+import { RemoteConfigCompat } from '@firebase/remote-config-compat';
 
 import { TEST_PROJECT_CONFIG } from './util';
 
-firebase.initializeApp(TEST_PROJECT_CONFIG);
-
-const compatRC = firebase.remoteConfig();
-const modularRC = getRemoteConfig();
-
 describe('RC compat interop', () => {
+  let app: firebase.app.App;
+  let compatRC: Compat<RemoteConfigCompat>;
+  let modularRC: RemoteConfig;
+
+  beforeEach(() => {
+    app = firebase.initializeApp(TEST_PROJECT_CONFIG, 'rc-interop');
+    compatRC = firebase.remoteConfig(app) as unknown as Compat<RemoteConfigCompat>;
+    modularRC = getRemoteConfig(app as unknown as any);
+  });
+
+  afterEach(async () => {
+    await app.delete();
+  });
+
   it('RC compat instance references modular RC instance', () => {
     expect(getModularInstance(compatRC)).to.equal(modularRC);
   });

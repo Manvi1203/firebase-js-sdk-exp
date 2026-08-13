@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import { addCallback, removeCallback } from '../helpers/fid-changed';
+import { _fidChangedInternal } from '../helpers/fid-changed';
 import { FirebaseInstallationsImpl } from '../interfaces/installation-impl';
 import { Installations } from '../interfaces/public-types';
 
@@ -47,8 +47,8 @@ export function onIdChange(
 ): IdChangeUnsubscribeFn {
   const { appConfig } = installations as FirebaseInstallationsImpl;
 
-  addCallback(appConfig, callback);
+  _fidChangedInternal.addCallback(appConfig, callback);
   return () => {
-    removeCallback(appConfig, callback);
+    _fidChangedInternal.removeCallback(appConfig, callback);
   };
 }

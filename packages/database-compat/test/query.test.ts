@@ -30,13 +30,20 @@ import {
 } from '../../database/test/helpers/EventAccumulator';
 import { DataSnapshot, Query, Reference } from '../src/api/Reference';
 
-import { getFreshRepo, getPath, getRandomNode, pause } from './helpers/util';
+import {
+  getFreshRepo,
+  getPath,
+  getRandomNode,
+  pause,
+  USE_EMULATOR
+} from './helpers/util';
 
 use(chaiAsPromised);
 
 type TaskList = Array<[Query, any]>;
 
-describe('Query Tests', () => {
+// Fix Vitest/Node error: skip integration tests that require a running emulator
+(USE_EMULATOR ? describe : describe.skip)('Query Tests', () => {
   // Little helper class for testing event callbacks w/ contexts.
   const EventReceiver = function () {
     this.gotValue = false;

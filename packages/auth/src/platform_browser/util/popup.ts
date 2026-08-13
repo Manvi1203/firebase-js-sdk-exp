@@ -39,6 +39,13 @@ const TARGET_BLANK = '_blank';
 
 const FIREFOX_EMPTY_URL = 'http://localhost';
 
+// Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+export const _popupInternal = {
+  getUA(): string {
+    return getUA();
+  }
+};
+
 export class AuthPopup {
   associatedEvent: string | null = null;
 
@@ -74,7 +81,7 @@ export function _open(
 
   // Chrome iOS 7 and 8 is returning an undefined popup win when target is
   // specified, even though the popup is not necessarily blocked.
-  const ua = getUA().toLowerCase();
+  const ua = _popupInternal.getUA().toLowerCase();
 
   if (name) {
     target = _isChromeIOS(ua) ? TARGET_BLANK : name;

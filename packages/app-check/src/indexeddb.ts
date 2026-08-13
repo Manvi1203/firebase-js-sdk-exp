@@ -149,3 +149,10 @@ async function read(key: string): Promise<unknown> {
 function computeKey(app: FirebaseApp): string {
   return `${app.options.appId}-${app.name}`;
 }
+
+export const _indexedDbInternal = {
+  readTokenFromIndexedDB,
+  writeTokenToIndexedDB,
+  readDebugTokenFromIndexedDB,
+  writeDebugTokenToIndexedDB
+};

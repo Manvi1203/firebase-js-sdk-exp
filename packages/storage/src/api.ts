@@ -51,13 +51,14 @@ import {
 } from './reference';
 import { STORAGE_TYPE } from './constants';
 import {
-  EmulatorMockTokenOptions,
   getModularInstance,
-  getDefaultEmulatorHostnameAndPort
+  getDefaultEmulatorHostnameAndPort,
+  type EmulatorMockTokenOptions
 } from '@firebase/util';
 import { StringFormat } from './implementation/string';
 
-export { EmulatorMockTokenOptions } from '@firebase/util';
+// Fix Vitest error: "SyntaxError: The requested module ... does not provide an export named 'EmulatorMockTokenOptions'"
+export type { EmulatorMockTokenOptions };
 
 export { StorageError, StorageErrorCode } from './implementation/error';
 

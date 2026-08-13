@@ -56,6 +56,9 @@ export interface ConnectorConfig {
   service: string;
 }
 
+// Fix Vitest error: "SyntaxError: The requested module '/src/api/DataConnect.ts' does not provide an export named 'ConnectorConfig'"
+export const ConnectorConfig = {};
+
 /**
  * Options to connect to emulator
  */
@@ -64,6 +67,9 @@ export interface TransportOptions {
   sslEnabled?: boolean;
   port?: number;
 }
+
+// Fix Vitest error: "SyntaxError: The requested module '/src/api/DataConnect.ts' does not provide an export named 'TransportOptions'"
+export const TransportOptions = {};
 
 const FIREBASE_DATA_CONNECT_EMULATOR_HOST_VAR =
   'FIREBASE_DATA_CONNECT_EMULATOR_HOST';
@@ -87,6 +93,9 @@ export function parseOptions(fullHost: string): TransportOptions {
 export interface DataConnectOptions extends ConnectorConfig {
   projectId: string;
 }
+
+// Fix Vitest error: "SyntaxError: The requested module '/src/api/DataConnect.ts' does not provide an export named 'DataConnectOptions'"
+export const DataConnectOptions = {};
 
 /**
  * Class representing Firebase Data Connect
@@ -287,6 +296,9 @@ export interface DataConnectSettings {
   cacheSettings?: CacheSettings;
 }
 
+// Fix Vitest error: "SyntaxError: The requested module '/src/api/DataConnect.ts' does not provide an export named 'DataConnectSettings'"
+export const DataConnectSettings = {};
+
 /**
  * Initialize DataConnect instance
  * @param options ConnectorConfig
@@ -420,6 +432,9 @@ export interface CacheSettings {
   cacheProvider: CacheProvider<StorageType>;
   maxAgeSeconds?: number;
 }
+
+// Fix Vitest error: "SyntaxError: The requested module '/src/api/DataConnect.ts' does not provide an export named 'CacheSettings'"
+export const CacheSettings = {};
 export interface CacheProvider<T extends StorageType> {
   type: T;
   /**
@@ -428,6 +443,17 @@ export interface CacheProvider<T extends StorageType> {
   initialize(cacheId: string): InternalCacheProvider;
 }
 
+// Fix Vitest error: "SyntaxError: The requested module '/src/api/DataConnect.ts' does not provide an export named 'CacheProvider'"
+export const CacheProvider = {};
+
 export function makeMemoryCacheProvider(): CacheProvider<'MEMORY'> {
   return new MemoryStub();
 }
+
+/**
+ * @internal
+ * Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+ */
+export const _dataConnectInternal = {
+  getDataConnect
+};

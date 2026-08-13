@@ -36,8 +36,15 @@ export function _setExternalJSProvider(p: ExternalJSProvider): void {
   externalJSProvider = p;
 }
 
+// Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+export const _loadJsInternal = {
+  _loadJS(url: string): Promise<Event> {
+    return externalJSProvider.loadJS(url);
+  }
+};
+
 export function _loadJS(url: string): Promise<Event> {
-  return externalJSProvider.loadJS(url);
+  return _loadJsInternal._loadJS(url);
 }
 
 export function _recaptchaV2ScriptUrl(): string {

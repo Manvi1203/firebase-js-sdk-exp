@@ -17,18 +17,29 @@
 
 import { getModularInstance } from '@firebase/util';
 import { expect } from 'chai';
-import { getMessaging } from '@firebase/messaging';
+import { getMessaging, Messaging } from '@firebase/messaging';
 import firebase from '@firebase/app-compat';
 import '@firebase/messaging-compat';
+import { Compat } from '@firebase/util';
+import { MessagingCompat } from '@firebase/messaging-compat';
 
 import { TEST_PROJECT_CONFIG } from './util';
 
-firebase.initializeApp(TEST_PROJECT_CONFIG);
-
-const compatMessaging = firebase.messaging();
-const modularMessaging = getMessaging();
-
 describe('Messaging compat interop', () => {
+  let app: firebase.app.App;
+  let compatMessaging: Compat<MessagingCompat>;
+  let modularMessaging: Messaging;
+
+  beforeEach(() => {
+    app = firebase.initializeApp(TEST_PROJECT_CONFIG, 'messaging-interop');
+    compatMessaging = firebase.messaging(app) as unknown as Compat<MessagingCompat>;
+    modularMessaging = getMessaging(app as unknown as any);
+  });
+
+  afterEach(async () => {
+    await app.delete();
+  });
+
   it('Messaging compat instance references modular Messaging instance', () => {
     expect(getModularInstance(compatMessaging)).to.equal(modularMessaging);
   });

@@ -131,7 +131,7 @@ describe('FirebaseAnalytics instance tests', () => {
     let app: FirebaseApp = {} as FirebaseApp;
     let fidDeferred: Deferred<void>;
     const gtagStub: SinonStub = stub();
-    before(async () => {
+    beforeEach(async () => {
       clock = useFakeTimers();
       resetGlobalVars();
       app = getFakeApp(fakeAppParams);
@@ -147,7 +147,7 @@ describe('FirebaseAnalytics instance tests', () => {
       // Successfully resolves fake IDB open request.
       fakeRequest.onsuccess();
     });
-    after(() => {
+    afterEach(() => {
       delete window['gtag'];
       delete window['dataLayer'];
       removeGtagScripts();

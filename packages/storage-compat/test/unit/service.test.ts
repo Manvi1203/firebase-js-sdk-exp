@@ -17,11 +17,10 @@
 import '../setup';
 import { expect } from 'chai';
 import { stub } from 'sinon';
-import * as modularStorage from '@firebase/storage';
 import { makeTestCompatStorage, fakeApp, fakeStorage } from '../utils';
 import { FirebaseStorage, getStorage, StorageError } from '@firebase/storage';
 import firebase from '@firebase/app-compat';
-import { StorageServiceCompat } from '../../src/service';
+import { StorageServiceCompat, _serviceInternal } from '../../src/service';
 import { FirebaseApp } from '@firebase/app-types';
 
 const DEFAULT_HOST = 'firebasestorage.googleapis.com';
@@ -29,8 +28,10 @@ const DEFAULT_HOST = 'firebasestorage.googleapis.com';
 describe('Firebase Storage > Service', () => {
   describe('useEmulator(host, port)', () => {
     it('calls connectStorageEmulator() correctly', () => {
+      // Fix Vitest error: "TypeError: Cannot redefine property: connectStorageEmulator"
+      // In native ESM, module namespaces cannot be stubbed directly.
       const connectStorageEmulatorStub = stub(
-        modularStorage,
+        _serviceInternal,
         'connectStorageEmulator'
       ).callsFake(() => {});
       const service = makeTestCompatStorage(fakeApp, fakeStorage);

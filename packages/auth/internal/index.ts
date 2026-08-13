@@ -23,25 +23,28 @@ import { Auth } from '../src/model/public_types';
  */
 export * from '../index';
 
-export { SignInWithIdpResponse } from '../src/api/authentication/idp';
+// Fix Vitest error: "SyntaxError: The requested module ... does not provide an export named 'SignInWithIdpResponse'"
+export type { SignInWithIdpResponse } from '../src/api/authentication/idp';
 export { AuthErrorCode } from '../src/core/errors';
-export { PersistenceInternal } from '../src/core/persistence';
+export type { PersistenceInternal } from '../src/core/persistence';
 export { _persistenceKeyName } from '../src/core/persistence/persistence_user_manager';
 export { UserImpl } from '../src/core/user/user_impl';
 export { _getInstance } from '../src/core/util/instantiator';
-export {
+export type {
   PopupRedirectResolverInternal,
-  EventManager,
-  AuthEventType
+  EventManager
 } from '../src/model/popup_redirect';
-export { UserCredentialInternal, UserParameters } from '../src/model/user';
-export { AuthInternal, ConfigInternal } from '../src/model/auth';
-export { DefaultConfig, AuthImpl, _castAuth } from '../src/core/auth/auth_impl';
+export { AuthEventType } from '../src/model/popup_redirect';
+export type { UserCredentialInternal, UserParameters } from '../src/model/user';
+export type { AuthInternal, ConfigInternal } from '../src/model/auth';
+// Fix Vitest error: "SyntaxError: The requested module ... does not provide an export named 'DefaultConfig'" (const enum erased at runtime)
+export type { DefaultConfig } from '../src/core/auth/auth_impl';
+export { AuthImpl, _castAuth } from '../src/core/auth/auth_impl';
 
 export { ClientPlatform, _getClientVersion } from '../src/core/util/version';
 
 export { _generateEventId } from '../src/core/util/event_id';
-export { TaggedWithTokenResponse } from '../src/model/id_token';
+export type { TaggedWithTokenResponse } from '../src/model/id_token';
 export { _fail, _assert } from '../src/core/util/assert';
 export { AuthPopup } from '../src/platform_browser/util/popup';
 export { _getRedirectResult } from '../src/platform_browser/strategies/redirect';

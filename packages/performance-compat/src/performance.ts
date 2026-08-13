@@ -16,7 +16,7 @@
  */
 
 import {
-  trace,
+  _apiInternal,
   FirebasePerformance,
   // The PerformanceTrace type has not changed between modular and non-modular packages.
   PerformanceTrace
@@ -49,6 +49,6 @@ export class PerformanceCompatImpl
   }
 
   trace(traceName: string): PerformanceTrace {
-    return trace(this._delegate, traceName);
+    return _apiInternal.trace(this._delegate, traceName);
   }
 }

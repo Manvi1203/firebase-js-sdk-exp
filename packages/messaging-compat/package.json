@@ -32,7 +32,9 @@
     "test:debug": "karma start --browsers=Chrome --auto-watch",
     "trusted-type-check": "tsec -p tsconfig.json --noEmit",
     "type-check": "tsc --noEmit",
-    "add-compat-overloads": "ts-node-script ../../scripts/build/create-overloads.ts -i ../messaging/dist/index-public.d.ts -o dist/src/index.d.ts -a -r Messaging:MessagingCompat -r FirebaseApp:FirebaseAppCompat --moduleToEnhance @firebase/messaging"
+    "add-compat-overloads": "ts-node-script ../../scripts/build/create-overloads.ts -i ../messaging/dist/index-public.d.ts -o dist/src/index.d.ts -a -r Messaging:MessagingCompat -r FirebaseApp:FirebaseAppCompat --moduleToEnhance @firebase/messaging",
+    "test:vitest:browser": "vitest run --config vitest.config.browser.mjs",
+    "test:vitest:browser:watch": "vitest --config vitest.config.browser.mjs"
   },
   "peerDependencies": {
     "@firebase/app": "0.x",

@@ -28,8 +28,13 @@ use(chaiAsPromised);
 
 describe('chromeAdapterFactory', () => {
   it('returns undefined in native Node environment', function () {
+    // Guard this.skip to avoid Vitest error:
+    // "TypeError: Cannot read properties of undefined (reading 'skip')"
     if (!isNode()) {
-      this.skip();
+      if (this && typeof this.skip === 'function') {
+        this.skip();
+      }
+      return;
     }
     const adapter = chromeAdapterFactory(
       InferenceMode.PREFER_ON_DEVICE,

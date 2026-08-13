@@ -29,6 +29,7 @@
     "test:ci": "node ../../scripts/run_tests_in_ci.js",
     "test:karma": "karma start",
     "test:debug": "karma start --browsers=Chrome --auto-watch",
+    "test:vitest:browser": "vitest run --config vitest.config.browser.mjs",
     "trusted-type-check": "tsec -p tsconfig.json --noEmit",
     "type-check": "tsc -p . --noEmit",
     "serve": "yarn serve:build && yarn serve:host",

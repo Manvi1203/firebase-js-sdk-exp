@@ -114,7 +114,8 @@ describe('platform_browser/recaptcha/recaptcha_enterprise_verifier', () => {
     mockFetch.setUp();
     verifier = new RecaptchaEnterpriseVerifier(auth);
     recaptcha = new MockGreCAPTCHATopLevel();
-    sinon.stub(jsHelpers, '_loadJS').callsFake(mockLoadJS);
+    // Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+    sinon.stub(jsHelpers._loadJsInternal, '_loadJS').callsFake(mockLoadJS);
     window.grecaptcha = recaptcha;
   });
 

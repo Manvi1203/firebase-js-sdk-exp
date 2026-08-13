@@ -17,9 +17,10 @@
 
 import '../testing/setup';
 
-import * as fidChangeRegistrationModule from '../helpers/fid-change-registration';
-import * as tokenManagementModule from '../internals/token-manager';
-import * as idbManager from '../internals/idb-manager';
+// Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+import { _fidChangeRegistrationInternal } from '../helpers/fid-change-registration';
+import { _tokenManagerInternal } from '../internals/token-manager';
+import { _idbManagerInternal } from '../internals/idb-manager';
 
 import {
   CONSOLE_CAMPAIGN_ANALYTICS_ENABLED,
@@ -104,14 +105,14 @@ describe('SwController', () => {
   // eslint-disable-next-line @typescript-eslint/ban-types
   let eventListenerMap: Map<string, Function>;
   let messaging: MessagingService;
-  let getTokenStub: Stub<(typeof tokenManagementModule)['getTokenInternal']>;
+  let getTokenStub: Stub<(typeof _tokenManagerInternal)['getTokenInternal']>;
   let revokeRegistrationStub: Stub<
-    (typeof tokenManagementModule)['revokeRegistrationInternal']
+    (typeof _tokenManagerInternal)['revokeRegistrationInternal']
   >;
   let refreshFidRegistrationStub: Stub<
-    (typeof fidChangeRegistrationModule)['refreshFidRegistrationIfStored']
+    (typeof _fidChangeRegistrationInternal)['refreshFidRegistrationIfStored']
   >;
-  let dbGetFidRegistrationStub: Stub<typeof idbManager.dbGetFidRegistration>;
+  let dbGetFidRegistrationStub: Stub<typeof _idbManagerInternal.dbGetFidRegistration>;
 
   beforeEach(() => {
     mockServiceWorker();
@@ -128,21 +129,22 @@ describe('SwController', () => {
     );
     eventListenerMap = new Map();
 
-    getTokenStub = stub(tokenManagementModule, 'getTokenInternal').resolves(
+    // Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+    getTokenStub = stub(_tokenManagerInternal, 'getTokenInternal').resolves(
       'token-value'
     );
     revokeRegistrationStub = stub(
-      tokenManagementModule,
+      _tokenManagerInternal,
       'revokeRegistrationInternal'
     ).resolves(true);
     refreshFidRegistrationStub = stub(
-      fidChangeRegistrationModule,
+      _fidChangeRegistrationInternal,
       'refreshFidRegistrationIfStored'
     ).resolves();
     dbGetFidRegistrationStub = stub(
-      idbManager,
+      _idbManagerInternal,
       'dbGetFidRegistration'
-    ).resolves(undefined) as Stub<typeof idbManager.dbGetFidRegistration>;
+    ).resolves(undefined) as Stub<typeof _idbManagerInternal.dbGetFidRegistration>;
 
     messaging = new MessagingService(
       getFakeApp(),
@@ -162,6 +164,10 @@ describe('SwController', () => {
   });
 
   afterEach(() => {
+    // Fix Vitest error: "Attempted to wrap addEventListener which is already wrapped"
+    addEventListenerStub.restore();
+    getTokenStub.restore();
+    revokeRegistrationStub.restore();
     refreshFidRegistrationStub.restore();
     dbGetFidRegistrationStub.restore();
     restoreServiceWorker();

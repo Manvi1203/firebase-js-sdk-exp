@@ -195,3 +195,8 @@ function checkTokenDetails(
     subscriptionOptions.vapidKey.length > 0
   );
 }
+
+// Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+export const _migrateOldDatabaseInternal = {
+  migrateOldDatabase
+};

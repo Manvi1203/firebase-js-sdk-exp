@@ -15,8 +15,8 @@
  * limitations under the License.
  */
 
-import { getInstallationEntry } from '../helpers/get-installation-entry';
-import { refreshAuthToken } from '../helpers/refresh-auth-token';
+import { _getInstallationEntryInternal } from '../helpers/get-installation-entry';
+import { _refreshAuthTokenInternal } from '../helpers/refresh-auth-token';
 import { FirebaseInstallationsImpl } from '../interfaces/installation-impl';
 import { Installations } from '../interfaces/public-types';
 
@@ -29,7 +29,7 @@ import { Installations } from '../interfaces/public-types';
  */
 export async function getId(installations: Installations): Promise<string> {
   const installationsImpl = installations as FirebaseInstallationsImpl;
-  const { installationEntry, registrationPromise } = await getInstallationEntry(
+  const { installationEntry, registrationPromise } = await _getInstallationEntryInternal.getInstallationEntry(
     installationsImpl
   );
 
@@ -38,7 +38,7 @@ export async function getId(installations: Installations): Promise<string> {
   } else {
     // If the installation is already registered, update the authentication
     // token if needed.
-    refreshAuthToken(installationsImpl).catch(console.error);
+    _refreshAuthTokenInternal.refreshAuthToken(installationsImpl).catch(console.error);
   }
 
   return installationEntry.fid;

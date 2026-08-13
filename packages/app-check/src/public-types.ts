@@ -21,7 +21,9 @@ import {
   ReCaptchaEnterpriseProvider,
   ReCaptchaV3Provider
 } from './providers';
-export { Unsubscribe, PartialObserver } from '@firebase/util';
+// Type-only re-exports to avoid Vitest error:
+// "SyntaxError: The requested module '.../packages/util/dist/index.esm.js' does not provide an export named 'Unsubscribe'"
+export type { Unsubscribe, PartialObserver } from '@firebase/util';
 
 /**
  * The Firebase App Check service interface.

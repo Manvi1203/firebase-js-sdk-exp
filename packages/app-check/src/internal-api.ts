@@ -27,8 +27,8 @@ import { getStateReference } from './state';
 import { TOKEN_REFRESH_TIME } from './constants';
 import { Refresher } from './proactive-refresh';
 import { ensureActivated } from './util';
-import { exchangeToken, getExchangeDebugTokenRequest } from './client';
-import { writeTokenToStorage } from './storage';
+import { _clientInternal } from './client';
+import { _storageInternal } from './storage';
 import { getDebugToken, isDebugMode } from './debug';
 import { base64, FirebaseError } from '@firebase/util';
 import { logger } from './logger';
@@ -94,7 +94,7 @@ export async function getToken(
         token = cachedToken;
       } else {
         // If there was an invalid token in the indexedDB cache, clear it.
-        await writeTokenToStorage(app, undefined);
+        await _storageInternal.writeTokenToStorage(app, undefined);
       }
     }
   }
@@ -121,8 +121,8 @@ export async function getToken(
       const debugToken = await getDebugToken();
       // Avoid making another call to the exchange endpoint if one is in flight.
       if (!state.exchangeTokenPromise) {
-        state.exchangeTokenPromise = exchangeToken(
-          getExchangeDebugTokenRequest(app, debugToken),
+        state.exchangeTokenPromise = _clientInternal.exchangeToken(
+          _clientInternal.getExchangeDebugTokenRequest(app, debugToken),
           appCheck.heartbeatServiceProvider
         ).finally(() => {
           // Clear promise when settled - either resolved or rejected.
@@ -133,7 +133,7 @@ export async function getToken(
       const tokenFromDebugExchange: AppCheckTokenInternal =
         await state.exchangeTokenPromise;
       // Write debug token to indexedDB.
-      await writeTokenToStorage(app, tokenFromDebugExchange);
+      await _storageInternal.writeTokenToStorage(app, tokenFromDebugExchange);
       // Write debug token to state.
       state.token = tokenFromDebugExchange;
       return { token: tokenFromDebugExchange.token };
@@ -215,7 +215,7 @@ export async function getToken(
     // write the new token to the memory state as well as the persistent storage.
     // Only do it if we got a valid new token
     state.token = token;
-    await writeTokenToStorage(app, token);
+    await _storageInternal.writeTokenToStorage(app, token);
   }
 
   if (shouldCallListeners) {
@@ -238,9 +238,9 @@ export async function getLimitedUseToken(
 
   if (isDebugMode()) {
     const debugToken = await getDebugToken();
-    const request = getExchangeDebugTokenRequest(app, debugToken);
+    const request = _clientInternal.getExchangeDebugTokenRequest(app, debugToken);
     request.body['limited_use'] = true;
-    const { token } = await exchangeToken(
+    const { token } = await _clientInternal.exchangeToken(
       request,
       appCheck.heartbeatServiceProvider
     );
@@ -433,3 +433,13 @@ function makeDummyTokenResult(error: Error): AppCheckTokenResult {
     error
   };
 }
+
+export const _internalApiInternal = {
+  getToken,
+  getLimitedUseToken,
+  addTokenListener,
+  removeTokenListener,
+  formatDummyToken,
+  notifyTokenListeners,
+  isValid
+};

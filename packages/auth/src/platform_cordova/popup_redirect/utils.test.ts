@@ -39,6 +39,7 @@ import {
 import { FirebaseError } from '@firebase/util';
 import { InAppBrowserRef, _cordovaWindow } from '../plugins';
 import * as projectConfig from '../../api/project_config/get_project_config';
+import { _browserInternal } from '../../core/util/browser';
 
 const ANDROID_UA = 'UserAgent/5.0 (Linux; Android 0.0.0)';
 const IOS_UA = 'UserAgent/5.0 (iPhone; CPU iPhone 0.0.0)';
@@ -67,7 +68,8 @@ describe('platform_cordova/popup_redirect/utils', () => {
   });
 
   function setUA(ua: string): void {
-    sinon.stub(fbUtils, 'getUA').returns(ua);
+    // Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+    sinon.stub(_browserInternal, 'getUA').returns(ua);
   }
 
   describe('_checkCordovaConfiguration', () => {
@@ -190,8 +192,9 @@ describe('platform_cordova/popup_redirect/utils', () => {
   describe('_validateOrigin', () => {
     beforeEach(() => {
       sinon.stub(win.BuildInfo, 'packageName').value('com.example.myapp');
+      // Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
       sinon
-        .stub(projectConfig, '_getProjectConfig')
+        .stub(projectConfig._projectConfigInternal, '_getProjectConfig')
         .returns(
           Promise.resolve({ /* does not matter here */ authorizedDomains: [] })
         );
@@ -200,7 +203,8 @@ describe('platform_cordova/popup_redirect/utils', () => {
     it('sets the correct fields for android', async () => {
       setUA(ANDROID_UA);
       await _validateOrigin(auth);
-      expect(projectConfig._getProjectConfig).to.have.been.calledWith(auth, {
+      // Fix Vitest error: "TypeError: [Function _getProjectConfig] is not a spy or a call to a spy!"
+      expect(projectConfig._projectConfigInternal._getProjectConfig).to.have.been.calledWith(auth, {
         androidPackageName: 'com.example.myapp'
       });
     });
@@ -208,7 +212,8 @@ describe('platform_cordova/popup_redirect/utils', () => {
     it('sets the correct fields for ios', async () => {
       setUA(IOS_UA);
       await _validateOrigin(auth);
-      expect(projectConfig._getProjectConfig).to.have.been.calledWith(auth, {
+      // Fix Vitest error: "TypeError: [Function _getProjectConfig] is not a spy or a call to a spy!"
+      expect(projectConfig._projectConfigInternal._getProjectConfig).to.have.been.calledWith(auth, {
         iosBundleId: 'com.example.myapp'
       });
     });

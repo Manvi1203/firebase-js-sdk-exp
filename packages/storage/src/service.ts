@@ -42,9 +42,10 @@ import {
 } from './implementation/error';
 import { validateNumber } from './implementation/type';
 import { FirebaseStorage } from './public-types';
+// Fix Vitest error: "SyntaxError: The requested module ... does not provide an export named 'EmulatorMockTokenOptions'"
+import type { EmulatorMockTokenOptions } from '@firebase/util';
 import {
   createMockUserToken,
-  EmulatorMockTokenOptions,
   isCloudWorkstation,
   pingServer
 } from '@firebase/util';
@@ -149,7 +150,8 @@ export function connectStorageEmulator(
   const useSsl = isCloudWorkstation(host);
   // Workaround to get cookies in Firebase Studio
   if (useSsl) {
-    void pingServer(`https://${storage.host}/b`);
+    // Fix Vitest error: "Unhandled rejection: TypeError: Failed to fetch"
+    void pingServer(`https://${storage.host}/b`).catch(() => {});
   }
   storage._isUsingEmulator = true;
   storage._protocol = useSsl ? 'https' : 'http';

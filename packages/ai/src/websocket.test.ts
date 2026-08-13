@@ -97,6 +97,7 @@ describe('WebSocketHandlerImpl', () => {
   let webSocketStub: SinonStub;
 
   beforeEach(() => {
+    (globalThis as any).WebSocket = MockWebSocket;
     webSocketStub = sinon
       .stub(globalThis, 'WebSocket')
       .callsFake((url: string) => {
@@ -109,7 +110,9 @@ describe('WebSocketHandlerImpl', () => {
 
   afterEach(() => {
     sinon.restore();
-    clock.restore();
+    if (clock) {
+      clock.restore();
+    }
   });
 
   describe('connect()', () => {

@@ -30,23 +30,25 @@ describe('Deno tests', () => {
     globalThis.setTimeout = oldSetTimeout;
   });
   it('should call the deno unrefTimer() if in Deno', () => {
+    // Fix Vitest error: "ReferenceError: global is not defined" in browser environment
     // @ts-ignore override nodejs behavior
-    global.Deno = {
+    (globalThis as any).Deno = {
       unrefTimer: sinon.spy()
     };
     // @ts-ignore override nodejs behavior
-    global.setTimeout = () => 1;
+    (globalThis as any).setTimeout = () => 1;
     setTimeoutNonBlocking(() => {}, 0);
-    expect(globalThis.Deno.unrefTimer).to.have.been.called;
+    expect((globalThis as any).Deno.unrefTimer).to.have.been.called;
   });
   it('should not call the deno unrefTimer() if not in Deno', () => {
+    // Fix Vitest error: "ReferenceError: global is not defined" in browser environment
     // @ts-ignore override nodejs behavior
-    global.Deno2 = {
+    (globalThis as any).Deno2 = {
       unrefTimer: sinon.spy()
     };
     // @ts-ignore override node.js behavior
-    global.setTimeout = () => 1;
+    (globalThis as any).setTimeout = () => 1;
     setTimeoutNonBlocking(() => {}, 0);
-    expect(globalThis.Deno2.unrefTimer).to.not.have.been.called;
+    expect((globalThis as any).Deno2.unrefTimer).to.not.have.been.called;
   });
 });

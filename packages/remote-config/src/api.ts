@@ -393,3 +393,21 @@ export function onConfigUpdate(
     rc._realtimeHandler.removeObserver(observer);
   };
 }
+
+/**
+ * @internal
+ */
+export const _apiInternal = {
+  getRemoteConfig,
+  activate,
+  ensureInitialized,
+  fetchConfig,
+  getAll,
+  getBoolean,
+  getNumber,
+  getString,
+  getValue,
+  setLogLevel,
+  setCustomSignals,
+  onConfigUpdate
+};

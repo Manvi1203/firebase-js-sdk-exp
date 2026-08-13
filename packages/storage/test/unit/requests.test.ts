@@ -564,7 +564,8 @@ describe('Firebase Storage > Requests', () => {
       requestInfo
     );
   });
-  describe('getResumableUploadStatus handler', () => {
+  // Fix Vitest error: "Error: No test found in suite getResumableUploadStatus handler"
+  it('getResumableUploadStatus handler', () => {
     const url =
       'https://this.is.totally.a.real.url.com/hello/upload?whatsgoingon';
     const requestInfo = getResumableUploadStatus(

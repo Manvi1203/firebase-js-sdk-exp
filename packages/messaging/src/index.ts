@@ -27,6 +27,17 @@ import '@firebase/installations';
 import { Messaging } from './interfaces/public-types';
 import { registerMessagingInWindow } from './helpers/register';
 
+import {
+  getToken,
+  deleteToken,
+  register,
+  unregister,
+  onMessage,
+  onRegistered,
+  onUnregistered,
+  getMessagingInWindow
+} from './api';
+
 export {
   getToken,
   deleteToken,
@@ -36,9 +47,19 @@ export {
   onRegistered,
   onUnregistered,
   getMessagingInWindow as getMessaging
-} from './api';
+};
 export { isWindowSupported as isSupported } from './api/isSupported';
 export * from './interfaces/public-types';
+
+/**
+ * @internal
+ * Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+ */
+export const _messagingInternal = {
+  getToken,
+  deleteToken,
+  onMessage
+};
 
 declare module '@firebase/component' {
   interface NameServiceMapping {

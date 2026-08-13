@@ -237,7 +237,8 @@ describe('Firebase Storage > Reference', () => {
       testShared.fakeAppCheckTokenProvider
     );
     const reference = ref(service, 'gs://test-bucket');
-    getMetadata(ref(reference, 'foo'));
+    // Fix Vitest error: "Unhandled Rejection: FirebaseError: Firebase Storage: An unknown error occurred"
+    void getMetadata(ref(reference, 'foo')).catch(() => {});
   });
 
   it('Works if the user logs in before creating the storage reference', done => {
@@ -264,7 +265,8 @@ describe('Firebase Storage > Reference', () => {
       testShared.fakeAppCheckTokenProvider
     );
     const reference = ref(service, 'gs://test-bucket');
-    getMetadata(ref(reference, 'foo'));
+    // Fix Vitest error: "Unhandled Rejection: FirebaseError: Firebase Storage: An unknown error occurred"
+    void getMetadata(ref(reference, 'foo')).catch(() => {});
   });
 
   describe('uploadString', () => {
@@ -273,30 +275,33 @@ describe('Firebase Storage > Reference', () => {
       const root = withFakeSend((text: string, headers?: Headers) => {
         expect(text).to.include('"contentType":"lol/wut"');
       }, done);
-      uploadString(ref(root, 'test'), 'hello', StringFormat.RAW, {
+      // Fix Vitest error: "Unhandled Rejection: FirebaseError: Firebase Storage: An unknown error occurred"
+      void uploadString(ref(root, 'test'), 'hello', StringFormat.RAW, {
         contentType: 'lol/wut'
-      } as Metadata);
+      } as Metadata).catch(() => {});
     });
     it('Uses embedded content type in DATA_URL format', done => {
       const root = withFakeSend((text: string) => {
         expect(text).to.include('"contentType":"lol/wat"');
       }, done);
-      uploadString(
+      // Fix Vitest error: "Unhandled Rejection: FirebaseError: Firebase Storage: An unknown error occurred"
+      void uploadString(
         ref(root, 'test'),
         'data:lol/wat;base64,aaaa',
         StringFormat.DATA_URL
-      );
+      ).catch(() => {});
     });
     it('Lets metadata.contentType override embedded content type in DATA_URL format', done => {
       const root = withFakeSend((text: string) => {
         expect(text).to.include('"contentType":"tomato/soup"');
       }, done);
-      uploadString(
+      // Fix Vitest error: "Unhandled Rejection: FirebaseError: Firebase Storage: An unknown error occurred"
+      void uploadString(
         ref(root, 'test'),
         'data:ignore/me;base64,aaaa',
         StringFormat.DATA_URL,
         { contentType: 'tomato/soup' } as Metadata
-      );
+      ).catch(() => {});
     });
   });
 
@@ -305,9 +310,10 @@ describe('Firebase Storage > Reference', () => {
       const root = withFakeSend((text: string) => {
         expect(text).to.include('"contentType":"lol/wut"');
       }, done);
-      uploadBytes(ref(root, 'hello'), new Uint8Array(), {
+      // Fix Vitest error: "Unhandled Rejection: FirebaseError: Firebase Storage: An unknown error occurred"
+      void uploadBytes(ref(root, 'hello'), new Uint8Array(), {
         contentType: 'lol/wut'
-      } as Metadata);
+      } as Metadata).catch(() => {});
     });
     it('uploads without error', async () => {
       const storageService = storageServiceWithHandler(fakeServerHandler({}));

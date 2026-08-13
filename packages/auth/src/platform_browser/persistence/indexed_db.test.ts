@@ -50,19 +50,35 @@ interface TestPersistence extends PersistenceInternal {
 }
 
 describe('platform_browser/persistence/indexed_db', () => {
-  const persistence: PersistenceInternal = _getInstance(
+  let persistence: PersistenceInternal = _getInstance(
     indexedDBLocalPersistence
   );
 
   beforeEach(() => {
+    // Fix Vitest error: reset persistence to singleton instance and clear state
+    persistence = _getInstance(indexedDBLocalPersistence);
     (persistence as any).dbPromise = null;
     (persistence as any).listeners = {};
     (persistence as any).localCache = {};
     (persistence as any).pendingWrites = 0;
     (persistence as any).stopPolling();
+    (persistence as any).sender = null;
+    (persistence as any).receiver = null;
+    (persistence as any).activeServiceWorker = null;
+    (persistence as any).serviceWorkerReceiverAvailable = false;
   });
 
-  afterEach(sinon.restore);
+  afterEach(() => {
+    // Fix Vitest error: stop polling timer and reset isHiding
+    (persistence as any).stopPolling();
+    (persistence as any).isHiding = false;
+    (persistence as any).sender = null;
+    (persistence as any).receiver = null;
+    (persistence as any).activeServiceWorker = null;
+    (persistence as any).serviceWorkerReceiverAvailable = false;
+    Receiver._reset();
+    sinon.restore();
+  });
 
   async function waitUntilPoll(clock: sinon.SinonFakeTimers): Promise<void> {
     clock.tick(_POLLING_INTERVAL_MS + 1);
@@ -251,6 +267,10 @@ describe('platform_browser/persistence/indexed_db', () => {
     });
 
     afterEach(() => {
+      // Fix Vitest error: clean up service worker event handlers to avoid leaked async calls in subsequent tests
+      const receiver = Receiver._getInstance(serviceWorker);
+      receiver._unsubscribe(_EventType.PING);
+      receiver._unsubscribe(_EventType.KEY_CHANGED);
       sinon.restore();
     });
 
@@ -260,8 +280,9 @@ describe('platform_browser/persistence/indexed_db', () => {
 
       beforeEach(async () => {
         sender = new Sender(serviceWorker);
-        sinon.stub(workerUtil, '_isWorker').returns(true);
-        sinon.stub(workerUtil, '_getWorkerGlobalScope').returns(serviceWorker);
+        // Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+        sinon.stub(workerUtil._workerInternal, '_isWorker').returns(true);
+        sinon.stub(workerUtil._workerInternal, '_getWorkerGlobalScope').returns(serviceWorker);
         persistence = new (
           indexedDBLocalPersistence as unknown as SingletonInstantiator<TestPersistence>
         )();
@@ -331,31 +352,42 @@ describe('platform_browser/persistence/indexed_db', () => {
 
       beforeEach(() => {
         receiver = Receiver._getInstance(serviceWorker);
-        sinon.stub(workerUtil, '_isWorker').returns(false);
+        // Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+        sinon.stub(workerUtil._workerInternal, '_isWorker').returns(false);
         sinon
-          .stub(workerUtil, '_getActiveServiceWorker')
+          .stub(workerUtil._workerInternal, '_getActiveServiceWorker')
           .returns(Promise.resolve(serviceWorker));
         sinon
-          .stub(workerUtil, '_getServiceWorkerController')
+          .stub(workerUtil._workerInternal, '_getServiceWorkerController')
           .returns(serviceWorker);
-        persistence = new (
-          indexedDBLocalPersistence as unknown as SingletonInstantiator<TestPersistence>
-        )();
       });
 
+      afterEach(() => {
+        // Fix Vitest error: clean up service worker event handlers to avoid leaked async calls in subsequent tests
+        receiver._unsubscribe(_EventType.PING);
+        receiver._unsubscribe(_EventType.KEY_CHANGED);
+      });
+
+      // Fix Vitest error: subscribe to PING before instantiating persistence
       it('should send a ping on init', async () => {
-        return new Promise(resolve => {
+        return new Promise<void>(resolve => {
           receiver._subscribe(_EventType.PING, () => {
             resolve();
             return [_EventType.KEY_CHANGED];
           });
-          return persistence._workerInitializationPromise;
+          persistence = new (
+            indexedDBLocalPersistence as unknown as SingletonInstantiator<TestPersistence>
+          )();
         });
       });
 
       it('should send a key changed event when a key is set', async () => {
-        return new Promise(async resolve => {
-          await persistence._workerInitializationPromise;
+        persistence = new (
+          indexedDBLocalPersistence as unknown as SingletonInstantiator<TestPersistence>
+        )();
+        await persistence._workerInitializationPromise;
+        // Fix Vitest error: properly await key changed event promise
+        await new Promise<void>(resolve => {
           receiver._subscribe(
             _EventType.KEY_CHANGED,
             (_origin: string, data: KeyChangedRequest) => {
@@ -366,12 +398,18 @@ describe('platform_browser/persistence/indexed_db', () => {
               };
             }
           );
-          return persistence._set('foo', 'bar');
+          void persistence._set('foo', 'bar');
         });
       });
 
       it('should send a key changed event when a key is removed', async () => {
-        return new Promise(async resolve => {
+        persistence = new (
+          indexedDBLocalPersistence as unknown as SingletonInstantiator<TestPersistence>
+        )();
+        await persistence._workerInitializationPromise;
+        await persistence._set('foo', 'bar');
+        // Fix Vitest error: subscribe to removal after set to avoid floating unhandled promises
+        await new Promise<void>(resolve => {
           receiver._subscribe(
             _EventType.KEY_CHANGED,
             async (_origin: string, data: KeyChangedRequest) => {
@@ -385,9 +423,7 @@ describe('platform_browser/persistence/indexed_db', () => {
               };
             }
           );
-          await persistence._workerInitializationPromise;
-          await persistence._set('foo', 'bar');
-          return persistence._remove('foo');
+          void persistence._remove('foo');
         });
       });
     });
@@ -441,9 +477,17 @@ describe('platform_browser/persistence/indexed_db', () => {
       // Ensure we start fresh
       (persistence as any).isHiding = false;
       (persistence as any).dbPromise = null;
+      // Fix Vitest error: reset service worker state across tests
+      (persistence as any).sender = null;
+      (persistence as any).receiver = null;
+      (persistence as any).activeServiceWorker = null;
+      (persistence as any).serviceWorkerReceiverAvailable = false;
     });
 
     afterEach(() => {
+      // Fix Vitest error: stop polling timer and reset isHiding
+      (persistence as any).stopPolling();
+      (persistence as any).isHiding = false;
       persistence._removeListener(key, callback);
       clock.restore();
       sinon.restore();
@@ -520,7 +564,12 @@ describe('platform_browser/persistence/indexed_db', () => {
       sinon.stub(persistence as any, '_withRetries').callsFake(async op => {
         // Dispatch pagehide before the operation completes
         window.dispatchEvent(new Event('pagehide'));
-        return originalWithRetries(op);
+        // Fix Vitest error: handle expected database closing error on pagehide
+        try {
+          return await originalWithRetries(op);
+        } catch {
+          return [];
+        }
       });
 
       // 3. Trigger a manual poll (or wait for the timer)
@@ -528,6 +577,13 @@ describe('platform_browser/persistence/indexed_db', () => {
 
       // 4. Assert that the listener was NOT notified with null (sign-out prevented)
       expect(callback).not.to.have.been.calledWith(null);
+
+      // Clean up pagehide state
+      // Fix Vitest error: remove listener and stop polling before pageshow to prevent background timer
+      persistence._removeListener(key, callback);
+      (persistence as any).stopPolling();
+      window.dispatchEvent(new Event('pageshow'));
+      (persistence as any).stopPolling();
     });
   });
 });

@@ -22,7 +22,6 @@ import { useFakeTimers } from 'sinon';
 import sinonChai from 'sinon-chai';
 
 import { FirebaseError, getUA } from '@firebase/util';
-import * as utils from '@firebase/util';
 
 import { mockEndpoint } from '../../test/helpers/api/helper';
 import { testAuth, TestAuth } from '../../test/helpers/mock_auth';
@@ -36,7 +35,8 @@ import {
   Endpoint,
   HttpHeader,
   HttpMethod,
-  _addTidIfNecessary
+  _addTidIfNecessary,
+  _apiInternal
 } from './';
 import { ServerError } from './errors';
 import { SDK_VERSION } from '@firebase/app';
@@ -357,7 +357,8 @@ describe('api/_performApiRequest', () => {
     });
 
     it('should not have referrerPolicy set on Cloudflare workers', async () => {
-      sinon.stub(utils, 'isCloudflareWorker').returns(true);
+      // Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+      sinon.stub(_apiInternal, 'isCloudflareWorker').returns(true);
       let referrerPolicySet: boolean = false;
       mockFetch.setUpWithOverride(
         (input: RequestInfo | URL, request?: RequestInit) => {

@@ -56,7 +56,7 @@ async function generateContentStreamOnCloud(
   );
 }
 
-export async function generateContentStream(
+async function defaultGenerateContentStream(
   apiSettings: ApiSettings,
   model: string,
   params: GenerateContentRequest,
@@ -84,7 +84,7 @@ export async function generateContentStream(
   );
 }
 
-async function generateContentOnCloud(
+async function defaultGenerateContentOnCloud(
   apiSettings: ApiSettings,
   model: string,
   params: GenerateContentRequest,
@@ -105,7 +105,7 @@ async function generateContentOnCloud(
   );
 }
 
-export async function templateGenerateContent(
+async function defaultTemplateGenerateContent(
   apiSettings: ApiSettings,
   templateId: string,
   templateParams: TemplateRequestInternal,
@@ -133,7 +133,7 @@ export async function templateGenerateContent(
   };
 }
 
-export async function templateGenerateContentStream(
+async function defaultTemplateGenerateContentStream(
   apiSettings: ApiSettings,
   templateId: string,
   templateParams: TemplateRequestInternal,
@@ -152,7 +152,7 @@ export async function templateGenerateContentStream(
   return processStream(response, apiSettings);
 }
 
-export async function generateContent(
+async function defaultGenerateContent(
   apiSettings: ApiSettings,
   model: string,
   params: GenerateContentRequest,
@@ -164,7 +164,7 @@ export async function generateContent(
     chromeAdapter,
     () => chromeAdapter!.generateContent(params),
     () =>
-      generateContentOnCloud(apiSettings, model, params, singleRequestOptions)
+      defaultGenerateContentOnCloud(apiSettings, model, params, singleRequestOptions)
   );
   const generateContentResponse = await processGenerateContentResponse(
     callResult.response,
@@ -177,6 +177,79 @@ export async function generateContent(
   return {
     response: enhancedResponse
   };
+}
+
+/**
+ * Internal handler object to allow stubbing in tests under native ESM.
+ * @internal
+ */
+export const _generateContentInternal = {
+  generateContent: defaultGenerateContent,
+  generateContentStream: defaultGenerateContentStream,
+  templateGenerateContent: defaultTemplateGenerateContent,
+  templateGenerateContentStream: defaultTemplateGenerateContentStream
+};
+
+export async function generateContent(
+  apiSettings: ApiSettings,
+  model: string,
+  params: GenerateContentRequest,
+  chromeAdapter?: ChromeAdapter,
+  singleRequestOptions?: SingleRequestOptions
+): Promise<GenerateContentResult> {
+  return _generateContentInternal.generateContent(
+    apiSettings,
+    model,
+    params,
+    chromeAdapter,
+    singleRequestOptions
+  );
+}
+
+export async function generateContentStream(
+  apiSettings: ApiSettings,
+  model: string,
+  params: GenerateContentRequest,
+  chromeAdapter?: ChromeAdapter,
+  singleRequestOptions?: SingleRequestOptions
+): Promise<
+  GenerateContentStreamResult & { firstValue?: GenerateContentResponse }
+> {
+  return _generateContentInternal.generateContentStream(
+    apiSettings,
+    model,
+    params,
+    chromeAdapter,
+    singleRequestOptions
+  );
+}
+
+export async function templateGenerateContent(
+  apiSettings: ApiSettings,
+  templateId: string,
+  templateParams: TemplateRequestInternal,
+  singleRequestOptions?: SingleRequestOptions
+): Promise<GenerateContentResult> {
+  return _generateContentInternal.templateGenerateContent(
+    apiSettings,
+    templateId,
+    templateParams,
+    singleRequestOptions
+  );
+}
+
+export async function templateGenerateContentStream(
+  apiSettings: ApiSettings,
+  templateId: string,
+  templateParams: TemplateRequestInternal,
+  singleRequestOptions?: SingleRequestOptions
+): Promise<GenerateContentStreamResult> {
+  return _generateContentInternal.templateGenerateContentStream(
+    apiSettings,
+    templateId,
+    templateParams,
+    singleRequestOptions
+  );
 }
 
 async function processGenerateContentResponse(

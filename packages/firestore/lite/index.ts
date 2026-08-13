@@ -37,32 +37,30 @@ export {
   aggregateFieldEqual
 } from '../src/lite-api/aggregate';
 
+// Fix Vitest error: type-only exports in lite/index.ts
 export {
   AggregateField,
+  AggregateQuerySnapshot
+} from '../src/lite-api/aggregate_types';
+export type {
   AggregateFieldType,
   AggregateSpec,
   AggregateSpecData,
-  AggregateQuerySnapshot,
   AggregateType
 } from '../src/lite-api/aggregate_types';
 
-export { FirestoreSettings as Settings } from '../src/lite-api/settings';
+export type { FirestoreSettings as Settings } from '../src/lite-api/settings';
 
 export {
   Firestore as Firestore,
-  EmulatorMockTokenOptions,
   initializeFirestore,
   getFirestore,
   terminate,
   connectFirestoreEmulator
 } from '../src/lite-api/database';
+export type { EmulatorMockTokenOptions } from '../src/lite-api/database';
 
 export {
-  DocumentData,
-  UpdateData,
-  WithFieldValue,
-  PartialWithFieldValue,
-  SetOptions,
   DocumentReference,
   Query,
   CollectionReference,
@@ -71,6 +69,13 @@ export {
   doc,
   refEqual,
   queryEqual
+} from '../src/lite-api/reference';
+export type {
+  DocumentData,
+  UpdateData,
+  WithFieldValue,
+  PartialWithFieldValue,
+  SetOptions
 } from '../src/lite-api/reference';
 
 export {
@@ -86,15 +91,17 @@ export {
   orderBy,
   query,
   QueryConstraint,
-  QueryConstraintType,
   QueryCompositeFilterConstraint,
-  QueryFilterConstraint,
   QueryFieldFilterConstraint,
   QueryOrderByConstraint,
   QueryLimitConstraint,
-  QueryNonFilterConstraint,
   QueryStartAtConstraint,
-  QueryEndAtConstraint,
+  QueryEndAtConstraint
+} from '../src/lite-api/query';
+export type {
+  QueryConstraintType,
+  QueryFilterConstraint,
+  QueryNonFilterConstraint,
   OrderByDirection,
   WhereFilterOp
 } from '../src/lite-api/query';
@@ -108,7 +115,7 @@ export {
   getDocs
 } from '../src/lite-api/reference_impl';
 
-export {
+export type {
   Primitive,
   NestedUpdateFields,
   ChildUpdateFields,
@@ -134,22 +141,24 @@ export {
 } from '../src/lite-api/field_value_impl';
 
 export {
-  FirestoreDataConverter,
   DocumentSnapshot,
   QueryDocumentSnapshot,
   QuerySnapshot,
   snapshotEqual
 } from '../src/lite-api/snapshot';
+export type { FirestoreDataConverter } from '../src/lite-api/snapshot';
 
 export { VectorValue } from '../src/lite-api/vector_value';
 
 export { WriteBatch, writeBatch } from '../src/lite-api/write_batch';
 
-export { TransactionOptions } from '../src/lite-api/transaction_options';
+export type { TransactionOptions } from '../src/lite-api/transaction_options';
 
 export { Transaction, runTransaction } from '../src/lite-api/transaction';
 
-export { setLogLevel, LogLevelString as LogLevel } from '../src/util/log';
+// Fix Vitest error: type-only export for LogLevelString
+export { setLogLevel } from '../src/util/log';
+export type { LogLevelString as LogLevel } from '../src/util/log';
 
 export { Bytes } from '../src/lite-api/bytes';
 
@@ -157,4 +166,5 @@ export { GeoPoint } from '../src/lite-api/geo_point';
 
 export { Timestamp } from '../src/lite-api/timestamp';
 
-export { FirestoreErrorCode, FirestoreError } from '../src/util/error';
+export { FirestoreError } from '../src/util/error';
+export type { FirestoreErrorCode } from '../src/util/error';

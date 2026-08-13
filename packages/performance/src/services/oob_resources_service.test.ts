@@ -157,7 +157,9 @@ describe('Firebase Performance > oob_resources_service', () => {
 
   beforeEach(() => {
     resetForUnitTests();
-    getIidStub = stub(iidService, 'getIid');
+    // Stub _iidServiceInternal to avoid Vitest error:
+    // "TypeError: ES Modules cannot be stubbed"
+    getIidStub = stub(iidService._iidServiceInternal, 'getIid');
     eventListenerSpy = spy(mockWindow.document, 'addEventListener');
 
     clock = useFakeTimers();

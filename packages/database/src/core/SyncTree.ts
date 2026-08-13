@@ -17,7 +17,8 @@
 
 import { assert } from '@firebase/util';
 
-import { ReferenceConstructor } from '../api/Reference';
+// Fix Vitest error: "SyntaxError: The requested module ... does not provide an export named 'ReferenceConstructor'"
+import type { ReferenceConstructor } from '../api/Reference';
 
 import { AckUserWrite } from './operation/AckUserWrite';
 import { ListenComplete } from './operation/ListenComplete';

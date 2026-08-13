@@ -84,6 +84,15 @@ let gtagCoreFunction: Gtag;
  */
 export let wrappedGtagFunction: Gtag;
 
+export const _factoryInternal = {
+  get wrappedGtagFunction(): Gtag | undefined {
+    return wrappedGtagFunction;
+  },
+  set wrappedGtagFunction(fn: Gtag | undefined) {
+    wrappedGtagFunction = fn as Gtag;
+  }
+};
+
 /**
  * Flag to ensure page initialization steps (creation or wrapping of
  * dataLayer and gtag script) are only run once per page load.

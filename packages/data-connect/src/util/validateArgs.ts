@@ -15,11 +15,12 @@
  * limitations under the License.
  */
 
-import { ExecuteQueryOptions } from '../api';
+import type { ExecuteQueryOptions } from '../api';
+// Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
 import {
   ConnectorConfig,
   DataConnect,
-  getDataConnect
+  _dataConnectInternal
 } from '../api/DataConnect';
 import { Code, DataConnectError } from '../core/error';
 
@@ -59,7 +60,7 @@ export function validateArgs<Variables extends object>(
     dcInstance = dcOrVars as DataConnect;
     realVars = vars as Variables;
   } else {
-    dcInstance = getDataConnect(connectorConfig);
+    dcInstance = _dataConnectInternal.getDataConnect(connectorConfig);
     realVars = dcOrVars as Variables;
   }
 
@@ -110,7 +111,7 @@ export function validateArgsWithOptions<Variables extends object>(
       realOptions = varsOrOptions as ExecuteQueryOptions;
     }
   } else {
-    dcInstance = getDataConnect(connectorConfig);
+    dcInstance = _dataConnectInternal.getDataConnect(connectorConfig);
     if (hasVars) {
       realVars = dcOrVarsOrOptions as Variables;
       realOptions = varsOrOptions as ExecuteQueryOptions;

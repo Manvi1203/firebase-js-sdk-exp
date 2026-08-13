@@ -45,7 +45,7 @@ describe('TemplateGenerativeModel', () => {
   describe('generateContent', () => {
     it('should call templateGenerateContent with correct parameters no options', async () => {
       const templateGenerateContentStub = stub(
-        generateContentMethods,
+        generateContentMethods._generateContentInternal,
         'templateGenerateContent'
       ).resolves({} as any);
       const model = new TemplateGenerativeModel(fakeAI);
@@ -61,7 +61,7 @@ describe('TemplateGenerativeModel', () => {
 
     it('should call templateGenerateContent with correct parameters w/ request options', async () => {
       const templateGenerateContentStub = stub(
-        generateContentMethods,
+        generateContentMethods._generateContentInternal,
         'templateGenerateContent'
       ).resolves({} as any);
       const model = new TemplateGenerativeModel(fakeAI);
@@ -77,7 +77,7 @@ describe('TemplateGenerativeModel', () => {
 
     it('should call templateGenerateContent with correct parameters w/ tool config', async () => {
       const templateGenerateContentStub = stub(
-        generateContentMethods,
+        generateContentMethods._generateContentInternal,
         'templateGenerateContent'
       ).resolves({} as any);
       const model = new TemplateGenerativeModel(fakeAI);
@@ -104,7 +104,7 @@ describe('TemplateGenerativeModel', () => {
 
     it('should call templateGenerateContent with correct parameters w/ both optional params', async () => {
       const templateGenerateContentStub = stub(
-        generateContentMethods,
+        generateContentMethods._generateContentInternal,
         'templateGenerateContent'
       ).resolves({} as any);
       const model = new TemplateGenerativeModel(fakeAI);
@@ -132,7 +132,7 @@ describe('TemplateGenerativeModel', () => {
 
     it('singleRequestOptions overrides requestOptions', async () => {
       const templateGenerateContentStub = stub(
-        generateContentMethods,
+        generateContentMethods._generateContentInternal,
         'templateGenerateContent'
       ).resolves({} as any);
       const model = new TemplateGenerativeModel(fakeAI, { timeout: 1000 });
@@ -154,7 +154,7 @@ describe('TemplateGenerativeModel', () => {
 
     it('singleRequestOptions is merged with requestOptions', async () => {
       const templateGenerateContentStub = stub(
-        generateContentMethods,
+        generateContentMethods._generateContentInternal,
         'templateGenerateContent'
       ).resolves({} as any);
       const abortController = new AbortController();
@@ -179,7 +179,7 @@ describe('TemplateGenerativeModel', () => {
   describe('generateContentStream', () => {
     it('should call templateGenerateContentStream with correct parameters', async () => {
       const templateGenerateContentStreamStub = stub(
-        generateContentMethods,
+        generateContentMethods._generateContentInternal,
         'templateGenerateContentStream'
       ).resolves({} as any);
       const model = new TemplateGenerativeModel(fakeAI, { timeout: 5000 });
@@ -196,7 +196,7 @@ describe('TemplateGenerativeModel', () => {
 
     it('should call templateGenerateContentStream with correct parameters w/ request options', async () => {
       const templateGenerateContentStreamStub = stub(
-        generateContentMethods,
+        generateContentMethods._generateContentInternal,
         'templateGenerateContentStream'
       ).resolves({} as any);
       const model = new TemplateGenerativeModel(fakeAI);
@@ -214,7 +214,7 @@ describe('TemplateGenerativeModel', () => {
 
     it('should call templateGenerateContentStream with correct parameters w/ tool config', async () => {
       const templateGenerateContentStreamStub = stub(
-        generateContentMethods,
+        generateContentMethods._generateContentInternal,
         'templateGenerateContentStream'
       ).resolves({} as any);
       const latLng: LatLng = {
@@ -240,7 +240,7 @@ describe('TemplateGenerativeModel', () => {
 
     it('should call templateGenerateContent with correct parameters w/ both optional params', async () => {
       const templateGenerateContentStreamStub = stub(
-        generateContentMethods,
+        generateContentMethods._generateContentInternal,
         'templateGenerateContentStream'
       ).resolves({} as any);
       const latLng: LatLng = {
@@ -267,7 +267,7 @@ describe('TemplateGenerativeModel', () => {
 
     it('singleRequestOptions overrides requestOptions', async () => {
       const templateGenerateContentStreamStub = stub(
-        generateContentMethods,
+        generateContentMethods._generateContentInternal,
         'templateGenerateContentStream'
       ).resolves({} as any);
       const model = new TemplateGenerativeModel(fakeAI, { timeout: 1000 });
@@ -289,7 +289,7 @@ describe('TemplateGenerativeModel', () => {
 
     it('singleRequestOptions is merged with requestOptions', async () => {
       const templateGenerateContentStreamStub = stub(
-        generateContentMethods,
+        generateContentMethods._generateContentInternal,
         'templateGenerateContentStream'
       ).resolves({} as any);
       const abortController = new AbortController();

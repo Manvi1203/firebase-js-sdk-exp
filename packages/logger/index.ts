@@ -19,8 +19,13 @@ export {
   setLogLevel,
   Logger,
   LogLevel,
+  setUserLogHandler
+} from './src/logger';
+
+// Type-only re-exports to avoid Vitest error:
+// "SyntaxError: The requested module '/src/logger.ts' does not provide an export named 'LogHandler'"
+export type {
   LogHandler,
-  setUserLogHandler,
   LogCallback,
   LogLevelString,
   LogOptions

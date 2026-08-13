@@ -20,7 +20,8 @@ import type { DBSchema, IDBPDatabase, OpenDBCallbacks } from 'idb';
 
 import { FirebaseInternalDependencies } from '../interfaces/internal-dependencies';
 import { TokenDetails } from '../interfaces/registration-details';
-import { migrateOldDatabase } from '../helpers/migrate-old-database';
+// Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+import { _migrateOldDatabaseInternal } from '../helpers/migrate-old-database';
 import { ERROR_FACTORY, ErrorCode } from '../util/errors';
 
 export const DATABASE_NAME = 'firebase-messaging-database';
@@ -162,9 +163,10 @@ export async function dbGet(
   if (tokenDetails) {
     return tokenDetails;
   } else {
-    const oldTokenDetails = await migrateOldDatabase(
-      firebaseDependencies.appConfig.senderId
-    );
+    const oldTokenDetails =
+      await _migrateOldDatabaseInternal.migrateOldDatabase(
+        firebaseDependencies.appConfig.senderId
+      );
     if (oldTokenDetails) {
       await dbSet(firebaseDependencies, oldTokenDetails);
       return oldTokenDetails;
@@ -271,3 +273,14 @@ export async function dbDelete(): Promise<void> {
 function getKey({ appConfig }: FirebaseInternalDependencies): string {
   return appConfig.appId;
 }
+
+// Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+export const _idbManagerInternal = {
+  dbGet,
+  dbSet,
+  dbRemove,
+  dbGetFidRegistration,
+  dbSetFidRegistration,
+  dbRemoveFidRegistration,
+  dbDelete
+};

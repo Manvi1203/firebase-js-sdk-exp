@@ -51,8 +51,10 @@ describe('getInstallationEntry', () => {
     clock = useFakeTimers({ now: 1_000_000 });
     fakeInstallations = getFakeInstallations();
     appConfig = fakeInstallations.appConfig;
+    // Stub _createInstallationRequestInternal to avoid Vitest error:
+    // "TypeError: ES Modules cannot be stubbed"
     createInstallationRequestSpy = stub(
-      createInstallationRequestModule,
+      createInstallationRequestModule._createInstallationRequestInternal,
       'createInstallationRequest'
     ).callsFake(
       async (_, installationEntry): Promise<RegisteredInstallationEntry> => {
@@ -75,8 +77,8 @@ describe('getInstallationEntry', () => {
   });
 
   afterEach(() => {
-    // Clean up all pending requests.
-    clock.runAll();
+    // Restore fake clock after each test.
+    clock.restore();
   });
 
   it('saves the InstallationEntry in the database before returning it', async () => {
@@ -188,8 +190,10 @@ describe('getInstallationEntry', () => {
     let generateInstallationEntrySpy: SinonStub<[], string>;
 
     beforeEach(() => {
+      // Stub _generateFidInternal to avoid Vitest error:
+      // "TypeError: ES Modules cannot be stubbed"
       generateInstallationEntrySpy = stub(
-        generateFidModule,
+        generateFidModule._generateFidInternal,
         'generateFid'
       ).returns(FID);
     });
@@ -250,13 +254,17 @@ describe('getInstallationEntry', () => {
     });
 
     it('does not return a registrationPromise on subsequent calls after initial promise resolves', async () => {
+      clock.restore();
+      clock = useFakeTimers({
+        now: 1_000_000,
+        shouldAdvanceTime: true
+      });
       const { registrationPromise: promise1 } = await getInstallationEntry(
         fakeInstallations
       );
       expect(promise1).to.be.an.instanceOf(Promise);
 
-      clock.next(); // Finish registration request.
-      await expect(promise1).to.be.fulfilled;
+      await promise1;
 
       const { registrationPromise: promise2 } = await getInstallationEntry(
         fakeInstallations
@@ -341,11 +349,14 @@ describe('getInstallationEntry', () => {
     });
 
     it("returns the same InstallationEntry if the request hasn't timed out", async () => {
-      clock.now = 1_001_000; // One second after the request was initiated.
+      clock.restore();
+      clock = useFakeTimers({
+        now: 1_001_000 /* One second after the request was initiated. */,
+        shouldAdvanceTime: true
+      });
 
-      const { installationEntry } = await getInstallationEntry(
-        fakeInstallations
-      );
+      const { installationEntry, registrationPromise } =
+        await getInstallationEntry(fakeInstallations);
 
       expect(installationEntry).to.deep.equal({
         fid: FID,
@@ -353,6 +364,20 @@ describe('getInstallationEntry', () => {
         registrationTime: 1_000_000
       });
       expect(createInstallationRequestSpy).not.to.be.called;
+
+      // Complete registration to cleanly terminate background polling and avoid test leakage.
+      await set(appConfig, {
+        fid: FID,
+        registrationStatus: RequestStatus.COMPLETED,
+        refreshToken: 'rt',
+        authToken: {
+          requestStatus: RequestStatus.COMPLETED,
+          creationTime: Date.now(),
+          token: 'tok',
+          expiresIn: 1000
+        }
+      });
+      await registrationPromise;
     });
 
     it('updates the InstallationEntry and triggers createInstallation if the request fails', async () => {

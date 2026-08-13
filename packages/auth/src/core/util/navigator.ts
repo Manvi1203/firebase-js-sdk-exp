@@ -41,17 +41,25 @@ export function _isOnline(): boolean {
 }
 
 export function _getUserLanguage(): string | null {
-  if (typeof navigator === 'undefined') {
-    return null;
-  }
-  const navigatorLanguage: NavigatorLanguage = navigator;
-  return (
-    // Most reliable, but only supported in Chrome/Firefox.
-    (navigatorLanguage.languages && navigatorLanguage.languages[0]) ||
-    // Supported in most browsers, but returns the language of the browser
-    // UI, not the language set in browser settings.
-    navigatorLanguage.language ||
-    // Couldn't determine language.
-    null
-  );
+  return _navigatorInternal._getUserLanguage();
 }
+
+// Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+export const _navigatorInternal = {
+  _getUserLanguage(): string | null {
+    if (typeof navigator === 'undefined') {
+      return null;
+    }
+    const navigatorLanguage: NavigatorLanguage = navigator;
+    return (
+      // Most reliable, but only supported in Chrome/Firefox.
+      (navigatorLanguage.languages && navigatorLanguage.languages[0]) ||
+      // Supported in most browsers, but returns the language of the browser
+      // UI, not the language set in browser settings.
+      navigatorLanguage.language ||
+      // Couldn't determine language.
+      null
+    );
+  },
+  _isOnline
+};

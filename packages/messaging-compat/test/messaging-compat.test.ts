@@ -15,37 +15,47 @@
  * limitations under the License.
  */
 
-import * as messagingModule from '@firebase/messaging';
-import * as messagingModuleInSw from '@firebase/messaging/sw';
+// Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+import { _messagingInternal } from '@firebase/messaging';
+import { _messagingSwInternal } from '@firebase/messaging/sw';
 
 import { getFakeApp, getFakeModularMessaging } from './fakes';
 
 import { MessagingCompatImpl } from '../src/messaging-compat';
 import { expect } from 'chai';
-import { stub } from 'sinon';
+import { stub, SinonStub } from 'sinon';
 
 describe('messagingCompat', () => {
-  const messagingCompat = new MessagingCompatImpl(
-    getFakeApp(),
-    getFakeModularMessaging()
-  );
+  let messagingCompat: MessagingCompatImpl;
+  let getTokenStub: SinonStub;
+  let deleteTokenStub: SinonStub;
+  let onMessageStub: SinonStub;
+  let onBackgroundMessageStub: SinonStub;
 
-  //Stubs
-  const getTokenStub = stub(messagingModule, 'getToken');
-  const deleteTokenStub = stub(messagingModule, 'deleteToken');
-  const onMessageStub = stub(messagingModule, 'onMessage');
-  const onBackgroundMessageStub = stub(
-    messagingModuleInSw,
-    'onBackgroundMessage'
-  );
+  beforeEach(() => {
+    messagingCompat = new MessagingCompatImpl(
+      getFakeApp(),
+      getFakeModularMessaging()
+    );
 
-  it('routes messagingCompat.getToken to modular SDK', () => {
-    void messagingCompat.getToken();
+    // Stubs
+    // Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+    getTokenStub = stub(_messagingInternal, 'getToken').resolves('fake-token');
+    deleteTokenStub = stub(_messagingInternal, 'deleteToken').resolves(true);
+    onMessageStub = stub(_messagingInternal, 'onMessage');
+    onBackgroundMessageStub = stub(
+      _messagingSwInternal,
+      'onBackgroundMessage'
+    );
+  });
+
+  it('routes messagingCompat.getToken to modular SDK', async () => {
+    await messagingCompat.getToken();
     expect(getTokenStub.called).to.be.true;
   });
 
-  it('routes messagingCompat.deleteToken to modular SDK', () => {
-    void messagingCompat.deleteToken();
+  it('routes messagingCompat.deleteToken to modular SDK', async () => {
+    await messagingCompat.deleteToken();
     expect(deleteTokenStub.called).to.be.true;
   });
 

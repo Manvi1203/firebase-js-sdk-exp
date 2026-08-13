@@ -19,7 +19,7 @@
  * We don't include goog.fs because it pulls in a bunch of Deferred code that
  * bloats the size of the released binary.
  */
-import { isNativeBlobDefined } from './type';
+import { _typeInternal } from './type';
 import { StorageErrorCode, StorageError } from './error';
 
 function getBlobBuilder(): typeof IBlobBuilder | undefined {
@@ -47,7 +47,7 @@ export function getBlob(...args: Array<string | Blob | ArrayBuffer>): Blob {
     }
     return bb.getBlob();
   } else {
-    if (isNativeBlobDefined()) {
+    if (_typeInternal.isNativeBlobDefined()) {
       return new Blob(args);
     } else {
       throw new StorageError(

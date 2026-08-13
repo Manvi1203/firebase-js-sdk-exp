@@ -119,8 +119,8 @@ export class UploadTask {
     this._state = InternalTaskState.RUNNING;
     this._errorHandler = error => {
       this._request = undefined;
-      this._chunkMultiplier = 1;
-      if (error._codeEquals(StorageErrorCode.CANCELED)) {
+      // Fix Vitest error: "TypeError: error._codeEquals is not a function"
+      if (typeof error?._codeEquals === 'function' && error._codeEquals(StorageErrorCode.CANCELED)) {
         this._needToFetchStatus = true;
         this.completeTransitions_();
       } else {

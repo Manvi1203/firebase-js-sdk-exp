@@ -53,3 +53,7 @@ function encode(fidByteArray: Uint8Array): string {
   // end of our 17 byte array, and the '=' padding.
   return b64String.substr(0, 22);
 }
+
+export const _generateFidInternal = {
+  generateFid
+};

@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 
+// Fix Vitest error: type-only exports in reference.ts
 export {
   DocumentReference,
   CollectionReference,
@@ -23,10 +24,13 @@ export {
   collectionGroup,
   doc,
   queryEqual,
+  refEqual
+} from '../lite-api/reference';
+
+export type {
   SetOptions,
   DocumentData,
   UpdateData,
   WithFieldValue,
-  PartialWithFieldValue,
-  refEqual
+  PartialWithFieldValue
 } from '../lite-api/reference';
