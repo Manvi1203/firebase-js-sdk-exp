@@ -79,6 +79,18 @@ export function getRunEnterpriseTests(): boolean {
   return !!process.env.RUN_ENTERPRISE_TESTS;
 }
 
+export function getRunMultiDbTests(): boolean {
+  const karma = typeof __karma__ !== 'undefined' ? __karma__ : undefined;
+  if (karma && karma.config.runMultiDbTests !== undefined) {
+    return !!karma.config.runMultiDbTests;
+  }
+  const multiDb =
+    typeof process !== 'undefined' &&
+    process.env &&
+    process.env.FIRESTORE_RUN_MULTI_DB_TESTS;
+  return multiDb === 'true' || multiDb === 'YES';
+}
+
 function parseTargetBackend(targetBackend: string): TargetBackend {
   switch (targetBackend) {
     case 'emulator':

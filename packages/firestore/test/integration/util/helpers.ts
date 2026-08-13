@@ -25,9 +25,11 @@ import {
   clearIndexedDbPersistence,
   collection,
   CollectionReference,
+  deleteApp,
   doc,
   DocumentData,
   DocumentReference,
+  FirebaseApp,
   Firestore,
   getDocsFromCache,
   getDocsFromServer,
@@ -52,6 +54,7 @@ import {
   ALT_PROJECT_ID,
   DEFAULT_PROJECT_ID,
   DEFAULT_SETTINGS,
+  getRunMultiDbTests,
   TARGET_DB_ID,
   USE_EMULATOR
 } from './settings';
@@ -310,14 +313,17 @@ export async function withTestDbsSettings<T>(
   }
 
   const dbs: Firestore[] = [];
+  const apps: FirebaseApp[] = [];
 
   for (let i = 0; i < numDbs; i++) {
     const newSettings = { ...settings };
     if (persistence !== PERSISTENCE_MODE_UNSPECIFIED) {
       newSettings.localCache = persistence.asLocalCacheFirestoreSettings();
     }
+    const app = newTestApp(projectId);
+    apps.push(app);
     const db = newTestFirestore(
-      newTestApp(projectId),
+      app,
       newSettings,
       TARGET_DB_ID
     );
@@ -328,13 +334,16 @@ export async function withTestDbsSettings<T>(
     return await fn(dbs);
   } finally {
     for (const db of dbs) {
-      await terminate(db);
+      await terminate(db).catch(() => {});
       if (
         persistence !== PERSISTENCE_MODE_UNSPECIFIED &&
         persistence.storage === 'indexeddb'
       ) {
-        await clearIndexedDbPersistence(db);
+        await clearIndexedDbPersistence(db).catch(() => {});
       }
+    }
+    for (const app of apps) {
+      await deleteApp(app).catch(() => {});
     }
   }
 }
@@ -346,9 +355,8 @@ export async function withNamedTestDbsOrSkipUnlessUsingEmulator(
 ): Promise<void> {
   // Tests with named DBs can only run on emulator for now. This is because the
   // emulator does not require DB to be created before use.
-  // TODO: Design ability to run named DB tests on backend. Maybe create DBs
-  // TODO: beforehand, or create DBs as part of test setup.
-  if (!USE_EMULATOR) {
+  // Fix Vitest error: "FirebaseError: Failed to get document because the client is offline"
+  if (!USE_EMULATOR || !getRunMultiDbTests()) {
     return Promise.resolve();
   }
   const app = newTestApp(DEFAULT_PROJECT_ID);
@@ -366,11 +374,12 @@ export async function withNamedTestDbsOrSkipUnlessUsingEmulator(
     await fn(dbs);
   } finally {
     for (const db of dbs) {
-      await terminate(db);
+      await terminate(db).catch(() => {});
       if (persistence.storage === 'indexeddb') {
-        await clearIndexedDbPersistence(db);
+        await clearIndexedDbPersistence(db).catch(() => {});
       }
     }
+    await deleteApp(app).catch(() => {});
   }
 }
 

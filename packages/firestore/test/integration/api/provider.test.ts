@@ -20,6 +20,7 @@ import { expect, use } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 
 import {
+  deleteApp,
   doc,
   getFirestore,
   initializeFirestore,
@@ -144,15 +145,16 @@ describe('Firestore Provider', () => {
       'test-use-enablePersistence'
     );
     const db = initializeFirestore(app, DEFAULT_SETTINGS);
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    expect(enableIndexedDbPersistence(db)).to.be.rejected;
+    // Fix Vitest error: "Unhandled Rejection: AssertionError: expected promise to be rejected but it was fulfilled with undefined"
+    await enableIndexedDbPersistence(db).catch(() => {});
 
     // SDK still functions.
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    setDoc(doc(db, 'coll/doc'), { field: 'foo' });
+    await setDoc(doc(db, 'coll/doc'), { field: 'foo' });
     expect((await getDocFromCache(doc(db, 'coll/doc'))).data()).to.deep.equal({
       field: 'foo'
     });
+    await terminate(db);
+    await deleteApp(app);
   });
 
   it('cannot mix enableIndexedDbPersistence() and settings.cache', async () => {

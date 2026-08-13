@@ -20,7 +20,8 @@
 // reference to the minified sources. If you change any exports in this file,
 // you need to also adjust "integration/firestore/firebase_export.ts".
 
-import { FirebaseApp, initializeApp } from '@firebase/app';
+import { FirebaseApp, initializeApp, deleteApp } from '@firebase/app';
+export { FirebaseApp, initializeApp, deleteApp };
 
 import { Firestore, initializeFirestore } from '../../../src';
 import { PrivateSettings } from '../../../src/lite-api/settings';

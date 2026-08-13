@@ -168,8 +168,15 @@ apiDescribe('Database', persistence => {
       return withTestDbs(persistence, 2, async ([reader, writer]) => {
         const writerRef = doc(collection(writer, 'collection'));
         const readerRef = doc(collection(reader, 'collection'), writerRef.id);
+        // Fix Vitest error: "FirebaseError: Could not reach Cloud Firestore backend. Backend didn't respond within 10 seconds"
+        // Warm up reader connection with an unrelated document without caching readerRef
+        await getDocFromServer(doc(collection(reader, '_warmup'), '_warmup')).catch(
+          () => {}
+        );
         await setDoc(writerRef, { a: 'a' });
+        await waitForPendingWrites(writer);
         await updateDoc(readerRef, { b: 'b' });
+        await waitForPendingWrites(reader);
         await getDocFromCache(writerRef).then(
           doc => expect(doc.exists()).to.be.true
         );
@@ -179,10 +186,11 @@ apiDescribe('Database', persistence => {
           },
           err => expect(err.code).to.be.equal('unavailable')
         );
-        await getDoc(writerRef).then(doc =>
+        // Fix Vitest error: "FirebaseError: Failed to get document because the client is offline"
+        await getDocFromServer(writerRef).then(doc =>
           expect(doc.data()).to.deep.equal({ a: 'a', b: 'b' })
         );
-        await getDoc(readerRef).then(doc =>
+        await getDocFromServer(readerRef).then(doc =>
           expect(doc.data()).to.deep.equal({ a: 'a', b: 'b' })
         );
       });
@@ -2617,6 +2625,11 @@ apiDescribe('Database', persistence => {
         const snapshot1 = await getDoc(ref1);
         expect(snapshot1.exists()).to.be.ok;
         expect(snapshot1.data()).to.be.deep.equals(data);
+
+        // Fix Vitest error: "FirebaseError: Failed to get document because the client is offline"
+        // Ensure db2 is initialized on emulator by creating an init document before read
+        const initRef = doc(collection(db2, '_init'), '_init');
+        await setDoc(initRef, { init: true });
 
         const ref2 = await doc(collection(db2, 'users'), 'doc1');
         const snapshot2 = await getDocFromServer(ref2);
