@@ -19,12 +19,11 @@ import {
   FirebaseApp as AppCompat,
   _FirebaseService
 } from '@firebase/app-compat';
+// Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
 import {
   Messaging,
   MessagePayload,
-  deleteToken,
-  getToken,
-  onMessage
+  _messagingInternal
 } from '@firebase/messaging';
 import {
   areCookiesEnabled,
@@ -34,7 +33,8 @@ import {
   Unsubscribe
 } from '@firebase/util';
 
-import { onBackgroundMessage } from '@firebase/messaging/sw';
+// Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+import { _messagingSwInternal } from '@firebase/messaging/sw';
 
 export interface MessagingCompat {
   getToken(options?: {
@@ -105,22 +105,22 @@ export class MessagingCompatImpl implements MessagingCompat, _FirebaseService {
     vapidKey?: string;
     serviceWorkerRegistration?: ServiceWorkerRegistration;
   }): Promise<string> {
-    return getToken(this._delegate, options);
+    return _messagingInternal.getToken(this._delegate, options);
   }
 
   async deleteToken(): Promise<boolean> {
-    return deleteToken(this._delegate);
+    return _messagingInternal.deleteToken(this._delegate);
   }
 
   onMessage(
     nextOrObserver: NextFn<MessagePayload> | Observer<MessagePayload>
   ): Unsubscribe {
-    return onMessage(this._delegate, nextOrObserver);
+    return _messagingInternal.onMessage(this._delegate, nextOrObserver);
   }
 
   onBackgroundMessage(
     nextOrObserver: NextFn<MessagePayload> | Observer<MessagePayload>
   ): Unsubscribe {
-    return onBackgroundMessage(this._delegate, nextOrObserver);
+    return _messagingSwInternal.onBackgroundMessage(this._delegate, nextOrObserver);
   }
 }
