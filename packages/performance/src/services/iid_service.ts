@@ -24,10 +24,12 @@ export function getIidPromise(
   installationsService: _FirebaseInstallationsInternal
 ): Promise<string> {
   const iidPromise = installationsService.getId();
-  // eslint-disable-next-line @typescript-eslint/no-floating-promises
-  iidPromise.then((iidVal: string) => {
-    iid = iidVal;
-  });
+  // Fix Vitest error: "Unhandled Rejection: FirebaseError: Installations: Create Installation request failed"
+  iidPromise
+    .then((iidVal: string) => {
+      iid = iidVal;
+    })
+    .catch(() => {});
   return iidPromise;
 }
 
@@ -40,10 +42,12 @@ export function getAuthTokenPromise(
   installationsService: _FirebaseInstallationsInternal
 ): Promise<string> {
   const authTokenPromise = installationsService.getToken();
-  // eslint-disable-next-line @typescript-eslint/no-floating-promises
-  authTokenPromise.then((authTokenVal: string) => {
-    authToken = authTokenVal;
-  });
+  // Fix Vitest error: "Unhandled Rejection: FirebaseError: Installations: Create Installation request failed"
+  authTokenPromise
+    .then((authTokenVal: string) => {
+      authToken = authTokenVal;
+    })
+    .catch(() => {});
   return authTokenPromise;
 }
 
