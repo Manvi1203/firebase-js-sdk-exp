@@ -15,12 +15,20 @@
  * limitations under the License.
  */
 
-// Fix Vitest error: "ReferenceError: global is not defined" in browser tests
-if (typeof (globalThis as unknown as { global: unknown }).global === 'undefined') {
-  (globalThis as unknown as { global: typeof globalThis }).global = globalThis;
+const g = globalThis as Record<string, unknown>;
+if (typeof g.global === 'undefined') {
+  g.global = globalThis;
 }
-if (typeof (globalThis as unknown as { process: unknown }).process === 'undefined') {
-  (globalThis as unknown as { process: { env: Record<string, string> } }).process = {
-    env: {}
-  };
+if (typeof g.process === 'undefined') {
+  g.process = { env: {} };
 }
+if (typeof g.before === 'undefined') {
+  g.before = g.beforeAll;
+}
+if (typeof g.after === 'undefined') {
+  g.after = g.afterAll;
+}
+if (typeof g.context === 'undefined') {
+  g.context = g.describe;
+}
+
