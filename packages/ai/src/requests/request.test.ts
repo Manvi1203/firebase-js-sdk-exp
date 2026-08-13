@@ -572,12 +572,14 @@ describe('request methods', () => {
         '{}'
       );
 
-      await clock.tickAsync(timeoutDuration + 100);
-
-      await expect(requestPromise).to.be.rejectedWith(
+      const assertionPromise = expect(requestPromise).to.be.rejectedWith(
         DOMException,
         TIMEOUT_EXPIRED_MESSAGE
       );
+
+      await clock.tickAsync(timeoutDuration + 100);
+
+      await assertionPromise;
 
       expect(fetchStub).to.have.been.calledOnce;
       const fetchOptions = fetchStub.firstCall.args[1] as RequestInit;
