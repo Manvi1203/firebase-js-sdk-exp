@@ -84,7 +84,8 @@ describe('mock fetch utility', () => {
 
     it('if call is not a string', () => {
       mockFetch.mock('/blah', {});
-      expect(() => FetchProvider.fetch()(new Request({} as any))).to.throw(
+      // Fix Vitest error: "Failed to parse URL from [object Object]" when constructing invalid Request
+      expect(() => (FetchProvider.fetch() as (url: unknown) => void)({})).to.throw(
         'URL passed to fetch was not a string'
       );
     });

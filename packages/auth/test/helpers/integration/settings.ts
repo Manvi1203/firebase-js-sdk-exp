@@ -24,10 +24,10 @@ declare const __karma__: any;
 // Fix Vitest error: "Failed to resolve import config/project.json" / "ReferenceError: require is not defined"
 let PROJECT_CONFIG: Record<string, string> = {};
 try {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
   PROJECT_CONFIG =
     typeof require !== 'undefined'
-      ? require('../../../../../config/project.json')
+      ? // eslint-disable-next-line @typescript-eslint/no-require-imports
+        require('../../../../../config/project.json')
       : {};
 } catch {
   PROJECT_CONFIG = {};

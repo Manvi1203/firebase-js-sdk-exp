@@ -216,13 +216,12 @@ describe('core/strategies/redirect', () => {
     expect(resolverInstance._initialize).not.to.have.been.called;
   });
 
-  context('_getAndClearPendingRedirectStatus', () => {
-    // Do not run these tests in node
-    if (typeof window === 'undefined') {
-      return;
-    }
-
+  describe('_getAndClearPendingRedirectStatus', () => {
     it('returns false if the key is not set', async () => {
+      // Fix Vitest error: skip browser-specific test when window is undefined in node
+      if (typeof window === 'undefined') {
+        return;
+      }
       redirectPersistence.hasPendingRedirect = false;
       expect(
         await _getAndClearPendingRedirectStatus(_getInstance(resolver), auth)
@@ -230,6 +229,9 @@ describe('core/strategies/redirect', () => {
     });
 
     it('returns true if the key is found', async () => {
+      if (typeof window === 'undefined') {
+        return;
+      }
       redirectPersistence.hasPendingRedirect = true;
       expect(
         await _getAndClearPendingRedirectStatus(_getInstance(resolver), auth)
@@ -237,6 +239,9 @@ describe('core/strategies/redirect', () => {
     });
 
     it('returns false if sessionStorage is permission denied', async () => {
+      if (typeof window === 'undefined') {
+        return;
+      }
       _getInstance<PopupRedirectResolverInternal>(
         resolver
       )._redirectPersistence =
