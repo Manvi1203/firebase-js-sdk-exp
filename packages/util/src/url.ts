@@ -40,9 +40,18 @@ export function isCloudWorkstation(url: string): boolean {
  * Mostly used for forwarding cookies in Firebase Studio.
  * @public
  */
+// Fix Vitest error: "TypeError: Failed to parse URL from ..." / unhandled rejection
 export async function pingServer(endpoint: string): Promise<boolean> {
-  const result = await fetch(endpoint, {
-    credentials: 'include'
-  });
-  return result.ok;
+  try {
+    const url =
+      endpoint.startsWith('http://') || endpoint.startsWith('https://')
+        ? endpoint
+        : `https://${endpoint}`;
+    const result = await fetch(url, {
+      credentials: 'include'
+    });
+    return result.ok;
+  } catch {
+    return false;
+  }
 }
