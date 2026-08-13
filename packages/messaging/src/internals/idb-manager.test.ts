@@ -17,7 +17,8 @@
 
 import '../testing/setup';
 
-import * as migrateOldDatabaseModule from '../helpers/migrate-old-database';
+// Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+import { _migrateOldDatabaseInternal } from '../helpers/migrate-old-database';
 
 import {
   dbDelete,
@@ -94,12 +95,13 @@ describe('idb manager', () => {
 
     describe('old DB migration', () => {
       let migrateOldDatabaseStub: Stub<
-        (typeof migrateOldDatabaseModule)['migrateOldDatabase']
+        (typeof _migrateOldDatabaseInternal)['migrateOldDatabase']
       >;
 
       beforeEach(() => {
+        // Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
         migrateOldDatabaseStub = stub(
-          migrateOldDatabaseModule,
+          _migrateOldDatabaseInternal,
           'migrateOldDatabase'
         ).resolves(tokenDetailsA);
       });

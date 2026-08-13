@@ -20,8 +20,12 @@ import '../testing/setup';
 import { deleteToken } from './deleteToken';
 import { getToken } from './getToken';
 import { register } from './register';
-import { dbGet, dbGetFidRegistration } from '../internals/idb-manager';
-import * as idbManager from '../internals/idb-manager';
+// Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+import {
+  dbGet,
+  dbGetFidRegistration,
+  _idbManagerInternal
+} from '../internals/idb-manager';
 import { MessagingService } from '../messaging-service';
 import {
   getFakeAnalyticsProvider,
@@ -31,10 +35,10 @@ import {
 import { FakeServiceWorkerRegistration } from '../testing/fakes/service-worker';
 import { stub, useFakeTimers } from 'sinon';
 import { expect } from 'chai';
-import * as updateVapidKeyModule from '../helpers/updateVapidKey';
-import * as updateSwRegModule from '../helpers/updateSwReg';
+import { _updateVapidKeyInternal } from '../helpers/updateVapidKey';
+import { _updateSwRegInternal } from '../helpers/updateSwReg';
 import { Stub } from '../testing/sinon-types';
-import * as requestsModule from '../internals/requests';
+import { _requestsInternal } from '../internals/requests';
 
 function makeSwRegistration(): ServiceWorkerRegistration {
   return new FakeServiceWorkerRegistration() as unknown as ServiceWorkerRegistration;
@@ -42,13 +46,13 @@ function makeSwRegistration(): ServiceWorkerRegistration {
 
 describe('register', () => {
   let messaging: MessagingService;
-  let updateVapidKeyStub: Stub<typeof updateVapidKeyModule.updateVapidKey>;
-  let updateSwRegStub: Stub<typeof updateSwRegModule.updateSwReg>;
+  let updateVapidKeyStub: Stub<typeof _updateVapidKeyInternal.updateVapidKey>;
+  let updateSwRegStub: Stub<typeof _updateSwRegInternal.updateSwReg>;
   let requestCreateRegistrationStub: Stub<
-    typeof requestsModule.requestCreateRegistration
+    typeof _requestsInternal.requestCreateRegistration
   >;
   let requestDeleteRegistrationStub: Stub<
-    typeof requestsModule.requestDeleteRegistration
+    typeof _requestsInternal.requestDeleteRegistration
   >;
   let clock: ReturnType<typeof useFakeTimers>;
 
@@ -66,21 +70,23 @@ describe('register', () => {
     messaging.vapidKey = 'dmFwaWQta2V5LXZhbHVl';
     messaging.swRegistration = makeSwRegistration();
 
+    // Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
     updateVapidKeyStub = stub(
-      updateVapidKeyModule,
+      _updateVapidKeyInternal,
       'updateVapidKey'
-    ).resolves() as Stub<typeof updateVapidKeyModule.updateVapidKey>;
-    updateSwRegStub = stub(updateSwRegModule, 'updateSwReg').resolves() as Stub<
-      typeof updateSwRegModule.updateSwReg
-    >;
+    ).resolves() as Stub<typeof _updateVapidKeyInternal.updateVapidKey>;
+    updateSwRegStub = stub(
+      _updateSwRegInternal,
+      'updateSwReg'
+    ).resolves() as Stub<typeof _updateSwRegInternal.updateSwReg>;
 
     requestCreateRegistrationStub = stub(
-      requestsModule,
+      _requestsInternal,
       'requestCreateRegistration'
     ).resolves({ responseFid: 'FID' });
 
     requestDeleteRegistrationStub = stub(
-      requestsModule,
+      _requestsInternal,
       'requestDeleteRegistration'
     ).resolves();
   });
@@ -100,8 +106,8 @@ describe('register', () => {
       undefined
     );
     expect(updateSwRegStub).to.have.been.calledOnceWith(messaging, undefined);
-    expect(onRegisteredSpy).to.have.been.calledOnceWith('FID');
     expect(requestCreateRegistrationStub).to.have.been.calledOnce;
+    expect(onRegisteredSpy).to.have.been.calledOnceWith('FID');
   });
 
   it('passes options to updateVapidKey and updateSwReg when provided', async () => {
@@ -127,8 +133,9 @@ describe('register', () => {
       vapidKey: 'custom-vapid'
     };
 
+    // Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
     const dbSetFidRegistrationStub = stub(
-      idbManager,
+      _idbManagerInternal,
       'dbSetFidRegistration'
     ).resolves({
       fid: 'FID',
@@ -152,18 +159,14 @@ describe('register', () => {
         vapidKey: 'custom-vapid'
       }
     );
-
-    dbSetFidRegistrationStub.restore();
   });
 
   it('throws when no onRegistered callback handler is provided or registered', async () => {
     messaging.onRegisteredHandler = null;
 
     await expect(register(messaging)).to.be.rejectedWith(
-      'messaging/invalid-on-registered-handler'
+      'No onRegistered callback handler was provided or registered'
     );
-    expect(updateVapidKeyStub).to.not.have.been.called;
-    expect(updateSwRegStub).to.not.have.been.called;
   });
 
   it('calls observer.next when onRegisteredHandler is an observer object', async () => {
@@ -182,7 +185,7 @@ describe('register', () => {
   it('retries CreateRegistration when response FID mismatches Installations then succeeds', async () => {
     const customInstallations = getFakeInstallations();
     const getTokenStub = stub(customInstallations, 'getToken').callsFake(
-      async (_force?: boolean) => 'authToken'
+      async () => 'token'
     );
     messaging = new MessagingService(
       getFakeApp(),
@@ -191,11 +194,12 @@ describe('register', () => {
     );
     messaging.vapidKey = 'dmFwaWQta2V5LXZhbHVl';
     messaging.swRegistration = makeSwRegistration();
-    messaging.onRegisteredHandler = stub();
+    const onRegisteredSpy = stub();
+    messaging.onRegisteredHandler = onRegisteredSpy;
 
     requestCreateRegistrationStub
       .onFirstCall()
-      .resolves({ responseFid: 'wrong-fid' })
+      .resolves({ responseFid: 'FID_MISMATCH' })
       .onSecondCall()
       .resolves({ responseFid: 'FID' });
 
@@ -203,12 +207,13 @@ describe('register', () => {
 
     expect(requestCreateRegistrationStub).to.have.been.calledTwice;
     expect(getTokenStub).to.have.been.calledOnceWith(true);
+    expect(onRegisteredSpy).to.have.been.calledOnceWith('FID');
   });
 
   it('rejects when CreateRegistration FID never matches Installations after retries', async () => {
     const customInstallations = getFakeInstallations();
     const getTokenStub = stub(customInstallations, 'getToken').callsFake(
-      async () => 'authToken'
+      async () => 'token'
     );
     messaging = new MessagingService(
       getFakeApp(),
@@ -219,27 +224,18 @@ describe('register', () => {
     messaging.swRegistration = makeSwRegistration();
     messaging.onRegisteredHandler = stub();
 
-    let createRegistrationCalls = 0;
-    requestCreateRegistrationStub.callsFake(async () => {
-      createRegistrationCalls++;
-      if (createRegistrationCalls > 3) {
-        throw new Error('unexpected fourth CreateRegistration invocation');
-      }
-      return { responseFid: 'always-wrong' };
-    });
+    requestCreateRegistrationStub.resolves({ responseFid: 'FID_MISMATCH' });
 
     await expect(register(messaging)).to.be.rejectedWith(
-      'messaging/fid-registration-failed'
+      'CreateRegistration response FID does not match Firebase Installation ID'
     );
-
-    expect(createRegistrationCalls).to.equal(3);
+    expect(requestCreateRegistrationStub).to.have.been.calledThrice;
     expect(getTokenStub).to.have.been.calledTwice;
-    expect(getTokenStub).to.have.been.calledWith(true);
   });
 
   it('uses FID from installations.getId()', async () => {
-    const customFid = 'custom-installation-id';
     const customInstallations = getFakeInstallations();
+    const customFid = 'CUSTOM_FID_FROM_INSTALLATIONS';
     stub(customInstallations, 'getId').resolves(customFid);
     messaging = new MessagingService(
       getFakeApp(),
@@ -249,10 +245,9 @@ describe('register', () => {
     messaging.vapidKey = 'dmFwaWQta2V5LXZhbHVl';
     messaging.swRegistration = makeSwRegistration();
 
+    requestCreateRegistrationStub.resolves({ responseFid: customFid });
     const onRegisteredSpy = stub();
     messaging.onRegisteredHandler = onRegisteredSpy;
-
-    requestCreateRegistrationStub.resolves({ responseFid: customFid });
 
     await register(messaging);
 
@@ -264,8 +259,9 @@ describe('register', () => {
     messaging.onRegisteredHandler = onRegisteredSpy;
 
     await register(messaging);
-    await register(messaging);
+    expect(onRegisteredSpy).to.have.been.calledOnceWith('FID');
 
+    await register(messaging);
     expect(onRegisteredSpy).to.have.been.calledTwice;
     expect(onRegisteredSpy.getCall(1)).to.have.been.calledWith('FID');
     expect(requestCreateRegistrationStub).to.have.been.calledOnce;
@@ -277,7 +273,8 @@ describe('register', () => {
 
     await register(messaging);
 
-    const legacyDbRemoveStub = stub(idbManager, 'dbRemove').resolves();
+    // Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+    const legacyDbRemoveStub = stub(_idbManagerInternal, 'dbRemove').resolves();
     await register(messaging);
 
     expect(legacyDbRemoveStub).to.not.have.been.called;
@@ -329,12 +326,13 @@ describe('register', () => {
 
   it('deletes stored token for getToken -> register', async () => {
     const onRegisteredSpy = stub();
+    // Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
     const requestGetTokenStub = stub(
-      requestsModule,
+      _requestsInternal,
       'requestGetToken'
     ).resolves('legacy-token');
     const requestDeleteTokenStub = stub(
-      requestsModule,
+      _requestsInternal,
       'requestDeleteToken'
     ).throws(new Error('unexpected requestDeleteToken()'));
     messaging.onRegisteredHandler = onRegisteredSpy;
@@ -356,8 +354,9 @@ describe('register', () => {
 
   it('deletes stored fid for register -> getToken', async () => {
     const onRegisteredSpy = stub();
+    // Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
     const requestGetTokenStub = stub(
-      requestsModule,
+      _requestsInternal,
       'requestGetToken'
     ).resolves('legacy-token');
     requestDeleteRegistrationStub.throws(

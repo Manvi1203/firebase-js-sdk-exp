@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2020 Google LLC
+ * Copyright 2026 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,21 +15,26 @@
  * limitations under the License.
  */
 
-import { DEFAULT_VAPID_KEY } from '../util/constants';
-import { MessagingService } from '../messaging-service';
+import { defineConfig } from 'vitest/config';
+import { playwright } from '@vitest/browser-playwright';
 
-export async function updateVapidKey(
-  messaging: MessagingService,
-  vapidKey?: string | undefined
-): Promise<void> {
-  if (!!vapidKey) {
-    messaging.vapidKey = vapidKey;
-  } else if (!messaging.vapidKey) {
-    messaging.vapidKey = DEFAULT_VAPID_KEY;
+export default defineConfig({
+  server: {
+    fs: {
+      allow: ['../..']
+    }
+  },
+  test: {
+    globals: true,
+    include: ['src/**/*.test.ts'],
+    browser: {
+      enabled: true,
+      provider: playwright(),
+      instances: [{ browser: 'chromium' }],
+      headless: true
+    },
+    setupFiles: ['./test/polyfills.ts', './test/setup.ts'],
+    testTimeout: 20000,
+    hookTimeout: 20000
   }
-}
-
-// Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
-export const _updateVapidKeyInternal = {
-  updateVapidKey
-};
+});

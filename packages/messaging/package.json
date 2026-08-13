@@ -45,7 +45,11 @@
     "api-report:api-json": "api-extractor run --local --verbose",
     "type-check": "tsc --noEmit",
     "trusted-type-check": "tsec -p tsconfig.json --noEmit",
-    "typings:public": "node ../../scripts/build/use_typings.js ./dist/index-public.d.ts"
+    "typings:public": "node ../../scripts/build/use_typings.js ./dist/index-public.d.ts",
+    "test:vitest:browser": "vitest run --config vitest.config.browser.mjs",
+    "test:vitest:browser:watch": "vitest --config vitest.config.browser.mjs",
+    "test:vitest:node": "vitest run --config vitest.config.node.mjs",
+    "test:vitest:node:watch": "vitest --config vitest.config.node.mjs"
   },
   "license": "Apache-2.0",
   "peerDependencies": {

@@ -17,12 +17,9 @@
 
 import { ERROR_FACTORY, ErrorCode } from '../util/errors';
 import { MessagingService } from '../messaging-service';
-import {
-  dbRemove,
-  dbGetFidRegistration,
-  dbRemoveFidRegistration
-} from '../internals/idb-manager';
-import { requestDeleteRegistration } from '../internals/requests';
+// Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+import { _idbManagerInternal } from '../internals/idb-manager';
+import { _requestsInternal } from '../internals/requests';
 
 /**
  * Unregisters the app instance from FCM by deleting its FID-based registration.
@@ -37,24 +34,29 @@ export async function unregister(messaging: MessagingService): Promise<void> {
   }
 
   // Prefer the last successfully registered FID from local metadata when available.
-  const stored = await dbGetFidRegistration(
-    messaging.firebaseDependencies
-  ).catch(() => undefined);
+  const stored = await _idbManagerInternal
+    .dbGetFidRegistration(messaging.firebaseDependencies)
+    .catch(() => undefined);
   const fid =
     stored?.fid ?? (await messaging.firebaseDependencies.installations.getId());
 
-  await requestDeleteRegistration(messaging.firebaseDependencies, fid);
+  await _requestsInternal.requestDeleteRegistration(
+    messaging.firebaseDependencies,
+    fid
+  );
 
   // Best-effort local cleanup; still resolve even if schema is unavailable.
   try {
-    await dbRemoveFidRegistration(messaging.firebaseDependencies);
+    await _idbManagerInternal.dbRemoveFidRegistration(
+      messaging.firebaseDependencies
+    );
   } catch {
     // Ignore.
   }
 
   // Best-effort cleanup of legacy token details created via getToken().
   try {
-    await dbRemove(messaging.firebaseDependencies);
+    await _idbManagerInternal.dbRemove(messaging.firebaseDependencies);
   } catch {
     // Ignore.
   }
@@ -70,3 +72,8 @@ export async function unregister(messaging: MessagingService): Promise<void> {
     handler.next(fid);
   }
 }
+
+// Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+export const _unregisterInternal = {
+  unregister
+};

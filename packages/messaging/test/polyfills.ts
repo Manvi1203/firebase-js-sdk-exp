@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2020 Google LLC
+ * Copyright 2026 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,21 +15,12 @@
  * limitations under the License.
  */
 
-import { DEFAULT_VAPID_KEY } from '../util/constants';
-import { MessagingService } from '../messaging-service';
-
-export async function updateVapidKey(
-  messaging: MessagingService,
-  vapidKey?: string | undefined
-): Promise<void> {
-  if (!!vapidKey) {
-    messaging.vapidKey = vapidKey;
-  } else if (!messaging.vapidKey) {
-    messaging.vapidKey = DEFAULT_VAPID_KEY;
-  }
+// Fix Vitest error: "ReferenceError: global is not defined" in browser tests
+if (typeof (globalThis as unknown as { global: unknown }).global === 'undefined') {
+  (globalThis as unknown as { global: typeof globalThis }).global = globalThis;
 }
-
-// Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
-export const _updateVapidKeyInternal = {
-  updateVapidKey
-};
+if (typeof (globalThis as unknown as { process: unknown }).process === 'undefined') {
+  (globalThis as unknown as { process: { env: Record<string, string> } }).process = {
+    env: {}
+  };
+}

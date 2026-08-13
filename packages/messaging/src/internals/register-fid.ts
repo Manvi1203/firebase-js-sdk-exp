@@ -21,7 +21,8 @@ import {
   base64ToArray,
   arrayToBase64
 } from '../helpers/array-base64-translator';
-import { requestCreateRegistration } from './requests';
+// Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+import { _requestsInternal } from './requests';
 import { ERROR_FACTORY, ErrorCode } from '../util/errors';
 
 /** Retries when CreateRegistration echoes an FID that does not match Installations.getId(). */
@@ -60,10 +61,11 @@ export async function registerFcmRegistrationWithFid(
     attempt < FID_REGISTRATION_FID_MATCH_MAX_ATTEMPTS;
     attempt++
   ) {
-    const { responseFid } = await requestCreateRegistration(
-      messaging.firebaseDependencies,
-      subscriptionOptions
-    );
+    const { responseFid } =
+      await _requestsInternal.requestCreateRegistration(
+        messaging.firebaseDependencies,
+        subscriptionOptions
+      );
 
     if (responseFid === expectedFid) {
       return;
@@ -99,3 +101,9 @@ async function getPushSubscription(
     applicationServerKey: base64ToArray(vapidKey) as unknown as BufferSource
   });
 }
+
+// Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+export const _registerFidInternal = {
+  registerFcmRegistrationWithFid
+};
+
