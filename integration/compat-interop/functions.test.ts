@@ -17,18 +17,29 @@
 
 import { getModularInstance } from '@firebase/util';
 import { expect } from 'chai';
-import { getFunctions } from '@firebase/functions';
+import { getFunctions, Functions } from '@firebase/functions';
 import firebase from '@firebase/app-compat';
 import '@firebase/functions-compat';
+import { Compat } from '@firebase/util';
+import { FunctionsCompat } from '@firebase/functions-compat';
 
 import { TEST_PROJECT_CONFIG } from './util';
 
-firebase.initializeApp(TEST_PROJECT_CONFIG);
-
-const compatFunction = firebase.functions();
-const modularFunctions = getFunctions();
-
 describe('Functions compat interop', () => {
+  let app: firebase.app.App;
+  let compatFunction: Compat<FunctionsCompat>;
+  let modularFunctions: Functions;
+
+  beforeEach(() => {
+    app = firebase.initializeApp(TEST_PROJECT_CONFIG, 'functions-interop');
+    compatFunction = firebase.functions(app) as unknown as Compat<FunctionsCompat>;
+    modularFunctions = getFunctions(app as unknown as any);
+  });
+
+  afterEach(async () => {
+    await app.delete();
+  });
+
   it('Functions compat instance references modular Functions instance', () => {
     expect(getModularInstance(compatFunction)).to.equal(modularFunctions);
   });

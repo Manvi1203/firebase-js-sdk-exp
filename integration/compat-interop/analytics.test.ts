@@ -17,18 +17,53 @@
 
 import { getModularInstance } from '@firebase/util';
 import { expect } from 'chai';
-import { getAnalytics } from '@firebase/analytics';
+import * as sinon from 'sinon';
+import { getAnalytics, Analytics } from '@firebase/analytics';
 import firebase from '@firebase/app-compat';
 import '@firebase/analytics-compat';
+import { Compat } from '@firebase/util';
+import { AnalyticsCompat } from '@firebase/analytics-compat';
 
 import { TEST_PROJECT_CONFIG } from './util';
 
-firebase.initializeApp(TEST_PROJECT_CONFIG);
-
-const compatAnalytics = firebase.analytics();
-const modularAnalytics = getAnalytics();
-
 describe('Analytics compat interop', () => {
+  let app: firebase.app.App;
+  let compatAnalytics: Compat<AnalyticsCompat>;
+  let modularAnalytics: Analytics;
+  let fetchStub: sinon.SinonStub;
+
+  beforeEach(() => {
+    // Fix Vitest / CI error: "Analytics: Dynamic config fetch failed: [400] API key not valid"
+    const originalFetch = window.fetch.bind(window);
+    fetchStub = sinon.stub(window, 'fetch').callsFake(async (input, init) => {
+      const url =
+        typeof input === 'string'
+          ? input
+          : input instanceof Request
+            ? input.url
+            : String(input);
+      if (url.includes('webConfig') || url.includes('google-analytics')) {
+        return new Response(
+          JSON.stringify({
+            measurementId: 'G-123456',
+            appId: '1:1234567890:web:abcdef123456'
+          }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } }
+        );
+      }
+      return originalFetch(input, init);
+    });
+
+    app = firebase.initializeApp(TEST_PROJECT_CONFIG, 'analytics-interop');
+    compatAnalytics = firebase.analytics(app) as unknown as Compat<AnalyticsCompat>;
+    modularAnalytics = getAnalytics(app as unknown as any);
+  });
+
+  afterEach(async () => {
+    fetchStub.restore();
+    await app.delete();
+  });
+
   it('Analytics compat instance references modular Analytics instance', () => {
     expect(getModularInstance(compatAnalytics)).to.equal(modularAnalytics);
   });
