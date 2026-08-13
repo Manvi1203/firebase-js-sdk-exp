@@ -26,3 +26,14 @@ if (typeof (globalThis as Record<string, unknown>).process === 'undefined') {
     env: {}
   };
 }
+
+const g = globalThis as Record<string, unknown>;
+if (typeof g.before === 'undefined') {
+  g.before = g.beforeAll;
+}
+if (typeof g.after === 'undefined') {
+  g.after = g.afterAll;
+}
+if (typeof g.context === 'undefined') {
+  g.context = g.describe;
+}
