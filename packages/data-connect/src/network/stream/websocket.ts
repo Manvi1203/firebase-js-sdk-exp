@@ -16,7 +16,8 @@
  */
 
 import { Code, DataConnectError } from '../../core/error';
-import { logError } from '../../logger';
+// Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+import { _loggerInternal } from '../../logger';
 import { websocketUrlBuilder } from '../../util/url';
 import { DataConnectResponse } from '../transport';
 
@@ -31,7 +32,9 @@ let connectWebSocket: typeof WebSocket | null = globalThis.WebSocket;
  * be using a poyfill and/or bundlers. It should not be called by users of the Firebase JS SDK.
  * @internal
  */
-export function initializeWebSocket(webSocketImpl: typeof WebSocket): void {
+export function initializeWebSocket(
+  webSocketImpl: typeof WebSocket | null
+): void {
   connectWebSocket = webSocketImpl;
 }
 
@@ -83,7 +86,7 @@ export class WebSocketTransport extends AbstractDataConnectStreamTransport {
   private connection: WebSocket | undefined = undefined;
 
   get streamIsReady(): boolean {
-    return this.connection?.readyState === WebSocket.OPEN;
+    return this.connection?.readyState === (connectWebSocket?.OPEN ?? 1);
   }
 
   /**
@@ -202,7 +205,7 @@ export class WebSocketTransport extends AbstractDataConnectStreamTransport {
    * Handle an error that occurred on the WebSocket. Close the connection and reject all active requests.
    */
   private handleError(error?: unknown): void {
-    logError(`DataConnect WebSocket error, closing stream: ${error}`);
+    _loggerInternal.logError(`DataConnect WebSocket error, closing stream: ${error}`);
     let reason = error ? String(error) : 'Unknown Error';
     if (error instanceof DataConnectError) {
       reason = error.message;

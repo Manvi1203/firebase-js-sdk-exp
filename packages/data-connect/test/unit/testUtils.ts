@@ -78,10 +78,13 @@ export async function flushMicrotasks(ticks: number = 2): Promise<void> {
  * @internal
  */
 export class MockWebSocket {
-  static readonly CONNECTING = WebSocket.CONNECTING;
-  static readonly OPEN = WebSocket.OPEN;
-  static readonly CLOSING = WebSocket.CLOSING;
-  static readonly CLOSED = WebSocket.CLOSED;
+  static readonly CONNECTING =
+    typeof WebSocket !== 'undefined' ? WebSocket.CONNECTING : 0;
+  static readonly OPEN = typeof WebSocket !== 'undefined' ? WebSocket.OPEN : 1;
+  static readonly CLOSING =
+    typeof WebSocket !== 'undefined' ? WebSocket.CLOSING : 2;
+  static readonly CLOSED =
+    typeof WebSocket !== 'undefined' ? WebSocket.CLOSED : 3;
 
   readyState: number = MockWebSocket.CONNECTING;
   send: sinon.SinonSpy = sinon.spy();

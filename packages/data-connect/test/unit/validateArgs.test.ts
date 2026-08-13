@@ -18,8 +18,11 @@
 import { expect } from 'chai';
 import * as sinon from 'sinon';
 
-import * as dataConnectIndex from '../../src/api/DataConnect';
-import { DataConnect, ConnectorConfig } from '../../src/api/DataConnect';
+import {
+  DataConnect,
+  ConnectorConfig,
+  _dataConnectInternal
+} from '../../src/api/DataConnect';
 import { Code, DataConnectError } from '../../src/core/error';
 import { QueryFetchPolicy } from '../../src/core/query/queryOptions';
 import {
@@ -57,8 +60,9 @@ describe('validateArgs()', () => {
   } as unknown as DataConnect;
 
   beforeEach(() => {
+    // Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
     getDataConnectStub = sinon
-      .stub(dataConnectIndex, 'getDataConnect')
+      .stub(_dataConnectInternal, 'getDataConnect')
       .returns(stubDcInstance);
   });
 

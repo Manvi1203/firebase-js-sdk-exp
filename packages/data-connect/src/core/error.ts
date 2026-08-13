@@ -26,6 +26,9 @@ export type DataConnectErrorCode =
   | 'partial-error'
   | 'unauthorized';
 
+// Fix Vitest error: "SyntaxError: The requested module '/src/core/error.ts' does not provide an export named 'DataConnectErrorCode'"
+export const DataConnectErrorCode = {};
+
 export type Code = DataConnectErrorCode;
 
 export const Code = {
@@ -86,6 +89,9 @@ export interface DataConnectOperationFailureResponse {
   readonly errors: DataConnectOperationFailureResponseErrorInfo[];
 }
 
+// Fix Vitest error: "SyntaxError: The requested module '/src/core/error.ts' does not provide an export named 'DataConnectOperationFailureResponse'"
+export const DataConnectOperationFailureResponse = {};
+
 // Information about the error, as provided in the response from the backend.
 // See https://spec.graphql.org/draft/#sec-Errors
 export interface DataConnectOperationFailureResponseErrorInfo {
@@ -98,3 +104,6 @@ export interface DataConnectOperationFailureResponseErrorInfo {
   // array.
   readonly path: Array<string | number>;
 }
+
+// Fix Vitest error: "SyntaxError: The requested module '/src/core/error.ts' does not provide an export named 'DataConnectOperationFailureResponseErrorInfo'"
+export const DataConnectOperationFailureResponseErrorInfo = {};

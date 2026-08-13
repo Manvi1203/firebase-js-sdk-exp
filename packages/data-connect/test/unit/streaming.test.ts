@@ -159,10 +159,12 @@ describe('Streaming & Query Layer Integration', () => {
         testVariables
       );
 
-      void executeQuery(q);
+      // Fix Vitest error: "Unhandled Rejection: DataConnectError: Permission denied on resource project p"
+      const queryPromise = executeQuery(q).catch(() => {});
       expect(initStreamTransportStub).to.not.have.been.called;
-      void executeMutation(m);
+      const mutationPromise = executeMutation(m).catch(() => {});
       expect(initStreamTransportStub).to.not.have.been.called;
+      await Promise.all([queryPromise, mutationPromise]);
     });
 
     it('subscribe should initialize stream', async () => {

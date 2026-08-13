@@ -23,7 +23,8 @@ import sinonChai from 'sinon-chai';
 
 import { DataConnectOptions } from '../../src/api/DataConnect';
 import { Code } from '../../src/core/error';
-import * as logger from '../../src/logger';
+// Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+import { _loggerInternal } from '../../src/logger';
 import {
   WEBSOCKET_CLOSE_CODE,
   WebSocketTransport,
@@ -69,7 +70,7 @@ describe('WebSocketTransport', () => {
   });
 
   afterEach(() => {
-    initializeWebSocket(WebSocket);
+    initializeWebSocket(typeof WebSocket !== 'undefined' ? WebSocket : null);
     sinon.restore();
   });
 
@@ -225,7 +226,8 @@ describe('WebSocketTransport', () => {
   describe('handleWebSocketMessage', () => {
     let logErrorStub: sinon.SinonStub;
     beforeEach(() => {
-      logErrorStub = sinon.stub(logger, 'logError');
+      // Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+      logErrorStub = sinon.stub(_loggerInternal, 'logError');
     });
 
     const messageWithExtensions = {

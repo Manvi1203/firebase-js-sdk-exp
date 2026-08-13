@@ -27,7 +27,8 @@ import {
 } from '../../core/error';
 import { AuthTokenProvider } from '../../core/FirebaseAuthProvider';
 import { SDK_VERSION } from '../../core/version';
-import { logError, logDebug } from '../../logger';
+// Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+import { _loggerInternal } from '../../logger';
 import {
   AbstractDataConnectTransport,
   CallerSdkType,
@@ -465,12 +466,12 @@ export abstract class AbstractDataConnectStreamTransport extends AbstractDataCon
       await this.retriggerActiveRequests();
     } catch (e) {
       if (e instanceof FirebaseError) {
-        logDebug(
+        _loggerInternal.logDebug(
           `Reconnect attempt #${this.reconnectAttempts} failed with Firebase error: ${e.message}. Retrying...`
         );
         this.startReconnectBackoff();
       } else {
-        logError(
+        _loggerInternal.logError(
           `Unexpected error during reconnect attempt #${this.reconnectAttempts}: ${e}`
         );
         void this.cleanupAndTerminate(
@@ -623,7 +624,7 @@ export abstract class AbstractDataConnectStreamTransport extends AbstractDataCon
       );
       return;
     }
-    logDebug(
+    _loggerInternal.logDebug(
       `Stream disconnected with code ${code}: ${reason}. Attempting reconnect...`
     );
     this.rejectAllMutationsOnReconnect();
@@ -1008,7 +1009,7 @@ export abstract class AbstractDataConnectStreamTransport extends AbstractDataCon
 
     // asynchronous, fire and forget
     this.sendRequestMessage(cancelBody).catch(err => {
-      logError(`Stream Transport failed to send unsubscribe message: ${err}`);
+      _loggerInternal.logError(`Stream Transport failed to send unsubscribe message: ${err}`);
     });
 
     if (!this.hasActiveSubscriptions) {
@@ -1074,11 +1075,11 @@ export abstract class AbstractDataConnectStreamTransport extends AbstractDataCon
         try {
           await observer.onData(response);
         } catch (e) {
-          logError(`Error in observer callback: ${e}`);
+          _loggerInternal.logError(`Error in observer callback: ${e}`);
         }
       }
     } else {
-      logError(
+      _loggerInternal.logError(
         `Stream response contained unrecognized requestId '${requestId}'`
       );
     }

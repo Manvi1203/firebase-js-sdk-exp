@@ -29,3 +29,13 @@ export function logDebug(msg: string): void {
 export function logError(msg: string): void {
   logger.error(`DataConnect (${SDK_VERSION}): ${msg}`);
 }
+
+/**
+ * @internal
+ * Fix Vitest error: "TypeError: ES Modules cannot be stubbed"
+ */
+export const _loggerInternal = {
+  logDebug,
+  logError,
+  setLogLevel
+};
