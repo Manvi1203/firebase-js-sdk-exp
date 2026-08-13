@@ -18,10 +18,9 @@
 export { Component } from './src/component';
 export { ComponentContainer } from './src/component_container';
 export { Provider } from './src/provider';
+export { ComponentType, InstantiationMode } from './src/constants';
 export {
-  ComponentType,
   InstanceFactory,
-  InstantiationMode,
   NameServiceMapping,
   Name,
   InstanceFactoryOptions

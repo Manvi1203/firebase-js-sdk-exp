@@ -17,25 +17,7 @@
 
 import { ComponentContainer } from './component_container';
 
-export const enum InstantiationMode {
-  LAZY = 'LAZY', // Currently most components are LAZY in JS SDK
-  EAGER = 'EAGER', // EAGER components are initialized immediately upon registration
-  EXPLICIT = 'EXPLICIT' // component needs to be initialized explicitly by calling Provider.initialize()
-}
-
-/**
- * PUBLIC: A public component provides a set of public APIs to customers. A service namespace will be patched
- * onto `firebase` namespace. Assume the component name is `test`, customers will be able
- * to get the service by calling `firebase.test()` or `app.test()` where `app` is a `FirebaseApp` instance.
- *
- * PRIVATE: A private component provides a set of private APIs that are used internally by other
- * Firebase SDKs. No service namespace is created in `firebase` namespace and customers have no way to get them.
- */
-export const enum ComponentType {
-  PUBLIC = 'PUBLIC',
-  PRIVATE = 'PRIVATE',
-  VERSION = 'VERSION'
-}
+export { InstantiationMode, ComponentType } from './constants';
 
 export interface InstanceFactoryOptions {
   instanceIdentifier?: string;

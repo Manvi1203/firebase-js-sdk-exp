@@ -16,3 +16,15 @@
  */
 
 export const DEFAULT_ENTRY_NAME = '[DEFAULT]';
+
+export enum InstantiationMode {
+  LAZY = 'LAZY',
+  EAGER = 'EAGER',
+  EXPLICIT = 'EXPLICIT'
+}
+
+export enum ComponentType {
+  PUBLIC = 'PUBLIC',
+  PRIVATE = 'PRIVATE',
+  VERSION = 'VERSION'
+}
