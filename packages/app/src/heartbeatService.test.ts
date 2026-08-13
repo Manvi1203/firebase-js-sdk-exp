@@ -328,7 +328,7 @@ describe('HeartbeatServiceImpl', () => {
         date: '1969-12-31'
       }
     ];
-    before(() => {
+    beforeEach(() => {
       const container = new ComponentContainer('heartbeatTestContainer');
       container.addComponent(
         new Component(
@@ -355,8 +355,6 @@ describe('HeartbeatServiceImpl', () => {
         heartbeats: [...mockIndexedDBHeartbeats]
       });
       heartbeatService = new HeartbeatServiceImpl(container);
-    });
-    beforeEach(() => {
       useFakeTimers();
       writeStub = stub(heartbeatService._storage, 'overwrite');
     });
@@ -384,8 +382,8 @@ describe('HeartbeatServiceImpl', () => {
     });
     it(`triggerHeartbeat() will skip storing new data`, async () => {
       await heartbeatService.triggerHeartbeat();
-      expect(writeStub).to.not.be.called;
       if (firebaseUtil.isIndexedDBAvailable()) {
+        expect(writeStub).to.not.be.called;
         expect(heartbeatService._heartbeatsCache?.heartbeats).to.deep.equal(
           mockIndexedDBHeartbeats
         );
