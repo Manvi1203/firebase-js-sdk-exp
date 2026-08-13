@@ -45,11 +45,15 @@ export function setAbortableTimeout(
     // Derives backoff from given end time, normalizing negative numbers to zero.
     const backoffMillis = Math.max(throttleEndTimeMillis - Date.now(), 0);
 
-    const timeout = setTimeout(resolve, backoffMillis);
+    // Fix Vitest error: "TypeError: Illegal invocation"
+    const timeout = (typeof window !== 'undefined' ? window.setTimeout : setTimeout)(
+      resolve,
+      backoffMillis
+    );
 
     // Adds listener, rather than sets onabort, because signal is a shared object.
     signal.addEventListener(() => {
-      clearTimeout(timeout);
+      (typeof window !== 'undefined' ? window.clearTimeout : clearTimeout)(timeout);
 
       // If the request completes before this timeout, the rejection has no effect.
       reject(

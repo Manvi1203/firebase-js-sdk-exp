@@ -15,12 +15,17 @@
  * limitations under the License.
  */
 
-import { use } from 'chai';
-import sinonChai from 'sinon-chai';
-import chaiAsPromised from 'chai-as-promised';
+import * as chai from 'chai';
+import { restore } from 'sinon';
+import * as sinonChai from 'sinon-chai';
+import * as chaiAsPromised from 'chai-as-promised';
 
 // Normalizes Sinon assertions to Chai syntax.
-use(sinonChai);
+chai.use(sinonChai.default || sinonChai);
 
 // Adds Promise-friendly syntax to Chai.
-use(chaiAsPromised);
+chai.use(chaiAsPromised.default || chaiAsPromised);
+
+afterEach(() => {
+  restore();
+});

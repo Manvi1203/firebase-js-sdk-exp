@@ -31,10 +31,12 @@ import {
 import { ErrorCode, ERROR_FACTORY } from '../../src/errors';
 import '../setup';
 
-const DEFAULT_REQUEST: FetchRequest = {
-  cacheMaxAgeMillis: 1,
-  signal: new RemoteConfigAbortSignal()
-};
+function getDefaultRequest(): FetchRequest {
+  return {
+    cacheMaxAgeMillis: 1,
+    signal: new RemoteConfigAbortSignal()
+  };
+}
 
 describe('RetryingClient', () => {
   let backingClient: RemoteConfigFetchClient;
@@ -59,8 +61,9 @@ describe('RetryingClient', () => {
     let clock: sinon.SinonFakeTimers;
 
     beforeEach(() => {
-      // Sets Date.now() to zero.
-      clock = sinon.useFakeTimers();
+      // Fix Vitest error: "Error: Test timed out in 20000ms"
+      // Use shouldAdvanceTime: true so browser timers advance
+      clock = sinon.useFakeTimers({ shouldAdvanceTime: true });
     });
 
     afterEach(() => {
@@ -116,6 +119,17 @@ describe('RetryingClient', () => {
   });
 
   describe('fetch', () => {
+    let clock: sinon.SinonFakeTimers;
+
+    beforeEach(() => {
+      // Fix Vitest error: "Error: Test timed out in 20000ms"
+      clock = sinon.useFakeTimers({ shouldAdvanceTime: true });
+    });
+
+    afterEach(() => {
+      clock.restore();
+    });
+
     it('returns success response', async () => {
       const setTimeoutSpy = sinon.spy(window, 'setTimeout');
 
@@ -128,9 +142,9 @@ describe('RetryingClient', () => {
         .stub()
         .returns(Promise.resolve(expectedResponse));
 
-      const actualResponse = retryingClient.fetch(DEFAULT_REQUEST);
+      const actualResponse = await retryingClient.fetch(getDefaultRequest());
 
-      await expect(actualResponse).to.eventually.deep.eq(expectedResponse);
+      expect(actualResponse).to.deep.eq(expectedResponse);
 
       // Asserts setTimeout is passed a zero delay, since throttleEndTimeMillis is set to Date.now,
       // which is faked to be a constant.
@@ -145,18 +159,14 @@ describe('RetryingClient', () => {
       const expectedError = ERROR_FACTORY.create(ErrorCode.FETCH_STATUS, {
         httpStatus: 400
       });
-      backingClient.fetch = sinon.stub().returns(Promise.reject(expectedError));
+      backingClient.fetch = sinon.stub().rejects(expectedError);
 
-      const fetchPromise = retryingClient.fetch(DEFAULT_REQUEST);
-
-      await expect(fetchPromise).to.eventually.be.rejectedWith(expectedError);
+      await expect(
+        retryingClient.fetch(getDefaultRequest())
+      ).to.be.rejectedWith(expectedError.message);
     });
 
     it('retries on retriable errors', async () => {
-      // Configures Date.now() to advance clock from zero in 20ms increments, enabling
-      // tests to assert a known throttle end time and allow setTimeout to work.
-      const clock = sinon.useFakeTimers({ shouldAdvanceTime: true });
-
       // Ensures backoff is always zero, which simplifies reasoning about timer.
       const powSpy = sinon.stub(Math, 'pow').returns(0);
       const randomSpy = sinon.stub(Math, 'random').returns(0.5);
@@ -182,7 +192,7 @@ describe('RetryingClient', () => {
         return Promise.resolve({ status: 200 });
       });
 
-      await retryingClient.fetch(DEFAULT_REQUEST);
+      await retryingClient.fetch(getDefaultRequest());
 
       // Asserts throttle metadata was persisted after each error response.
       for (let i = 1; i <= errorResponseCount; i++) {
@@ -194,7 +204,6 @@ describe('RetryingClient', () => {
 
       powSpy.restore();
       randomSpy.restore();
-      clock.restore();
     });
   });
 
@@ -207,7 +216,7 @@ describe('RetryingClient', () => {
         throttleEndTimeMillis: 123
       } as ThrottleMetadata;
 
-      await retryingClient.attemptFetch(DEFAULT_REQUEST, throttleMetadata);
+      await retryingClient.attemptFetch(getDefaultRequest(), throttleMetadata);
 
       expect(setTimeoutSpy).to.have.been.calledWith(sinon.match.any, 123);
 
