@@ -3,11 +3,11 @@
   "private": true,
   "version": "0.1.0",
   "scripts": {
-    "test": "karma start",
-    "test:ci": "node ../../scripts/run_tests_in_ci.js -s test",
-    "test:debug": "karma start --browsers Chrome --auto-watch",
-    "test:vitest:browser": "vitest run --config vitest.config.browser.mjs",
-    "test:vitest:browser:watch": "vitest --config vitest.config.browser.mjs"
+    "test": "vitest run",
+    "test:all": "vitest run",
+    "test:ci": "node ../../scripts/run_tests_in_ci.js -s test:all",
+    "test:browser": "vitest run --project browser",
+    "test:browser:watch": "vitest --project browser"
   },
   "dependencies": {
     "@firebase/app": "0.16.0",
