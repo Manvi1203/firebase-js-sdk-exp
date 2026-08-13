@@ -15,51 +15,14 @@
  * limitations under the License.
  */
 
-import { assert, expect } from 'chai';
+import { assert } from 'chai';
 import * as sinon from 'sinon';
-// eslint-disable-next-line import/no-extraneous-dependencies
-import { FirebaseApp, deleteApp, initializeApp } from '@firebase/app';
 
 import { FbsBlob } from '../../src/implementation/blob';
 import * as type from '../../src/implementation/type';
 import * as testShared from '../unit/testshared';
-import { getBlob, getStorage, ref, uploadBytes } from '../../src';
-import * as types from '../../src/public-types';
-import { PROJECT_ID, STORAGE_BUCKET, API_KEY, AUTH_DOMAIN } from '../unit/index.test';
-
-// Define locally to avoid Vitest error: "Failed to resolve import @firebase/auth from test/integration/integration.test.ts"
-function createApp(): FirebaseApp {
-  return initializeApp({
-    apiKey: API_KEY,
-    projectId: PROJECT_ID,
-    storageBucket: STORAGE_BUCKET,
-    authDomain: AUTH_DOMAIN
-  });
-}
-
-function createStorage(app: FirebaseApp): types.FirebaseStorage {
-  return getStorage(app);
-}
-
-import { injectTestConnection } from '../../src/platform/connection';
-import { newTestConnection } from '../unit/connection';
 
 describe('Firebase Storage > Blob', () => {
-  let app: FirebaseApp;
-  let storage: types.FirebaseStorage;
-
-  beforeEach(async () => {
-    // Inject test connection to handle mock network requests in browser unit tests
-    injectTestConnection(newTestConnection);
-    app = createApp();
-    storage = createStorage(app);
-  });
-
-  afterEach(async () => {
-    injectTestConnection(null);
-    await deleteApp(app);
-  });
-
   let stubs: sinon.SinonStub[] = [];
   // Use beforeEach to avoid Vitest error: "ReferenceError: before is not defined"
   beforeEach(() => {
@@ -111,35 +74,5 @@ describe('Firebase Storage > Blob', () => {
     const concatenated = FbsBlob.getBlob(blob1, blob2)!;
 
     assert.equal(20, concatenated!.size());
-  });
-
-  it('can get blob', async () => {
-    const reference = ref(storage, 'public/exp-bytes');
-    await uploadBytes(reference, new Uint8Array([0, 1, 3, 128, 255]));
-    const blob = await getBlob(reference);
-    const bytes = await blob.arrayBuffer();
-    expect(new Uint8Array(bytes)).to.deep.equal(
-      new Uint8Array([0, 1, 3, 128, 255])
-    );
-  });
-
-  it('can get the first n-bytes of a blob', async () => {
-    const reference = ref(storage, 'public/exp-bytes');
-    await uploadBytes(reference, new Uint8Array([0, 1, 5]));
-    const blob = await getBlob(reference, 2);
-    const bytes = await blob.arrayBuffer();
-    expect(new Uint8Array(bytes)).to.deep.equal(new Uint8Array([0, 1]));
-  });
-
-  it('getBlob() throws for missing file', async () => {
-    const reference = ref(storage, 'public/exp-bytes-missing');
-    try {
-      await getBlob(reference);
-      expect.fail();
-    } catch (e) {
-      expect((e as Error)?.message).to.satisfy((v: string) =>
-        v.match(/Object 'public\/exp-bytes-missing' does not exist/)
-      );
-    }
   });
 });

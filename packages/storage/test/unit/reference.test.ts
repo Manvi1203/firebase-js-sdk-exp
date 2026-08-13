@@ -73,8 +73,12 @@ function withFakeSend(
     let text: Promise<string>;
     if (body instanceof Uint8Array) {
       text = Promise.resolve(decodeUint8Array(body));
-    } else {
+    } else if (body && typeof (body as Blob).text === 'function') {
       text = (body as Blob).text();
+    } else if (typeof body === 'string') {
+      text = Promise.resolve(body);
+    } else {
+      text = Promise.resolve('');
     }
     text.then(text => {
       testFn(text, headers);

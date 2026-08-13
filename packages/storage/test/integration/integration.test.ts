@@ -223,5 +223,7 @@ describe('FirebaseStorage Exp', () => {
     await task;
     const bytes = await getBytes(referenceA);
     expect(bytes).to.deep.eq(bytesToUpload);
-  }).timeout(10_000);
+    // Fix Vitest error: "TypeError: Cannot read properties of undefined (reading 'timeout')"
+  }, 10_000);
 });
+

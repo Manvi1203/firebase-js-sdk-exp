@@ -16,6 +16,13 @@
  */
 import { Connection } from '../implementation/connection';
 import {
+  newTextConnection as browserNewTextConnection,
+  newBytesConnection as browserNewBytesConnection,
+  newBlobConnection as browserNewBlobConnection,
+  newStreamConnection as browserNewStreamConnection,
+  injectTestConnection as browserInjectTestConnection
+} from './browser/connection';
+import {
   newTextConnection as nodeNewTextConnection,
   newBytesConnection as nodeNewBytesConnection,
   newBlobConnection as nodeNewBlobConnection,
@@ -23,29 +30,50 @@ import {
   injectTestConnection as nodeInjectTestConnection
 } from './node/connection';
 
+function isBrowser(): boolean {
+  return (
+    typeof XMLHttpRequest !== 'undefined' ||
+    typeof window !== 'undefined' ||
+    typeof self !== 'undefined'
+  );
+}
+
 export function injectTestConnection(
   factory: (() => Connection<string>) | null
 ): void {
-  // This file is only used under ts-node.
-  nodeInjectTestConnection(factory);
+  // Fix Vitest error: "Error: Blobs are not supported on Node" in browser tests
+  if (isBrowser()) {
+    browserInjectTestConnection(factory);
+  } else {
+    nodeInjectTestConnection(factory);
+  }
 }
 
 export function newTextConnection(): Connection<string> {
-  // This file is only used under ts-node.
+  if (isBrowser()) {
+    return browserNewTextConnection();
+  }
   return nodeNewTextConnection();
 }
 
 export function newBytesConnection(): Connection<ArrayBuffer> {
-  // This file is only used in Node.js tests using ts-node.
+  if (isBrowser()) {
+    return browserNewBytesConnection();
+  }
   return nodeNewBytesConnection();
 }
 
 export function newBlobConnection(): Connection<Blob> {
-  // This file is only used in Node.js tests using ts-node.
+  if (isBrowser()) {
+    return browserNewBlobConnection();
+  }
   return nodeNewBlobConnection();
 }
 
 export function newStreamConnection(): Connection<ReadableStream<Uint8Array>> {
-  // This file is only used in Node.js tests using ts-node.
+  if (isBrowser()) {
+    return browserNewStreamConnection();
+  }
   return nodeNewStreamConnection();
 }
+

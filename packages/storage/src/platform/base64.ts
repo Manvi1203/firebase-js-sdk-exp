@@ -16,18 +16,36 @@
  */
 
 import {
+  decodeUint8Array as browserDecodeUint8Array,
+  decodeBase64 as browserDecodeBase64
+} from './browser/base64';
+import {
   decodeUint8Array as nodeDecodeUint8Array,
   decodeBase64 as nodeDecodeBase64
 } from './node/base64';
 
+function isBrowser(): boolean {
+  return (
+    typeof atob !== 'undefined' ||
+    typeof window !== 'undefined' ||
+    typeof self !== 'undefined'
+  );
+}
+
 /** Converts a Base64 encoded string to a binary string. */
 export function decodeBase64(encoded: string): string {
-  // This file is only used under ts-node.
+  // Fix Vitest error: "FirebaseError: String does not match format 'base64'" in browser tests
+  if (isBrowser()) {
+    return browserDecodeBase64(encoded);
+  }
   return nodeDecodeBase64(encoded);
 }
 
 /** Converts a Uint8Array to a string. */
 export function decodeUint8Array(data: Uint8Array): string {
-  // This file is only used under ts-node.
+  if (isBrowser()) {
+    return browserDecodeUint8Array(data);
+  }
   return nodeDecodeUint8Array(data);
 }
+
