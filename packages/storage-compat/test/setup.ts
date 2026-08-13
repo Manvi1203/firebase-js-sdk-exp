@@ -15,13 +15,13 @@
  * limitations under the License.
  */
 
-import { use } from 'chai';
+import * as chai from 'chai';
 import { restore } from 'sinon';
-import sinonChai from 'sinon-chai';
-import chaiAsPromised from 'chai-as-promised';
+import * as sinonChai from 'sinon-chai';
+import * as chaiAsPromised from 'chai-as-promised';
 
-use(chaiAsPromised);
-use(sinonChai);
+chai.use(sinonChai.default || sinonChai);
+chai.use(chaiAsPromised.default || chaiAsPromised);
 
 // Fix Vitest error: alias before/after to beforeAll/afterAll if missing
 const g = globalThis as unknown as Record<string, unknown>;
