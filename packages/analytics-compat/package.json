@@ -44,13 +44,13 @@
     "build:deps": "lerna run build --scope @firebase/analytics-compat --include-dependencies",
     "build:release": "yarn build && yarn add-compat-overloads",
     "dev": "rollup -c -w",
-    "test": "run-p --npm-path npm lint test:browser",
-    "test:ci": "node ../../scripts/run_tests_in_ci.js -s test:browser",
-    "test:browser": "karma start",
-    "test:browser:debug": "karma start --browsers=Chrome --auto-watch",
+    "test": "run-p --npm-path npm lint test:all",
+    "test:all": "vitest run",
+    "test:ci": "node ../../scripts/run_tests_in_ci.js -s test:all",
+    "test:browser": "vitest run --project browser",
+    "test:browser:watch": "vitest --project browser",
     "trusted-type-check": "tsec -p tsconfig.json --noEmit",
-    "add-compat-overloads": "ts-node-script ../../scripts/build/create-overloads.ts -i ../analytics/dist/analytics-public.d.ts -o dist/src/index.d.ts -a -r Analytics:FirebaseAnalytics -r FirebaseApp:FirebaseAppCompat --moduleToEnhance @firebase/analytics",
-    "test:vitest:browser": "vitest run --config vitest.config.browser.mjs"
+    "add-compat-overloads": "ts-node-script ../../scripts/build/create-overloads.ts -i ../analytics/dist/analytics-public.d.ts -o dist/src/index.d.ts -a -r Analytics:FirebaseAnalytics -r FirebaseApp:FirebaseAppCompat --moduleToEnhance @firebase/analytics"
   },
   "typings": "dist/src/index.d.ts",
   "dependencies": {
