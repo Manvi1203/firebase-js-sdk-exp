@@ -15,14 +15,19 @@
  * limitations under the License.
  */
 
-// Polyfill global for browser runner
-if (typeof (globalThis as any).global === 'undefined') {
-  (globalThis as any).global = globalThis;
+const g = globalThis as Record<string, unknown>;
+if (typeof g.global === 'undefined') {
+  g.global = globalThis;
 }
-
-// Polyfill process for browser runner
-if (typeof (globalThis as any).process === 'undefined') {
-  (globalThis as any).process = {
-    env: {}
-  };
+if (typeof g.process === 'undefined') {
+  g.process = { env: {} };
+}
+if (typeof g.before === 'undefined') {
+  g.before = g.beforeAll;
+}
+if (typeof g.after === 'undefined') {
+  g.after = g.afterAll;
+}
+if (typeof g.context === 'undefined') {
+  g.context = g.describe;
 }
