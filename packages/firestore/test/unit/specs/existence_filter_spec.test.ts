@@ -407,10 +407,10 @@ describeSpec('Existence Filters:', [], () => {
 
   specTest(
     'Full re-query is triggered when bloom filter bitmap is invalid',
-    // Skip this test on Android and iOS because those platforms get the raw
+    // Skip this test on Android, iOS, and Node because those platforms get the raw
     // bytes of the bloom filter and, therefore, are not subject to base64
     // decoding errors.
-    ['no-ios', 'no-android'],
+    ['no-ios', 'no-android', 'no-node'],
     () => {
       const query1 = query('collection');
       const docA = doc('collection/a', 1000, { v: 1 });

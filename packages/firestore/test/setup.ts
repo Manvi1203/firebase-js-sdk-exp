@@ -15,17 +15,17 @@
  * limitations under the License.
  */
 
-import { use } from 'chai';
-import chaiAsPromised from 'chai-as-promised';
+import * as chai from 'chai';
+import * as chaiAsPromised from 'chai-as-promised';
 import { restore } from 'sinon';
-import sinonChai from 'sinon-chai';
+import * as sinonChai from 'sinon-chai';
 
 // Fix Vitest error: register Firestore component and prototype.pipeline extension
 import '../src/register';
 import '../src/api/pipeline_impl';
 
-use(chaiAsPromised);
-use(sinonChai);
+chai.use(sinonChai.default || sinonChai);
+chai.use(chaiAsPromised.default || chaiAsPromised);
 
 // Fix Vitest error: alias before/after to beforeAll/afterAll if missing
 const g = globalThis as unknown as Record<string, unknown>;
@@ -35,18 +35,53 @@ if (typeof g['before'] === 'undefined' && typeof g['beforeAll'] !== 'undefined')
 if (typeof g['after'] === 'undefined' && typeof g['afterAll'] !== 'undefined') {
   g['after'] = g['afterAll'];
 }
-// Fix Vitest error: "ReferenceError: context is not defined" (Mocha alias for describe)
-if (typeof g['context'] === 'undefined' && typeof describe !== 'undefined') {
-  g['context'] = describe;
-}
-// Fix Vitest error: "ReferenceError: xit is not defined" (Mocha alias for it.skip)
-if (typeof g['xit'] === 'undefined' && typeof it !== 'undefined') {
-  // eslint-disable-next-line no-restricted-properties
-  g['xit'] = it.skip;
-}
-if (typeof g['xdescribe'] === 'undefined' && typeof describe !== 'undefined') {
-  // eslint-disable-next-line no-restricted-properties
-  g['xdescribe'] = describe.skip;
+// Fix Vitest error: "Error: No test found in suite ..." for empty suites in node
+if (typeof globalThis.describe === 'function') {
+  const origDescribe = globalThis.describe;
+  const wrappedDescribe = function (
+    this: unknown,
+    name: unknown,
+    fn: unknown,
+    ...rest: unknown[]
+  ): unknown {
+    if (typeof fn === 'function') {
+      const wrappedFn = function (this: unknown, ...args: unknown[]): void {
+        let childCount = 0;
+        const currentIt = globalThis.it;
+        const currentDescribe = globalThis.describe;
+
+        const countIt = new Proxy(currentIt, {
+          apply(t, thisArg, a) {
+            childCount++;
+            return Reflect.apply(t, thisArg, a);
+          }
+        });
+        const countDescribe = new Proxy(currentDescribe, {
+          apply(t, thisArg, a) {
+            childCount++;
+            return Reflect.apply(t, thisArg, a);
+          }
+        });
+
+        globalThis.it = countIt;
+        globalThis.describe = countDescribe;
+        try {
+          (fn as (...a: unknown[]) => unknown).apply(this, args);
+        } finally {
+          globalThis.it = currentIt;
+          globalThis.describe = currentDescribe;
+        }
+        if (childCount === 0) {
+          // eslint-disable-next-line no-restricted-properties
+          globalThis.it.skip('skipped (environment not supported)', () => {});
+        }
+      };
+      return Reflect.apply(origDescribe, this, [name, wrappedFn, ...rest]);
+    }
+    return Reflect.apply(origDescribe, this, [name, fn, ...rest]);
+  };
+  Object.assign(wrappedDescribe, origDescribe);
+  globalThis.describe = wrappedDescribe as typeof origDescribe;
 }
 
 interface TestContextShape {
@@ -115,7 +150,7 @@ if (typeof globalThis.it === 'function') {
   (globalThis as any).test = wrapped;
 }
 
-// Fix Vitest error: prevent simulated test failure unhandled rejection in browser runner
+// Fix Vitest error: prevent simulated test failure unhandled rejection in test runners
 if (typeof globalThis.addEventListener === 'function') {
   globalThis.addEventListener('unhandledrejection', (event: PromiseRejectionEvent) => {
     if (
@@ -123,6 +158,16 @@ if (typeof globalThis.addEventListener === 'function') {
       String(event.reason.message || event.reason).includes('Simulated test failure')
     ) {
       event.preventDefault();
+    }
+  });
+}
+if (typeof process !== 'undefined' && typeof process.on === 'function') {
+  process.on('unhandledRejection', (reason: unknown) => {
+    if (
+      reason &&
+      String((reason as Error).message || reason).includes('Simulated test failure')
+    ) {
+      return;
     }
   });
 }

@@ -37,6 +37,7 @@ const EXCLUSIVE_TAG = 'exclusive';
 const NO_WEB_TAG = 'no-web';
 const NO_ANDROID_TAG = 'no-android';
 const NO_IOS_TAG = 'no-ios';
+const NO_NODE_TAG = 'no-node';
 // The remaining tags specify features that must be present to run a given test
 // Multi-client related tests (which imply persistence).
 export const MULTI_CLIENT_TAG = 'multi-client';
@@ -51,6 +52,7 @@ const KNOWN_TAGS = [
   NO_WEB_TAG,
   NO_ANDROID_TAG,
   NO_IOS_TAG,
+  NO_NODE_TAG,
   EAGER_GC_TAG,
   DURABLE_PERSISTENCE_TAG,
   SKIP_PIPELINE_CONVERSION
@@ -96,6 +98,13 @@ function getTestRunner(
   convertToPipeline: boolean
 ): ExclusiveTestFunction | PendingTestFunction {
   if (tags.indexOf(NO_WEB_TAG) >= 0) {
+    // eslint-disable-next-line no-restricted-properties
+    return it.skip;
+  } else if (
+    // eslint-disable-next-line no-restricted-globals
+    typeof window === 'undefined' &&
+    tags.indexOf(NO_NODE_TAG) >= 0
+  ) {
     // eslint-disable-next-line no-restricted-properties
     return it.skip;
   } else if (
