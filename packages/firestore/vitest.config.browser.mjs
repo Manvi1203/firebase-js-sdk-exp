@@ -1,12 +1,14 @@
 import { defineConfig } from 'vitest/config';
 import { playwright } from '@vitest/browser-playwright';
 
+const targetPlatform = process.env.TEST_PLATFORM || 'browser';
+
 export default defineConfig({
   resolve: {
     alias: [
       {
         find: /^(.*)\/platform\/([^.\/]*)(\.ts)?$/,
-        replacement: '$1/platform/browser/$2.ts'
+        replacement: `$1/platform/${targetPlatform}/$2.ts`
       }
     ]
   },
