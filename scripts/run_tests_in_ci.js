@@ -24,12 +24,12 @@ const LOGDIR = process.env.CI ? process.env.HOME : '/tmp';
 // Maps the packages where we should not run `test:all` and instead isolate the cross-browser tests.
 // TODO(dwyfrequency): Update object with `storage` and `firestore` packages.
 const crossBrowserPackages = {
-  'packages/auth': 'test:browser:unit',
-  'packages/auth-compat': 'test:browser:unit',
-  'packages/firestore': 'test:browser:unit',
+  'packages/auth': 'test:browser',
+  'packages/auth-compat': 'test:browser',
+  'packages/firestore': 'test:browser',
   'packages/firestore-compat': 'test:browser',
-  'packages/storage': 'test:browser:unit',
-  'packages/storage-compat': 'test:browser:unit'
+  'packages/storage': 'test:browser',
+  'packages/storage-compat': 'test:browser'
 };
 
 function writeLogs(status, name, logText) {
