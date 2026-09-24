@@ -148,30 +148,30 @@ export function runStage2ScaSolver(
     const strategy = allResolvedAlreadyPatched
       ? 'IN_PLACE_RELOCK'
       : canRelockInPlace
-      ? 'IN_PLACE_RELOCK'
-      : 'GRAPH_AWARE_PARENT_PEER_BUMP';
+        ? 'IN_PLACE_RELOCK'
+        : 'GRAPH_AWARE_PARENT_PEER_BUMP';
 
     const explanation = isUnaffectedHigherMajor
       ? `Stream ${major}.x (resolved: ${resolvedVersions.join(
           ', '
         )}) is above the highest affected major stream (${maxAffectedMajor}.x). No change needed.`
       : allResolvedAlreadyPatched
-      ? `Stream ${major}.x (resolved: ${resolvedVersions.join(
-          ', '
-        )}) is ALREADY >= ${targetFixedVersion}. No change needed for ${major}.x.`
-      : canRelockInPlace
-      ? `Stream ${major}.x (resolved: ${resolvedVersions.join(
-          ', '
-        )}) allows upgrading to >=${
-          targetFixedVersion || 'latest patch'
-        } within ${major}.x across all parent ranges (${specifiers.join(
-          ', '
-        )}). Safe for surgical in-place yarn.lock relock.`
-      : `Stream ${major}.x has exact/restrictive parent pin(s) [${blockingSpecifiers.join(
-          ', '
-        )}] that block >=${
-          targetFixedVersion || 'latest patch'
-        }. Requires parent package.json + linked peer dependency co-bump (Ref PR #10361).`;
+        ? `Stream ${major}.x (resolved: ${resolvedVersions.join(
+            ', '
+          )}) is ALREADY >= ${targetFixedVersion}. No change needed for ${major}.x.`
+        : canRelockInPlace
+          ? `Stream ${major}.x (resolved: ${resolvedVersions.join(
+              ', '
+            )}) allows upgrading to >=${
+              targetFixedVersion || 'latest patch'
+            } within ${major}.x across all parent ranges (${specifiers.join(
+              ', '
+            )}). Safe for surgical in-place yarn.lock relock.`
+          : `Stream ${major}.x has exact/restrictive parent pin(s) [${blockingSpecifiers.join(
+              ', '
+            )}] that block >=${
+              targetFixedVersion || 'latest patch'
+            }. Requires parent package.json + linked peer dependency co-bump (Ref PR #10361).`;
 
     streamResolutions.push({
       majorStream: major,

@@ -18,20 +18,22 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as yargs from 'yargs';
+import { fetchLiveSecurityAlerts } from './live-alert-fetcher';
 import {
   resolveSafeRepoPath,
   runStage1TriageAndPolicy
 } from './stage1-triage-and-policy';
 import { runStage2ScaSolver } from './stage2-lockfile-solver';
+import { runStage3CodingAgent } from './stage3-coding-agent';
 import { renderBatchedDraftPrMarkdown } from './pr-and-changeset-reporter';
-import { RawVulnerabilityAlert, Stage2ScaExecutionResult } from './types';
+import {
+  RawVulnerabilityAlert,
+  Stage2ScaExecutionResult,
+  Stage3AgentExecutionResult
+} from './types';
 
 const repoRoot = path.resolve(__dirname, '../..');
 
-/**
- * Representative sample alerts covering all 3 categories and PR post-mortem edge cases
- * when no external `--alerts <file.json>` is passed.
- */
 const DEFAULT_SAMPLE_ALERTS: RawVulnerabilityAlert[] = [
   {
     id: 'WIZ-SCA-101',
@@ -114,16 +116,34 @@ const DEFAULT_SAMPLE_ALERTS: RawVulnerabilityAlert[] = [
   }
 ];
 
-function main(): void {
+async function main(): Promise<void> {
   const argv = yargs
     .option('alerts', {
       type: 'string',
       describe: 'Optional path to JSON file of raw alerts'
     })
+    .option('fetch-live', {
+      type: 'boolean',
+      default: false,
+      describe:
+        'Query live GitHub Dependabot/CodeQL APIs and OSV.dev Batch API across all 8 yarn.lock files'
+    })
+    .option('github-repo', {
+      type: 'string',
+      default: 'Manvi1203/firebase-js-sdk-exp',
+      describe: 'GitHub owner/repo slug for gh api queries'
+    })
+    .option('run-stage3', {
+      type: 'boolean',
+      default: true,
+      describe:
+        'Run Stage 3 Coding Agent sub-step for Node 20+ native replacements and SAST fixes'
+    })
     .option('apply', {
       type: 'boolean',
       default: false,
-      describe: 'Apply surgical in-place lockfile relocks (default: dry-run)'
+      describe:
+        'Apply surgical in-place lockfile relocks and Stage 3 code fixes to disk (default: dry-run)'
     })
     .option('output-pr-md', {
       type: 'string',
@@ -131,16 +151,41 @@ function main(): void {
     })
     .parseSync();
 
-  let rawAlerts: RawVulnerabilityAlert[] = DEFAULT_SAMPLE_ALERTS;
+  let rawAlerts: RawVulnerabilityAlert[] = [...DEFAULT_SAMPLE_ALERTS];
+
   if (argv.alerts) {
     const safeAlertsPath = resolveSafeRepoPath(repoRoot, argv.alerts);
     rawAlerts = JSON.parse(fs.readFileSync(safeAlertsPath, 'utf8'));
+  } else if (argv['fetch-live']) {
+    console.log(
+      `=== LIVE FETCHER: QUERYING GITHUB (${argv['github-repo']}) & OSV.DEV ACROSS 8 LOCKFILES ===`
+    );
+    const liveSummary = await fetchLiveSecurityAlerts(
+      repoRoot,
+      argv['github-repo'],
+      120
+    );
+    console.log(
+      `  Dependabot Alerts Fetched: ${liveSummary.dependabotAlertsFetched}`
+    );
+    console.log(`  CodeQL Alerts Fetched: ${liveSummary.codeqlAlertsFetched}`);
+    console.log(
+      `  Live OSV.dev Lockfile Alerts Fetched across ${liveSummary.lockfilesScanned.length} lockfiles: ${liveSummary.osvLockfileAlertsFetched}`
+    );
+    if (liveSummary.warnings.length > 0) {
+      console.log('  Fetcher Notices:');
+      for (const w of liveSummary.warnings) {
+        console.log(`    - ${w}`);
+      }
+    }
+    // Combine live lockfile findings with representative SAST/Node-native cases
+    rawAlerts = [...liveSummary.alerts, ...DEFAULT_SAMPLE_ALERTS];
   }
 
   // Run Stage 1: Environment Guard, 8-Lockfile Mapper, Deduplication & Policy Router
   const stage1 = runStage1TriageAndPolicy(repoRoot, rawAlerts);
 
-  console.log('=== STAGE 1: ENVIRONMENT GUARD & POLICY TRIAGE ===');
+  console.log('\n=== STAGE 1: ENVIRONMENT GUARD & POLICY TRIAGE ===');
   console.log(
     `Yarn Version: ${stage1.environment.yarnVersion} (Meets >= 1.22.22 guard: ${stage1.environment.yarnVersionValid})`
   );
@@ -168,32 +213,64 @@ function main(): void {
     );
   }
 
-  // Run Stage 2: Deterministic Lockfile & Graph Solver on routed SCA alerts
-  console.log('\n=== STAGE 2: DETERMINISTIC LOCKFILE & SEMVER-STREAM SOLVER ===');
+  // Run Stage 2: Deterministic Lockfile & Graph Solver on routed SCA alerts (cap console detail at top 10 for readability)
+  console.log(
+    '\n=== STAGE 2: DETERMINISTIC LOCKFILE & SEMVER-STREAM SOLVER ==='
+  );
   const stage2Results: Stage2ScaExecutionResult[] = [];
-  for (const alert of stage1.triagedAlerts) {
-    if (alert.disposition === 'ROUTE_TO_STAGE2_DETERMINISTIC_SCA') {
-      const res = runStage2ScaSolver(repoRoot, alert, {
-        applyInPlaceRelock: argv.apply
+  const scaAlerts = stage1.triagedAlerts.filter(
+    a => a.disposition === 'ROUTE_TO_STAGE2_DETERMINISTIC_SCA'
+  );
+  for (const alert of scaAlerts.slice(0, 12)) {
+    const res = runStage2ScaSolver(repoRoot, alert, {
+      applyInPlaceRelock: argv.apply
+    });
+    stage2Results.push(res);
+    console.log(
+      `\n[Stage 2 Solver] ${res.packageName} (${res.cveOrRuleId}) in ${res.lockfileContext}:`
+    );
+    console.log(
+      `  Coexisting Major Streams: [${res.coexistingMajorStreams
+        .map(m => `${m}.x`)
+        .join(', ')}]`
+    );
+    for (const sr of res.streamResolutions) {
+      console.log(`  - ${sr.explanation}`);
+    }
+  }
+
+  // Run Stage 3: On-Demand Coding Agent Sub-Step
+  const stage3Results: Stage3AgentExecutionResult[] = [];
+  if (argv['run-stage3']) {
+    console.log(
+      '\n=== STAGE 3: SANDBOXED CODING AGENT (NODE 20+ NATIVE & SAST FIXER) ==='
+    );
+    const stage3Targets = stage1.triagedAlerts.filter(
+      a =>
+        a.disposition === 'ROUTE_TO_STAGE3_CODING_AGENT_NODE_NATIVE' ||
+        a.disposition === 'ROUTE_TO_STAGE3_CODING_AGENT_SAST' ||
+        a.disposition === 'ROUTE_TO_STAGE3_TEST_FIXTURE_SANITIZE'
+    );
+
+    for (const alert of stage3Targets) {
+      const s3Res = await runStage3CodingAgent(repoRoot, alert, {
+        applyEdits: argv.apply
       });
-      stage2Results.push(res);
+      stage3Results.push(s3Res);
       console.log(
-        `\n[Stage 2 Solver] ${res.packageName} (${res.cveOrRuleId}) in ${res.lockfileContext}:`
+        `\n[Stage 3 Agent] ${s3Res.targetPathOrPackage} (${s3Res.cveOrRuleId}):`
       );
       console.log(
-        `  Coexisting Major Streams: [${res.coexistingMajorStreams
-          .map(m => `${m}.x`)
-          .join(', ')}]`
+        `  Engine: ${s3Res.engineUsed} | Attempts: ${s3Res.attemptsUsed}/${s3Res.maxRetries} | Public API Unchanged: ${s3Res.publicApiUnchangedVerified}`
       );
-      for (const sr of res.streamResolutions) {
-        console.log(`  - ${sr.explanation}`);
-      }
-      if (res.deadDevToolingBlockingRemoval.length > 0) {
-        console.log(
-          `  - Dead Dev-Tooling Detected in yarn why: ${res.deadDevToolingBlockingRemoval.join(
-            ', '
-          )}`
-        );
+      console.log(
+        `  Status: ${s3Res.finalStatus} — ${s3Res.escalationOrSuccessNote}`
+      );
+      if (s3Res.diffPreview) {
+        console.log('  Diff Preview:');
+        for (const dl of s3Res.diffPreview.split('\n')) {
+          console.log(`    ${dl}`);
+        }
       }
     }
   }
@@ -201,8 +278,9 @@ function main(): void {
   // Generate Batched Draft PR Markdown + Human Escalation Report
   const prMarkdown = renderBatchedDraftPrMarkdown(
     repoRoot,
-    stage1.triagedAlerts,
-    stage2Results
+    stage1.triagedAlerts.slice(0, 25),
+    stage2Results,
+    stage3Results
   );
 
   console.log('\n=== GENERATED BATCHED DRAFT PR & ESCALATION REPORT ===\n');
@@ -210,9 +288,13 @@ function main(): void {
 
   if (argv['output-pr-md']) {
     const outPath = resolveSafeRepoPath(repoRoot, argv['output-pr-md']);
+    fs.mkdirSync(path.dirname(outPath), { recursive: true });
     fs.writeFileSync(outPath, prMarkdown, 'utf8');
     console.log(`Wrote Draft PR Markdown report to: ${outPath}`);
   }
 }
 
-main();
+main().catch(err => {
+  console.error('Fatal pipeline error:', err);
+  process.exit(1);
+});

@@ -43,9 +43,11 @@ const OFF_LIMITS_COMPILERS_AND_BUNDLERS = new Set([
  * rather than migrated across breaking major versions (Ref PR #10175, Note #6).
  */
 const NODE_NATIVE_REPLACEMENT_MAP: Record<string, string> = {
-  request: 'Replace with native global fetch() in Node >= 20/24 (Ref PR #10175).',
+  request:
+    'Replace with native global fetch() in Node >= 20/24 (Ref PR #10175).',
   'node-fetch': 'Replace with native global fetch() in Node >= 20/24.',
-  rimraf: 'Replace with native fs.rmSync(dir, { recursive: true, force: true }).',
+  rimraf:
+    'Replace with native fs.rmSync(dir, { recursive: true, force: true }).',
   mkdirp: 'Replace with native fs.mkdirSync(dir, { recursive: true }).'
 };
 
@@ -68,7 +70,10 @@ export interface Stage1Output {
 /**
  * Strictly validates that targetPath stays inside repoRoot (prevents path traversal).
  */
-export function resolveSafeRepoPath(repoRoot: string, targetPath: string): string {
+export function resolveSafeRepoPath(
+  repoRoot: string,
+  targetPath: string
+): string {
   const canonicalRoot = path.resolve(repoRoot);
   const resolved = path.resolve(canonicalRoot, targetPath);
   if (

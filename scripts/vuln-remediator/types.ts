@@ -16,17 +16,10 @@
  */
 
 export type ScannerSource =
-  | 'WIZ_SCA'
-  | 'DEPENDABOT'
-  | 'WIZ_SAST'
-  | 'CODEQL'
-  | 'WIZ_DATA'
-  | 'OSV_SCANNER';
+  'WIZ_SCA' | 'DEPENDABOT' | 'WIZ_SAST' | 'CODEQL' | 'WIZ_DATA' | 'OSV_SCANNER';
 
 export type AlertCategory =
-  | 'SCA_DEPENDENCY'
-  | 'SAST_FIRST_PARTY'
-  | 'SECRET_OR_TEST_DATA';
+  'SCA_DEPENDENCY' | 'SAST_FIRST_PARTY' | 'SECRET_OR_TEST_DATA';
 
 export type Stage1Disposition =
   | 'ROUTE_TO_STAGE2_DETERMINISTIC_SCA'
@@ -82,6 +75,23 @@ export interface Stage2ScaExecutionResult {
   yarnWhyRootParents: string[];
   deadDevToolingBlockingRemoval: string[];
   appliedLockfileEdit: boolean;
-  finalStatus: 'READY_FOR_PR' | 'REQUIRES_PATCH_PACKAGE_OR_REPLACE' | 'ESCALATED_TO_HUMAN';
+  finalStatus:
+    'READY_FOR_PR' | 'REQUIRES_PATCH_PACKAGE_OR_REPLACE' | 'ESCALATED_TO_HUMAN';
   summaryNote: string;
+}
+
+export interface Stage3AgentExecutionResult {
+  alertId: string;
+  cveOrRuleId: string;
+  targetPathOrPackage: string;
+  disposition: Stage1Disposition;
+  engineUsed: 'GEMINI_API_SANDBOX' | 'DETERMINISTIC_SECURITY_CODEMOD';
+  attemptsUsed: number;
+  maxRetries: number;
+  publicApiUnchangedVerified: boolean;
+  verificationGatePassed: boolean;
+  modifiedFiles: string[];
+  finalStatus: 'PATCHED_AND_VERIFIED' | 'CIRCUIT_BREAKER_ESCALATED_TO_HUMAN';
+  diffPreview: string;
+  escalationOrSuccessNote: string;
 }

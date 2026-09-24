@@ -19,7 +19,11 @@ import * as crypto from 'crypto';
 import * as fs from 'fs';
 import * as path from 'path';
 import { resolveSafeRepoPath } from './stage1-triage-and-policy';
-import { Stage2ScaExecutionResult, TriagedAlert } from './types';
+import {
+  Stage2ScaExecutionResult,
+  Stage3AgentExecutionResult,
+  TriagedAlert
+} from './types';
 
 export type ChangesetTier =
   | 'TIER_1_RUNTIME_DEP'
@@ -154,26 +158,32 @@ export function hashPackageDistDir(
 
 /**
  * Renders the Batched Draft PR Body Markdown including:
- * 1. Automated Fixes Table (Stage 2 SCA + Stage 3 Agent Fixes)
- * 2. Human Escalation Report Table (Off-Limits, Pinned Regressions, Stuck Upgrades — Note #3)
- * 3. Auto-Suppressed Non-Prod Script Noise Summary (Note #5)
+ * 1. Stage 2 Deterministic SCA Lockfile/Graph Resolutions
+ * 2. Stage 3 Sandboxed Coding-Agent Code Fixes (Node 20+ Native Replacement, Prod SAST, Test Fixtures)
+ * 3. Human Escalation Report Table (Off-Limits, Pinned Regressions, Circuit-Breaker Escalations — Note #3)
+ * 4. Auto-Suppressed Non-Production CI/Script Alerts (Note #5)
  */
 export function renderBatchedDraftPrMarkdown(
   repoRoot: string,
   triagedAlerts: TriagedAlert[],
-  stage2Results: Stage2ScaExecutionResult[]
+  stage2Results: Stage2ScaExecutionResult[],
+  stage3Results: Stage3AgentExecutionResult[] = []
 ): string {
   const stage2Map = new Map<string, Stage2ScaExecutionResult>();
   for (const r of stage2Results) {
     stage2Map.set(r.alertId, r);
   }
+  const stage3Map = new Map<string, Stage3AgentExecutionResult>();
+  for (const r of stage3Results) {
+    stage3Map.set(r.alertId, r);
+  }
 
   const lines: string[] = [
     '## Automated Security Vulnerability Remediation (Batched Draft PR)',
     '',
-    '### 1. Deterministically Resolved & Queued Fixes',
+    '### 1. Stage 2: Deterministic Lockfile & SemVer-Stream Fixes',
     '',
-    '| CVE / Rule ID | Target Package / Path | Lockfile Context | Resolution Strategy | SemVer Streams / Detail | Changeset Needed? |',
+    '| CVE / Rule ID | Target Package | Lockfile Context | Resolution Strategy | SemVer Streams / Detail | Changeset Needed? |',
     '| :--- | :--- | :--- | :--- | :--- | :--- |'
   ];
 
@@ -199,34 +209,57 @@ export function renderBatchedDraftPrMarkdown(
           cs.requiresChangeset ? 'Yes' : 'No'
         }** (${cs.tier}) |`
       );
-    } else if (
-      alert.disposition === 'ROUTE_TO_STAGE3_CODING_AGENT_NODE_NATIVE' ||
-      alert.disposition === 'ROUTE_TO_STAGE3_CODING_AGENT_SAST' ||
-      alert.disposition === 'ROUTE_TO_STAGE3_TEST_FIXTURE_SANITIZE'
-    ) {
-      lines.push(
-        `| \`${alert.cveOrRuleId}\` | \`${alert.packageOrFilePath}\` | \`${alert.lockfileContext}\` | \`${alert.disposition}\` | ${alert.rationale} | Evaluated post-build |`
-      );
+    }
+  }
+
+  if (stage3Results.length > 0) {
+    lines.push(
+      '',
+      '### 2. Stage 3: On-Demand Coding Agent Fixes (Node 20+ Native, SAST & Fixtures)',
+      '',
+      '| CVE / Rule ID | Target File / Package | Engine | Attempts (Max 2) | Public API Preserved? | Modified Files | Status / Note |',
+      '| :--- | :--- | :--- | :--- | :--- | :--- | :--- |'
+    );
+    for (const s3 of stage3Results) {
+      if (s3.finalStatus === 'PATCHED_AND_VERIFIED') {
+        const modFiles =
+          s3.modifiedFiles.length > 0
+            ? s3.modifiedFiles.map(f => `\`${f}\``).join(', ')
+            : '*(no active call sites)*';
+        lines.push(
+          `| \`${s3.cveOrRuleId}\` | \`${s3.targetPathOrPackage}\` | \`${
+            s3.engineUsed
+          }\` | ${s3.attemptsUsed}/${s3.maxRetries} | ${
+            s3.publicApiUnchangedVerified ? 'Yes' : 'No'
+          } | ${modFiles} | ${s3.escalationOrSuccessNote} |`
+        );
+      }
     }
   }
 
   const escalated = triagedAlerts.filter(
     a =>
       a.disposition === 'ESCALATE_TO_HUMAN_REPORT' ||
-      a.disposition === 'ROUTE_TO_PATCH_PACKAGE_OR_DEP_REPLACE'
+      a.disposition === 'ROUTE_TO_PATCH_PACKAGE_OR_DEP_REPLACE' ||
+      stage3Map.get(a.id)?.finalStatus === 'CIRCUIT_BREAKER_ESCALATED_TO_HUMAN'
   );
 
   if (escalated.length > 0) {
     lines.push(
       '',
-      '### 2. Human Escalation Report (Requires Manual Engineering Triage — Footnote #3)',
+      '### 3. Human Escalation Report (Requires Manual Engineering Triage — Footnote #3)',
       '',
       '| CVE / Rule ID | Package / Path | Policy Rule Triggered | Why Autonomous Bump Was Blocked | Recommended Maintainer Action |',
       '| :--- | :--- | :--- | :--- | :--- |'
     );
     for (const e of escalated) {
+      const s3 = stage3Map.get(e.id);
+      const reason =
+        s3?.finalStatus === 'CIRCUIT_BREAKER_ESCALATED_TO_HUMAN'
+          ? s3.escalationOrSuccessNote
+          : e.rationale;
       lines.push(
-        `| \`${e.cveOrRuleId}\` | \`${e.packageOrFilePath}\` | \`${e.policyRuleId}\` | ${e.rationale} | Handle in dedicated migration PR or apply \`patch-package\` |`
+        `| \`${e.cveOrRuleId}\` | \`${e.packageOrFilePath}\` | \`${e.policyRuleId}\` | ${reason} | Handle in dedicated migration PR or apply \`patch-package\` |`
       );
     }
   }
@@ -237,7 +270,7 @@ export function renderBatchedDraftPrMarkdown(
   if (suppressed.length > 0) {
     lines.push(
       '',
-      '### 3. Auto-Suppressed Non-Production CI/Script Alerts (Footnote #5)',
+      '### 4. Auto-Suppressed Non-Production CI/Script Alerts (Footnote #5)',
       '',
       '| CVE / Rule ID | File Path | Suppression Rationale |',
       '| :--- | :--- | :--- |'
