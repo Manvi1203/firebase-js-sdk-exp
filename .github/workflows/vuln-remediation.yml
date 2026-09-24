@@ -1,0 +1,93 @@
+# Copyright 2026 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: Security Vulnerability Remediation Pipeline (Prototype)
+
+on:
+  workflow_dispatch:
+    inputs:
+      apply_fixes:
+        description: 'Apply surgical in-place lockfile relocks and open Draft PR'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'false'
+          - 'true'
+  schedule:
+    # Runs every Monday at 09:00 UTC
+    - cron: '0 9 * * 1'
+
+jobs:
+  remediate-vulnerabilities:
+    name: Triage & Remediate Vulnerabilities (Stage 1 & Stage 2)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      security-events: read
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.19.0
+          cache: 'yarn'
+
+      - name: Install Dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Prepare CI Project Config
+        run: cp config/ci.config.json config/project.json
+
+      - name: Run Stage 1 & Stage 2 Vulnerability Remediator
+        run: |
+          if [ "${{ inputs.apply_fixes }}" = "true" ]; then
+            yarn vuln:remediate --apply --output-pr-md draft-pr-report.md
+          else
+            yarn vuln:remediate --output-pr-md draft-pr-report.md
+          fi
+
+      - name: Verify Dependency Tree Integrity
+        run: yarn check --verify-tree
+
+      - name: Upload Remediation & Escalation Report Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: vulnerability-remediation-report
+          path: draft-pr-report.md
+
+      - name: Create or Update Batched Draft Pull Request
+        if: ${{ inputs.apply_fixes == 'true' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [ -n "$(git status --porcelain --untracked-files=no)" ]; then
+            BRANCH_NAME="fix/vuln-batch-$(date +%Y%m%d)"
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git checkout -B "$BRANCH_NAME"
+            git add -u
+            git commit -m "chore(security): automated batched vulnerability remediation"
+            git push -u origin "$BRANCH_NAME" --force
+            gh pr create --draft \
+              --title "chore(security): batched dependency vulnerability remediation ($(date +%Y-%m-%d))" \
+              --body-file draft-pr-report.md
+          else
+            echo "No lockfile or manifest diffs generated in this run."
+          fi
