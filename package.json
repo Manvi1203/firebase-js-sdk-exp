@@ -49,7 +49,8 @@
     "postinstall": "patch-package && yarn --cwd repo-scripts/changelog-generator build",
     "sa": "ts-node-script repo-scripts/size-analysis/cli.ts",
     "api-documenter": "ts-node-script repo-scripts/api-documenter/src/start.ts",
-    "format": "ts-node ./scripts/format/format.ts"
+    "format": "ts-node ./scripts/format/format.ts",
+    "vuln:remediate": "ts-node-script scripts/vuln-remediator/cli.ts"
   },
   "repository": {
     "type": "git",
